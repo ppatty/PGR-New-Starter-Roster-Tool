@@ -194,6 +194,22 @@ const MIN_SHIFTS=15;
 const MANDATORY_SESSIONS=[ {name:'Welcome Day',label:'Welcome Day',start:'09:00'}, {name:'PGR F&B On boarding',label:'PGR F&B On boarding',start:'09:00'} ];
 const RULES={ "Oasis Food":["08:00","11:00","16:00"], "Oasis Bar":["06:00","08:00","10:00","14:00","16:00","17:00","18:00","19:00","22:00"], "SOV South Floor":Array.from({length:14},(_,k)=>(9+k).toString().padStart(2,'0')+":00"), "SOV North Floor":["18:00"], "SOV South Bar":["06:00","10:00","14:00","18:00","22:00"], "SOV Dining":["17:00"] };
 
+/* --- CORE ROSTERING FUNCTIONS (FIX) --- */
+function isMandatory(r){ return r.Outlet===MANDATORY_SESSIONS[0].label||r.Outlet===MANDATORY_SESSIONS[1].label; }
+function shiftsInLastNDaysFor(starterName,dateObj,n){
+  const start=new Date(dateObj); start.setDate(start.getDate()-(n-1));
+  const startKey=toYMD(start), endKey=toYMD(dateObj);
+  let count=0;
+  for(const r of allRows){
+    if(r.Starter!==starterName) continue;
+    if(isMandatory(r)) continue;
+    if(r.Date>=startKey && r.Date<=endKey) count++;
+  }
+  return count;
+}
+function canWorkThisDay(starterName,dateObj){ return shiftsInLastNDaysFor(starterName,dateObj,10)<8; }
+
+
 /* --- FEATURE 1: STARTER AVAILABILITY (CALENDAR MODAL) --- */
 const calendarModal = byId('calendar-modal');
 const calendarTitle = byId('calendar-title');
