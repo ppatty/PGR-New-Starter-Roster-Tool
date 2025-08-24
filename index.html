@@ -1,164 +1,447 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>PGR Roster Creator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="theme-color" content="#0f121a" />
-<link rel="manifest" href="/manifest.webmanifest">
+  <meta charset="utf-8" />
+  <title>PGR Roster Creator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A modern, fast, and deterministic roster creator for PGR at The Star Gold Coast.">
+  <meta name="theme-color" content="#111827" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
 
-<style>
-  :root{
-    --bg-0:#0b0d12;--bg-1:#0f121a;--bg-2:#141826;--card:#0f1420a6;--glass:rgba(255,255,255,.06);
-    --stroke:#1f2638;--ink:#e8ebff;--muted:#9aa6c3;--brand:#8aa4ff;--brand-2:#6be7ff;--warn:#ffd66b;--ok:#6bff95;
-    --shadow:0 8px 32px rgba(0,0,0,.4);--radius:14px;
-  }
-  @media (prefers-color-scheme: light){
-    :root{--bg-0:#f6f7fb;--bg-1:#fff;--bg-2:#eef1f8;--card:#ffffffd9;--glass:rgba(0,0,0,.04);--stroke:#e4e8f2;--ink:#121625;--muted:#5a647a;--shadow:0 10px 30px rgba(30,50,130,.12)}
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;color:var(--ink);background:
-      radial-gradient(1200px 800px at 80% -10%, #2435ff14 0%, transparent 60%),
-      radial-gradient(1000px 700px at -10% 20%, #00e8ff12 0%, transparent 60%),
-      var(--bg-0);
-    font:14px/1.45 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;letter-spacing:.2px;
-  }
-  .app{display:grid;grid-template-columns:260px 1fr;min-height:100%}
-  .side{position:sticky;top:0;align-self:start;height:100vh;padding:22px 18px;border-right:1px solid var(--stroke);background:linear-gradient(180deg,var(--bg-1) 0%,transparent 100%);backdrop-filter:saturate(120%) blur(14px)}
-  .brand{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:12px}
-  .logo{width:24px;height:24px;border-radius:8px;background:conic-gradient(from 200deg,var(--brand),var(--brand-2),var(--brand));box-shadow:inset 0 0 0 2px #ffffff22}
-  .brand h1{font-size:14px;margin:0}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
-  .nav{margin-top:18px;display:grid;gap:8px}
-  .nav .chip{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);background:var(--glass)}
-  .main{padding:24px;display:grid;gap:18px}
-  .toolbar{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px;margin:-10px;margin-bottom:0;background:linear-gradient(180deg,var(--bg-1) 0%,transparent 100%);backdrop-filter:saturate(120%) blur(10px);border-bottom:1px solid var(--stroke)}
-  .card{border:1px solid var(--stroke);background:linear-gradient(180deg,var(--card),#0b0f1a77);backdrop-filter:saturate(120%) blur(10px);border-radius:var(--radius);box-shadow:var(--shadow)}
-  .card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--stroke)}
-  .card .hd h2{font-size:13px;text-transform:uppercase;letter-spacing:.7px;margin:0;color:var(--muted)}
-  .card .bd{padding:14px 16px}.sub{font-size:12px;color:var(--muted)}
-  label{display:block;font-size:11px;color:var(--muted);margin:0 0 6px 2px}
-  input,textarea,button,select{font:inherit;color:inherit;background:var(--bg-2);border:1px solid var(--stroke);border-radius:12px;outline:none;padding:10px 12px;transition:border-color .15s,transform .06s}
-  textarea{min-height:160px;resize:vertical}
-  input:focus,textarea:focus,select:focus{border-color:var(--brand)}
-  button{background:linear-gradient(180deg,#1a2140,#121830);border-color:#2a3255;cursor:pointer}
-  button:hover{transform:translateY(-1px)}button:active{transform:translateY(0)}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);background:var(--glass)}
-  .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand-2));color:#0a1020;border:none}
-  .btn.ghost{background:transparent}.btn.warn{background:linear-gradient(180deg,#2b230f,#1b1406);border-color:#5b4920}
-  .btn .ico{width:16px;height:16px;display:inline-block}
-  .grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
-  @media (max-width:900px){.app{grid-template-columns:1fr}.side{position:static;height:auto}.g2,.g3{grid-template-columns:1fr}}
-  table{width:100%;border-collapse:separate;border-spacing:0}
-  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--stroke)}
-  thead th{position:sticky;top:48px;background:linear-gradient(180deg,var(--bg-1) 0%,transparent 100%);z-index:2}
-  tbody tr:hover{background:#ffffff07}
-  .group-row td{background:linear-gradient(180deg,#11172a,#0b1122);position:sticky;top:74px;z-index:1;border-bottom:1px solid var(--stroke)}
-  .pill{display:inline-block;padding:2px 8px;font-size:11px;border-radius:999px;border:1px solid var(--stroke);background:var(--glass);color:var(--muted)}
-  .status{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;border:1px dashed var(--stroke);background:var(--glass)}
-  .status b{color:var(--ok)}.visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px)}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  <style>
+    /* --- Modern Font: Inter --- */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-  .logo-img {
-    height: 40px;
-    width: auto;
-    display: block;
-    object-fit: contain;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
-  }
-  .brand .product {
-    display: flex;
-    flex-direction: column;
-  }
-  .brand .titleRow {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .brand .pgr-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    border: 1px solid var(--stroke);
-    background: var(--glass);
-    font-size: 11px;
-  }
-  .brand .pgr-badge b {
-    letter-spacing: .6px;
-  }
-  .brand .subbrand {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-</style>
+    /* --- CSS Variables & Base Styles --- */
+    :root {
+      --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      
+      --bg-primary: #030712;    /* Near black */
+      --bg-secondary: #111827; /* Dark gray-blue */
+      --bg-tertiary: #1f2937;  /* Lighter gray-blue */
+      --surface: #1a2332;      /* Card backgrounds */
+      
+      --text-primary: #f9fafb;  /* Off-white */
+      --text-secondary: #9ca3af;/* Medium gray */
+      --text-muted: #6b7280;    /* Darker gray */
+
+      --border-primary: #374151;
+      --border-secondary: #4b5563;
+
+      --brand-primary: #3b82f6; /* Vibrant Blue */
+      --brand-secondary: #14b8a6;/* Teal */
+      --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+
+      --warn-primary: #f59e0b; /* Amber */
+      --ok-primary: #22c55e;   /* Green */
+
+      --radius-sm: 0.375rem; /* 6px */
+      --radius-md: 0.5rem;   /* 8px */
+      --radius-lg: 0.75rem;  /* 12px */
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      background-color: var(--bg-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* --- App Layout --- */
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 1.5rem;
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .main {
+      padding: 2rem;
+      display: grid;
+      gap: 1.5rem;
+      align-content: start;
+    }
+
+    /* --- Brand & Logo --- */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .logo {
+      width: 40px;
+      height: 40px;
+      color: var(--brand-primary);
+    }
+    .brand .product h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+    .brand .product .subbrand {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    
+    /* --- Navigation & Summary Chips --- */
+    .nav-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .nav-group h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin: 0 0 0.5rem;
+      padding: 0 0.5rem;
+    }
+    .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.375rem 0.75rem;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-primary);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* --- Main Toolbar --- */
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 1rem;
+      margin: -2rem -2rem 0;
+      background: linear-gradient(180deg, rgba(3, 7, 18, 0.95) 70%, transparent 100%);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-primary);
+    }
+    #conflicts {
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      background-color: var(--bg-tertiary);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-primary);
+    }
+
+    /* --- Card Component --- */
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .card .hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-primary);
+      background-color: var(--bg-tertiary);
+    }
+    .card .hd h2 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+      color: var(--text-secondary);
+    }
+    .card .hd .sub { font-size: 0.875rem; color: var(--text-muted); }
+    .card .bd { padding: 1.5rem; }
+
+    /* --- Form Elements --- */
+    .grid { display: grid; gap: 1rem; }
+    .g2 { grid-template-columns: repeat(2, 1fr); }
+    .g3 { grid-template-columns: repeat(3, 1fr); }
+    .g-col-span-2 { grid-column: span 2 / span 2; }
+    
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    input, textarea, select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-md);
+      padding: 0.625rem 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary);
+    }
+    textarea { min-height: 160px; resize: vertical; }
+
+    /* --- Button Component --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.625rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-secondary);
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
+    .btn:hover { background-color: #374151; border-color: #4b5563; }
+    .btn:active { transform: scale(0.98); }
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary);
+    }
+    .btn .ico { width: 16px; height: 16px; }
+
+    .btn.primary {
+      background-image: var(--brand-gradient);
+      border: none;
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+    .btn.primary:hover { filter: brightness(1.1); }
+    
+    .btn.warn {
+      background-color: #422006;
+      border-color: #78350f;
+      color: var(--warn-primary);
+    }
+    .btn.warn:hover { background-color: #522a08; }
+
+    .btn.ghost {
+      background-color: transparent;
+      border-color: transparent;
+      color: var(--text-secondary);
+    }
+    .btn.ghost:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
+
+    /* --- Table Styles --- */
+    .table-wrapper {
+      overflow: auto;
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-primary);
+      white-space: nowrap;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: var(--bg-tertiary);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      z-index: 2;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background-color: #1f293799; }
+    .group-row td {
+      position: sticky;
+      /* FIX: Increased top offset to fully clear the header */
+      top: 48px; 
+      background-color: #1a2332;
+      font-weight: 600;
+      color: var(--text-primary);
+      z-index: 1;
+    }
+    
+    /* --- Utility Classes --- */
+    .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); }
+    .text-sm { font-size: 0.875rem; }
+    .text-muted { color: var(--text-muted); }
+    .mt-4 { margin-top: 1rem; }
+
+    /* --- Modal Styles --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background-color: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-primary);
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+      transform: scale(0.95);
+      transition: transform 0.3s;
+    }
+    .modal-overlay.visible .modal-content {
+      transform: scale(1);
+    }
+    .modal-content h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+    .modal-content p {
+      margin: 0 0 1.5rem;
+      color: var(--text-secondary);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    /* --- Responsive Design --- */
+    @media (max-width: 1024px) {
+      .app { grid-template-columns: 1fr; }
+      .side {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-primary);
+      }
+      .toolbar { margin: -2rem -2rem 0; }
+    }
+    @media (max-width: 768px) {
+      .main { padding: 1.5rem; }
+      .toolbar { margin: -1.5rem -1.5rem 0; }
+      .g2, .g3 { grid-template-columns: 1fr; }
+      .g-col-span-2 { grid-column: span 1 / span 1; }
+      .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    }
+  </style>
 </head>
 <body>
-<!-- Ensure 'the-star-gold-coast-logo.png' is placed alongside this HTML file -->
+
 <div class="app">
   <aside class="side">
     <div class="brand">
-  <img src="the-star-gold-coast-logo.png" alt="The Star Gold Coast" class="logo-img" onerror="this.style.display='none'">
-  <div class="product">
-    <div class="titleRow">
-      <h1>PGR Roster Creator</h1>
-      <span class="pgr-badge" title="Private Gaming Rooms"><b>PGR</b></span>
+      <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 7L12 12M12 22V12M22 7L12 12M17 4.5L7 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="product">
+        <h1>PGR Roster Creator</h1>
+        <div class="subbrand">The Star Gold Coast</div>
+      </div>
     </div>
-    <div class="subbrand">Private Gaming Rooms · The Star Gold Coast</div>
-  </div>
-</div>
-      <div><h1>PGR Roster Creator</h1><div class="hint">Modern. Fast. Deterministic.</div></div>
-    </div>
-    <div class="nav" aria-label="Summary">
-      <div class="chip"><span class="pill">One shift/day</span></div>
-      <div class="chip"><span class="pill">No Sundays</span><span class="pill">Mon off</span></div>
-      <div class="chip"><span class="pill">Min 15 shifts</span><span class="pill">≥2 off / 10d</span></div>
-      <div class="chip"><span class="pill">Capacity 1/day/outlet</span></div>
+    
+    <div class="nav-group">
+      <h2>Summary</h2>
+      <div class="nav-chips">
+        <div class="chip">One shift/day</div>
+        <div class="chip">No Sundays</div>
+        <div class="chip">Mon off</div>
+        <div class="chip">Min 15 shifts</div>
+        <div class="chip">≥2 off / 10d</div>
+        <div class="chip">Capacity 1/day/outlet</div>
+      </div>
     </div>
   </aside>
 
   <main class="main">
     <div class="toolbar" role="region" aria-label="Global actions">
-      <button id="buildAll" class="btn primary" type="button" title="Build all">
-        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.6L12 16l-4.9 2.3.9-5.6-4-3.9 5.5-.8L12 3z"/></svg>
-        Build
+      <button id="buildAll" class="btn primary" type="button">
+        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        Build Roster
       </button>
-      <button id="exportAllCsv" class="btn" type="button" title="Export roster CSV">
-        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+      <button id="exportAllCsv" class="btn" type="button">
+        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         CSV
       </button>
-      <button id="exportAllXls" class="btn" type="button" title="Export roster .xlsx">
-        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4zM7 8l10 8M17 8L7 16"/></svg>
+      <button id="exportAllXls" class="btn" type="button">
+        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>
         Excel (.xlsx)
       </button>
-      <span class="pill" id="conflicts" aria-live="polite">—</span>
+      <span id="conflicts" aria-live="polite">—</span>
     </div>
 
     <section class="card" aria-labelledby="base-h">
-      <div class="hd"><h2 id="base-h">Base plan</h2><span class="sub">Preloaded. Import optional.</span></div>
+      <div class="hd"><h2 id="base-h">Base Plan</h2><span class="sub">Preloaded. Import optional.</span></div>
       <div class="bd grid g2">
         <div>
           <label for="baseInput">Edit base CSV</label>
           <textarea id="baseInput" spellcheck="false"></textarea>
-          <div class="grid g3" style="margin-top:10px">
-            <input type="file" id="importBase" accept=".csv" class="visually-hidden" />
+        </div>
+        <div>
+          <label>Actions</label>
+          <div class="grid g2">
             <button id="importBaseBtn" class="btn" type="button">Import CSV</button>
             <button id="applyBase" class="btn" type="button">Apply</button>
             <button id="exportBase" class="btn" type="button">Export CSV</button>
             <button id="restoreBase" class="btn warn" type="button">Restore Preloaded</button>
-            <div class="status" id="baseSummary" aria-live="polite">—</div>
+            <input type="file" id="importBase" accept=".csv" class="visually-hidden" />
           </div>
-        </div>
-        <div>
-          <div class="sub" style="margin-bottom:8px">Rules snapshot</div>
-          <ul class="sub" style="margin:0; padding-left:16px">
-            <li>First two days fixed 09:00: Welcome Day, PGR F&amp;B On boarding</li>
-            <li>SOV North Floor 18:00 Fri/Sat only</li>
-            <li>Blocks remain consecutive per outlet</li>
-          </ul>
+          <div class="text-sm text-muted mt-4">
+            <b>Rules Snapshot:</b>
+            <ul style="margin:0.5rem 0 0; padding-left:1rem; color: var(--text-secondary);">
+              <li>First two days fixed 09:00: Welcome Day, PGR F&B On boarding</li>
+              <li>SOV North Floor 18:00 Fri/Sat only</li>
+              <li>Blocks remain consecutive per outlet</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
@@ -171,15 +454,13 @@
           <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
           <div><label for="stDate">Start Date</label><input id="stDate" type="date"></div>
         </div>
-        <div class="grid g3" style="margin-top:10px">
-          <button id="addStarter" class="btn primary" type="button">Add</button>
-          <button id="clearStarters" class="btn" type="button">Clear</button>
-          <button id="exportStarters" class="btn" type="button">Export CSV</button>
-          <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
+        <div class="grid g3 mt-4">
+          <button id="addStarter" class="btn primary" type="button">Add Starter</button>
           <button id="importStartersBtn" class="btn" type="button">Import CSV</button>
-          <span class="sub">CSV header: Name,StaffID,StartDate</span>
+          <button id="clearStarters" class="btn" type="button">Clear All</button>
+          <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
         </div>
-        <div style="margin-top:12px; overflow:auto">
+        <div class="mt-4 table-wrapper">
           <table id="startersTbl">
             <thead><tr><th>#</th><th>Name</th><th>StaffID</th><th>Start</th><th></th></tr></thead>
             <tbody></tbody>
@@ -189,7 +470,7 @@
     </section>
 
     <section class="card" aria-labelledby="blocks-h">
-      <div class="hd"><h2 id="blocks-h">Default blocks</h2><span class="sub">Consecutive per outlet. Shuffle optional.</span></div>
+      <div class="hd"><h2 id="blocks-h">Default Blocks</h2><span class="sub">Consecutive per outlet. Shuffle optional.</span></div>
       <div class="bd">
         <div class="grid g3">
           <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
@@ -199,30 +480,43 @@
           <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="2" min="0"></div>
           <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
         </div>
-        <div class="grid g2" style="margin-top:10px">
-          <button id="shuffleBlocks" class="btn" type="button">Shuffle per‑starter</button>
-          <div class="sub">Starts: Food 08/11/16 • Bar 06/08/10/14/16/17/18/19/22 • South Floor 09–22 hourly • North Floor 18 Fri/Sat • South Bar 06/10/14/18/22 • Dining 17</div>
+        <div class="mt-4">
+          <button id="shuffleBlocks" class="btn" type="button">Toggle Shuffle (Per-Starter)</button>
         </div>
       </div>
     </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Schedule</h2><span class="sub">Grouped by starter</span></div>
-      <div class="bd" style="overflow:auto">
-        <table id="schedTbl">
-          <thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead>
-          <tbody></tbody>
-        </table>
+      <div class="hd"><h2 id="schedule-h">Generated Schedule</h2><span class="sub">Grouped by starter</span></div>
+      <div class="bd" style="padding: 0;">
+        <div class="table-wrapper">
+          <table id="schedTbl">
+            <thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>
+</div>
+
+<!-- Custom Modal for Alerts/Confirms -->
+<div id="modal" class="modal-overlay">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h3 id="modal-title">Modal Title</h3>
+    <p id="modal-text">Modal message goes here.</p>
+    <div class="modal-actions">
+      <button id="modal-cancel" class="btn">Cancel</button>
+      <button id="modal-confirm" class="btn primary">Confirm</button>
+    </div>
+  </div>
 </div>
 
 <!-- SheetJS for .xlsx export -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <script>
-/* helpers */
+/* --- HELPERS --- */
 const byId = id => document.getElementById(id);
 const pad2 = n => (n<10?"0":"")+n;
 const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
@@ -232,7 +526,6 @@ const isSun = d => d.getDay()===0;
 const nextWorking = d => { let x=new Date(d); while(isSun(x)||isMon(x)) x.setDate(x.getDate()+1); return x; };
 function addWorkDay(d){ const x=new Date(d); x.setDate(x.getDate()+1); return nextWorking(x); }
 function shuffled(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-
 function isOutletAllowedOnDate(outlet, dateObj){
   const dow=dateObj.getDay();
   if(dow===0) return false;
@@ -240,7 +533,41 @@ function isOutletAllowedOnDate(outlet, dateObj){
   return true;
 }
 
-/* mandatory and off-day counting */
+/* --- MODAL LOGIC --- */
+const modal = byId('modal');
+const modalTitle = byId('modal-title');
+const modalText = byId('modal-text');
+const modalCancel = byId('modal-cancel');
+const modalConfirm = byId('modal-confirm');
+let modalResolve;
+
+function showModal(title, text, showCancel = false) {
+  modalTitle.textContent = title;
+  modalText.textContent = text;
+  modalCancel.style.display = showCancel ? 'inline-flex' : 'none';
+  modal.classList.add('visible');
+  
+  return new Promise(resolve => {
+    modalResolve = resolve;
+  });
+}
+
+modalCancel.onclick = () => {
+  modal.classList.remove('visible');
+  if (modalResolve) modalResolve(false);
+};
+modalConfirm.onclick = () => {
+  modal.classList.remove('visible');
+  if (modalResolve) modalResolve(true);
+};
+modal.onclick = (e) => {
+    if (e.target === modal) {
+        modal.classList.remove('visible');
+        if (modalResolve) modalResolve(false);
+    }
+};
+
+/* --- MANDATORY SESSIONS & COUNTERS --- */
 const MANDATORY_SESSIONS=[
   {name:'Welcome Day',label:'Welcome Day',start:'09:00'},
   {name:'PGR F&B On boarding',label:'PGR F&B On boarding',start:'09:00'}
@@ -260,7 +587,7 @@ function shiftsInLastNDaysFor(starterName,dateObj,n){
 }
 function canWorkThisDay(starterName,dateObj){ return shiftsInLastNDaysFor(starterName,dateObj,10)<8; }
 
-/* base plan */
+/* --- BASE PLAN --- */
 let base=[];
 function parseBase(text){
   const rows=[];
@@ -284,9 +611,7 @@ byId('importBase').onchange=e=>{
 byId('applyBase').onclick=applyBase;
 function applyBase(){
   base=parseBase(byId('baseInput').value);
-  const paths=[...new Set(base.map(r=>r.Path))];
-  byId('baseSummary').textContent=`${paths.length} paths • ${base.length} steps`;
-  if(!base.length) alert('No base steps found.');
+  if(!base.length) showModal('Base Plan Error', 'No valid base steps were found in the provided text.');
 }
 byId('exportBase').onclick=()=>{
   const header=['Path','Step','OffsetDays','Shift'];
@@ -327,9 +652,12 @@ function restoreBase(auto=false){
   const btn=byId('applyBase'); if(btn) btn.click();
 }
 byId('restoreBase').onclick=()=>restoreBase(false);
-restoreBase(true);
+document.addEventListener('DOMContentLoaded', () => {
+    restoreBase(true);
+});
 
-/* legal start times */
+
+/* --- LEGAL START TIMES --- */
 const RULES={
   "Oasis Food":["08:00","11:00","16:00"],
   "Oasis Bar":["06:00","08:00","10:00","14:00","16:00","17:00","18:00","19:00","22:00"],
@@ -339,31 +667,43 @@ const RULES={
   "SOV Dining":["17:00"]
 };
 
-/* starters */
+/* --- STARTERS --- */
 let starters=[];
 function renderStarters(){
   const tb=document.querySelector('#startersTbl tbody');
+  if (starters.length === 0) {
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
+    return;
+  }
   tb.innerHTML=starters.map((s,i)=>`
     <tr>
-      <td>${i+1}</td><td>${s.Name}</td><td>${s.StaffID||''}</td><td>${s.StartDate}</td>
-      <td style="text-align:right"><button data-i='${i}' class='btn ghost' type="button" aria-label="Remove ${s.Name}">Remove</button></td>
+      <td>${i+1}</td><td>${s.Name}</td><td>${s.StaffID||'N/A'}</td><td>${s.StartDate}</td>
+      <td style="text-align:right"><button data-i='${i}' class='btn ghost remove-starter' type="button" aria-label="Remove ${s.Name}">Remove</button></td>
     </tr>`).join('');
-  tb.querySelectorAll('button').forEach(b=> b.onclick=()=>{ starters.splice(+b.dataset.i,1); renderStarters(); });
+  tb.querySelectorAll('.remove-starter').forEach(b=> b.onclick= async ()=>{ 
+    const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true);
+    if (confirmed) {
+      starters.splice(+b.dataset.i,1); 
+      renderStarters(); 
+    }
+  });
 }
 byId('addStarter').onclick=()=>{
   const Name=byId('stName').value.trim();
   const StaffID=byId('stId').value.trim();
   const StartDate=byId('stDate').value;
-  if(!Name||!StartDate){ alert('Name + Start Date required'); return; }
+  if(!Name||!StartDate){ showModal('Missing Information', 'Both Name and Start Date are required to add a starter.'); return; }
   starters.push({Name,StaffID,StartDate});
   renderStarters();
   byId('stName').value=''; byId('stId').value=''; byId('stDate').value='';
 };
-byId('clearStarters').onclick=()=>{ if(confirm('Clear starters?')){ starters=[]; renderStarters(); } };
-byId('exportStarters').onclick=()=>{
-  const header=['Name','StaffID','StartDate'];
-  const csv=[header.join(',')].concat(starters.map(s=>[s.Name,s.StaffID||'',s.StartDate].join(','))).join('\n');
-  download('starters.csv',csv);
+byId('clearStarters').onclick= async ()=>{ 
+  if (starters.length === 0) {
+    showModal('No Starters', 'There are no starters to clear.');
+    return;
+  }
+  const confirmed = await showModal('Confirm Clear', 'Are you sure you want to clear all starters?', true);
+  if(confirmed){ starters=[]; renderStarters(); } 
 };
 byId('importStartersBtn').onclick=()=>byId('importStarters').click();
 byId('importStarters').onchange=e=>{
@@ -372,9 +712,16 @@ byId('importStarters').onchange=e=>{
   fr.onload=()=>{ const lines=fr.result.split(/\r?\n/).filter(Boolean); lines.shift(); starters=lines.map(l=>{const [Name,StaffID,StartDate]=l.split(','); return {Name,StaffID,StartDate};}); renderStarters(); };
   fr.readAsText(f);
 };
+document.addEventListener('DOMContentLoaded', renderStarters);
 
-/* blocks */
-let shuffle=false; byId('shuffleBlocks').onclick=()=>{ shuffle=!shuffle; alert('Shuffle per-starter: '+(shuffle?'ON':'OFF')); };
+
+/* --- BLOCKS --- */
+let shuffle=false; 
+byId('shuffleBlocks').onclick=()=>{ 
+  shuffle=!shuffle; 
+  showModal('Shuffle Toggled', 'Shuffle per-starter is now '+(shuffle?'ON':'OFF')); 
+  byId('shuffleBlocks').style.borderColor = shuffle ? 'var(--brand-secondary)' : 'var(--border-secondary)';
+};
 function getBlocks(){ return [
   {outlet:"Oasis Food",count:Math.max(0,+byId('blk_food').value||0)},
   {outlet:"Oasis Bar",count:Math.max(0,+byId('blk_obar').value||0)},
@@ -384,7 +731,7 @@ function getBlocks(){ return [
   {outlet:"SOV Dining",count:Math.max(0,+byId('blk_dining').value||0)},
 ]; }
 
-/* builder and fast counters */
+/* --- BUILDER --- */
 const MIN_SHIFTS=15;
 byId('buildAll').onclick=buildAll;
 const placedByStarter=new Map();
@@ -404,8 +751,8 @@ function makeRow(starter,dateObj,start,outlet,step){
   return {Starter:starter.Name,StaffID:starter.StaffID||'',Date:toYMD(dateObj),Start:start,End:pad2(endH)+":"+pad2(endM),Outlet:outlet,Step:step,Shift:start.replace(":","")+"-"+pad2(endH)+pad2(endM)+" "+outlet+" TRN"};
 }
 function buildAll(){
-  if(!base.length){ alert('Base is empty — click Restore Preloaded Base.'); return; }
-  if(!starters.length){ alert('Add starters.'); return; }
+  if(!base.length){ showModal('Build Error', 'The Base Plan is empty. Please restore the preloaded base plan or import a valid one.'); return; }
+  if(!starters.length){ showModal('Build Error', 'Please add at least one starter before building the roster.'); return; }
 
   allRows=[]; placedByStarter.clear(); placedByStarterOutlet.clear();
   const used=new Set();
@@ -470,34 +817,39 @@ function buildAll(){
   }
 
   allRows.sort((a,b)=> a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
-  byId('conflicts').textContent=`Built ${allRows.length} shifts • ${starters.length} starter(s) • Base: ${base.length} steps`;
+  byId('conflicts').textContent=`Built ${allRows.length} shifts for ${starters.length} starter(s)`;
   renderSched(allRows);
 }
 function renderSched(rows){
   const tb=document.querySelector('#schedTbl tbody'); tb.innerHTML='';
+  if (rows.length === 0) {
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet. Click "Build Roster".</td></tr>`;
+    return;
+  }
   let curStarter=null;
   for(const r of rows){
     if(r.Starter!==curStarter){
       curStarter=r.Starter;
       const trHead=document.createElement('tr'); trHead.className='group-row';
-      trHead.innerHTML=`<td colspan="7"><b>${r.Starter}</b> — <span class="sub">StaffID:</span> ${r.StaffID||''}</td>`;
+      trHead.innerHTML=`<td colspan="7"><b>${r.Starter}</b> &nbsp;&middot;&nbsp; <span class="text-muted">StaffID: ${r.StaffID||'N/A'}</span></td>`;
       tb.appendChild(trHead);
     }
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.Starter}</td><td>${r.StaffID||''}</td><td>${r.Date}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
+    tr.innerHTML=`<td>${r.Starter}</td><td>${r.StaffID||'N/A'}</td><td>${r.Date}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
     tb.appendChild(tr);
   }
 }
+document.addEventListener('DOMContentLoaded', () => renderSched([]));
 
-/* exports */
+/* --- EXPORTS --- */
 byId('exportAllCsv').onclick=()=>{
-  if(!allRows.length){ alert('Build first'); return; }
+  if(!allRows.length){ showModal('Export Error', 'You must build a schedule before exporting.'); return; }
   const header=['Starter','StaffID','Date','Start','End','Outlet','Step','Shift'];
   const csv=[header.join(',')].concat(allRows.map(r=>[r.Starter,r.StaffID||'',r.Date,r.Start,r.End,r.Outlet,r.Step,r.Shift].join(','))).join('\n');
   download('schedules.csv',csv);
 };
 byId('exportAllXls').onclick=()=>{
-  if(!allRows.length){ alert('Build first'); return; }
+  if(!allRows.length){ showModal('Export Error', 'You must build a schedule before exporting.'); return; }
   const wsSchedule=XLSX.utils.json_to_sheet(allRows.map(r=>({
     Starter:r.Starter,StaffID:r.StaffID||'',Date:r.Date,Start:r.Start,End:r.End,Outlet:r.Outlet,Step:r.Step,Shift:r.Shift
   })));
@@ -511,8 +863,12 @@ byId('exportAllXls').onclick=()=>{
 };
 function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download=name; a.click(); }
 
-/* PWA: register service worker */
-if("serviceWorker" in navigator){ navigator.serviceWorker.register("/sw.js"); }
+/* --- PWA: register service worker --- */
+if("serviceWorker" in navigator && window.location.protocol === 'https:') {
+  navigator.serviceWorker.register('sw.js').catch(error => {
+    console.warn('Service Worker registration failed:', error);
+  });
+}
 </script>
 </body>
 </html>
