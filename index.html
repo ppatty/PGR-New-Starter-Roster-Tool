@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PGR Roster Creator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0f121a" />
+<link rel="manifest" href="/manifest.webmanifest">
+
+<style>
+  :root{
+    --bg-0:#0b0d12;--bg-1:#0f121a;--bg-2:#141826;--card:#0f1420a6;--glass:rgba(255,255,255,.06);
+    --stroke:#1f2638;--ink:#e8ebff;--muted:#9aa6c3;--brand:#8aa4ff;--brand-2:#6be7ff;--warn:#ffd66b;--ok:#6bff95;
+    --shadow:0 8px 32px rgba(0,0,0,.4);--radius:14px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{--bg-0:#f6f7fb;--bg-1:#fff;--bg-2:#eef1f8;--card:#ffffffd9;--glass:rgba(0,0,0,.04);--stroke:#e4e8f2;--ink:#121625;--muted:#5a647a;--shadow:0 10px 30px rgba(30,50,130,.12)}
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;color:var(--ink);background:
+      radial-gradient(1200px 800px at 80% -10%, #2435ff14 0%, transparent 60%),
+      radial-gradient(1000px 700px at -10% 20%, #00e8ff12 0%, transparent 60%),
+      var(--bg-0);
+    font:14px/1.45 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;letter-spacing:.2px;
+  }
+  .app{display:grid;grid-template-columns:260px 1fr;min-height:100%}
+  .side{position:sticky;top:0;align-self:start;height:100vh;padding:22px 18px;border-right:1px solid var(--stroke);background:linear-gradient(180deg,var(--bg-1) 0%,transparent 100%);backdrop-filter:saturate(120%) blur(14px)}
+  .brand{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:12px}
+  .logo{width:24px;height:24px;border-radius:8px;background:conic-gradient(from 200deg,var(--brand),var(--brand-2),var(--brand));box-shadow:inset 0 0 0 2px #ffffff22}
+  .brand h1{font-size:14px;margin:0}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
+  .nav{margin-top:18px;display:grid;gap:8px}
+  .nav .chip{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);background:var(--glass)}
+  .main{padding:24px;display:grid;gap:18px}
+  .toolbar{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px;margin:-10px;margin-bottom:0;background:linear-gradient(180deg,var(--bg-1) 0%,transparent 100%);backdrop-filter:saturate(120%) blur(10px);border-bottom:1px solid var(--stroke)}
+  .card{border:1px solid var(--stroke);background:linear-gradient(180deg,var(--card),#0b0f1a77);backdrop-filter:saturate(120%) blur(10px);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--stroke)}
+  .card .hd h2{font-size:13px;text-transform:uppercase;letter-spacing:.7px;margin:0;color:var(--muted)}
+  .card .bd{padding:14px 16px}.sub{font-size:12px;color:var(--muted)}
+  label{display:block;font-size:11px;color:var(--muted);margin:0 0 6px 2px}
+  input,textarea,button,select{font:inherit;color:inherit;background:var(--bg-2);border:1px solid var(--stroke);border-radius:12px;outline:none;padding:10px 12px;transition:border-color .15s,transform .06s}
+  textarea{min-height:160px;resize:vertical}
+  input:focus,textarea:focus,select:focus{border-color:var(--brand)}
+  button{background:linear-gradient(180deg,#1a2140,#121830);border-color:#2a3255;cursor:pointer}
+  button:hover{transform:translateY(-1px)}button:active{transform:translateY(0)}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);background:var(--glass)}
+  .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand-2));color:#0a1020;border:none}
+  .btn.ghost{background:transparent}.btn.warn{background:linear-gradient(180deg,#2b230f,#1b1406);border-color:#5b4920}
+  .btn .ico{width:16px;height:16px;display:inline-block}
+  .grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  @media (max-width:900px){.app{grid-template-columns:1fr}.side{position:static;height:auto}.g2,.g3{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:separate;border-spacing:0}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--stroke)}
+  thead th{position:sticky;top:48px;background:linear-gradient(180deg,var(--bg-1) 0%,transparent 100%);z-index:2}
+  tbody tr:hover{background:#ffffff07}
+  .group-row td{background:linear-gradient(180deg,#11172a,#0b1122);position:sticky;top:74px;z-index:1;border-bottom:1px solid var(--stroke)}
+  .pill{display:inline-block;padding:2px 8px;font-size:11px;border-radius:999px;border:1px solid var(--stroke);background:var(--glass);color:var(--muted)}
+  .status{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;border:1px dashed var(--stroke);background:var(--glass)}
+  .status b{color:var(--ok)}.visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  .logo-img {
+    height: 40px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+  }
+  .brand .product {
+    display: flex;
+    flex-direction: column;
+  }
+  .brand .titleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand .pgr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--stroke);
+    background: var(--glass);
+    font-size: 11px;
+  }
+  .brand .pgr-badge b {
+    letter-spacing: .6px;
+  }
+  .brand .subbrand {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+<!-- Ensure 'the-star-gold-coast-logo.png' is placed alongside this HTML file -->
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+  <img src="the-star-gold-coast-logo.png" alt="The Star Gold Coast" class="logo-img" onerror="this.style.display='none'">
+  <div class="product">
+    <div class="titleRow">
+      <h1>PGR Roster Creator</h1>
+      <span class="pgr-badge" title="Private Gaming Rooms"><b>PGR</b></span>
+    </div>
+    <div class="subbrand">Private Gaming Rooms · The Star Gold Coast</div>
+  </div>
+</div>
+      <div><h1>PGR Roster Creator</h1><div class="hint">Modern. Fast. Deterministic.</div></div>
+    </div>
+    <div class="nav" aria-label="Summary">
+      <div class="chip"><span class="pill">One shift/day</span></div>
+      <div class="chip"><span class="pill">No Sundays</span><span class="pill">Mon off</span></div>
+      <div class="chip"><span class="pill">Min 15 shifts</span><span class="pill">≥2 off / 10d</span></div>
+      <div class="chip"><span class="pill">Capacity 1/day/outlet</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="toolbar" role="region" aria-label="Global actions">
+      <button id="buildAll" class="btn primary" type="button" title="Build all">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.6L12 16l-4.9 2.3.9-5.6-4-3.9 5.5-.8L12 3z"/></svg>
+        Build
+      </button>
+      <button id="exportAllCsv" class="btn" type="button" title="Export roster CSV">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+        CSV
+      </button>
+      <button id="exportAllXls" class="btn" type="button" title="Export roster .xlsx">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4zM7 8l10 8M17 8L7 16"/></svg>
+        Excel (.xlsx)
+      </button>
+      <span class="pill" id="conflicts" aria-live="polite">—</span>
+    </div>
+
+    <section class="card" aria-labelledby="base-h">
+      <div class="hd"><h2 id="base-h">Base plan</h2><span class="sub">Preloaded. Import optional.</span></div>
+      <div class="bd grid g2">
+        <div>
+          <label for="baseInput">Edit base CSV</label>
+          <textarea id="baseInput" spellcheck="false"></textarea>
+          <div class="grid g3" style="margin-top:10px">
+            <input type="file" id="importBase" accept=".csv" class="visually-hidden" />
+            <button id="importBaseBtn" class="btn" type="button">Import CSV</button>
+            <button id="applyBase" class="btn" type="button">Apply</button>
+            <button id="exportBase" class="btn" type="button">Export CSV</button>
+            <button id="restoreBase" class="btn warn" type="button">Restore Preloaded</button>
+            <div class="status" id="baseSummary" aria-live="polite">—</div>
+          </div>
+        </div>
+        <div>
+          <div class="sub" style="margin-bottom:8px">Rules snapshot</div>
+          <ul class="sub" style="margin:0; padding-left:16px">
+            <li>First two days fixed 09:00: Welcome Day, PGR F&amp;B On boarding</li>
+            <li>SOV North Floor 18:00 Fri/Sat only</li>
+            <li>Blocks remain consecutive per outlet</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="starters-h">
+      <div class="hd"><h2 id="starters-h">Starters</h2><span class="sub">Add, import, or clear</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <div><label for="stName">Name</label><input id="stName" placeholder="Dakota Parata"></div>
+          <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
+          <div><label for="stDate">Start Date</label><input id="stDate" type="date"></div>
+        </div>
+        <div class="grid g3" style="margin-top:10px">
+          <button id="addStarter" class="btn primary" type="button">Add</button>
+          <button id="clearStarters" class="btn" type="button">Clear</button>
+          <button id="exportStarters" class="btn" type="button">Export CSV</button>
+          <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
+          <button id="importStartersBtn" class="btn" type="button">Import CSV</button>
+          <span class="sub">CSV header: Name,StaffID,StartDate</span>
+        </div>
+        <div style="margin-top:12px; overflow:auto">
+          <table id="startersTbl">
+            <thead><tr><th>#</th><th>Name</th><th>StaffID</th><th>Start</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="blocks-h">
+      <div class="hd"><h2 id="blocks-h">Default blocks</h2><span class="sub">Consecutive per outlet. Shuffle optional.</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
+          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0"></div>
+          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
+          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
+          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="2" min="0"></div>
+          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
+        </div>
+        <div class="grid g2" style="margin-top:10px">
+          <button id="shuffleBlocks" class="btn" type="button">Shuffle per‑starter</button>
+          <div class="sub">Starts: Food 08/11/16 • Bar 06/08/10/14/16/17/18/19/22 • South Floor 09–22 hourly • North Floor 18 Fri/Sat • South Bar 06/10/14/18/22 • Dining 17</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="schedule-h">
+      <div class="hd"><h2 id="schedule-h">Schedule</h2><span class="sub">Grouped by starter</span></div>
+      <div class="bd" style="overflow:auto">
+        <table id="schedTbl">
+          <thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- SheetJS for .xlsx export -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+<script>
+/* helpers */
+const byId = id => document.getElementById(id);
+const pad2 = n => (n<10?"0":"")+n;
+const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+const parseYMD = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const isMon = d => d.getDay()===1;
+const isSun = d => d.getDay()===0;
+const nextWorking = d => { let x=new Date(d); while(isSun(x)||isMon(x)) x.setDate(x.getDate()+1); return x; };
+function addWorkDay(d){ const x=new Date(d); x.setDate(x.getDate()+1); return nextWorking(x); }
+function shuffled(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function isOutletAllowedOnDate(outlet, dateObj){
+  const dow=dateObj.getDay();
+  if(dow===0) return false;
+  if(outlet==="SOV North Floor") return (dow===5||dow===6);
+  return true;
+}
+
+/* mandatory and off-day counting */
+const MANDATORY_SESSIONS=[
+  {name:'Welcome Day',label:'Welcome Day',start:'09:00'},
+  {name:'PGR F&B On boarding',label:'PGR F&B On boarding',start:'09:00'}
+];
+let allRows=[];
+function isMandatory(r){ return r.Outlet===MANDATORY_SESSIONS[0].label||r.Outlet===MANDATORY_SESSIONS[1].label; }
+function shiftsInLastNDaysFor(starterName,dateObj,n){
+  const start=new Date(dateObj); start.setDate(start.getDate()-(n-1));
+  const startKey=toYMD(start), endKey=toYMD(dateObj);
+  let count=0;
+  for(const r of allRows){
+    if(r.Starter!==starterName) continue;
+    if(isMandatory(r)) continue;
+    if(r.Date>=startKey && r.Date<=endKey) count++;
+  }
+  return count;
+}
+function canWorkThisDay(starterName,dateObj){ return shiftsInLastNDaysFor(starterName,dateObj,10)<8; }
+
+/* base plan */
+let base=[];
+function parseBase(text){
+  const rows=[];
+  text.split(/\r?\n/).forEach(line=>{
+    const t=line.trim(); if(!t) return;
+    const parts=t.split(','); if(parts.length<4) return;
+    const [Path,Step,OffsetDays,...ShiftParts]=parts;
+    const Shift=ShiftParts.join(',').trim();
+    rows.push({Path:Path.trim(),Step:+Step,OffsetDays:+OffsetDays,Shift});
+  });
+  rows.sort((a,b)=> a.Path.localeCompare(b.Path)||a.Step-b.Step);
+  return rows;
+}
+byId('importBaseBtn').onclick=()=>byId('importBase').click();
+byId('importBase').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const fr=new FileReader();
+  fr.onload=()=>{ byId('baseInput').value=fr.result; applyBase(); };
+  fr.readAsText(f);
+};
+byId('applyBase').onclick=applyBase;
+function applyBase(){
+  base=parseBase(byId('baseInput').value);
+  const paths=[...new Set(base.map(r=>r.Path))];
+  byId('baseSummary').textContent=`${paths.length} paths • ${base.length} steps`;
+  if(!base.length) alert('No base steps found.');
+}
+byId('exportBase').onclick=()=>{
+  const header=['Path','Step','OffsetDays','Shift'];
+  const csv=[header.join(',')].concat(base.map(r=>[r.Path,r.Step,r.OffsetDays,r.Shift].join(','))).join('\n');
+  download('base_plan_export.csv',csv);
+};
+const PRELOADED_BASE=`Path,Step,OffsetDays,Shift
+Oasis Food (5h),1,0,0800-1300 Oasis Food TRN
+Oasis Food (5h),2,0,1100-1600 Oasis Food TRN
+Oasis Food (5h),3,0,1600-2100 Oasis Food TRN
+SOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN
+SOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN
+SOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN
+SOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN
+SOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN
+SOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN
+SOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN
+SOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN
+SOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN
+SOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN
+SOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN
+SOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN
+SOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN
+SOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN
+SOV Dining (5h),18,0,1700-2200 SOV Dining TRN
+SOV South Bar (5h),19,0,0600-1100 SOV South Bar TRN
+SOV South Bar (5h),20,0,1000-1500 SOV South Bar TRN
+SOV South Bar (5h),21,0,1400-1900 SOV South Bar TRN
+SOV South Bar (5h),22,0,1800-2300 SOV South Bar TRN
+SOV South Bar (5h),23,0,2200-0300 SOV South Bar TRN
+Oasis Bar (5h),24,0,0600-1100 Oasis Bar TRN
+Oasis Bar (5h),25,0,1700-2200 Oasis Bar TRN
+SOV North Floor (5h),26,0,1800-2300 SOV North Floor TRN`;
+function restoreBase(auto=false){
+  const ta=byId('baseInput'); if(!ta) return;
+  if(auto && ta.value.trim()) return;
+  ta.value=PRELOADED_BASE;
+  const btn=byId('applyBase'); if(btn) btn.click();
+}
+byId('restoreBase').onclick=()=>restoreBase(false);
+restoreBase(true);
+
+/* legal start times */
+const RULES={
+  "Oasis Food":["08:00","11:00","16:00"],
+  "Oasis Bar":["06:00","08:00","10:00","14:00","16:00","17:00","18:00","19:00","22:00"],
+  "SOV South Floor":Array.from({length:14},(_,k)=>(9+k).toString().padStart(2,'0')+":00"),
+  "SOV North Floor":["18:00"],
+  "SOV South Bar":["06:00","10:00","14:00","18:00","22:00"],
+  "SOV Dining":["17:00"]
+};
+
+/* starters */
+let starters=[];
+function renderStarters(){
+  const tb=document.querySelector('#startersTbl tbody');
+  tb.innerHTML=starters.map((s,i)=>`
+    <tr>
+      <td>${i+1}</td><td>${s.Name}</td><td>${s.StaffID||''}</td><td>${s.StartDate}</td>
+      <td style="text-align:right"><button data-i='${i}' class='btn ghost' type="button" aria-label="Remove ${s.Name}">Remove</button></td>
+    </tr>`).join('');
+  tb.querySelectorAll('button').forEach(b=> b.onclick=()=>{ starters.splice(+b.dataset.i,1); renderStarters(); });
+}
+byId('addStarter').onclick=()=>{
+  const Name=byId('stName').value.trim();
+  const StaffID=byId('stId').value.trim();
+  const StartDate=byId('stDate').value;
+  if(!Name||!StartDate){ alert('Name + Start Date required'); return; }
+  starters.push({Name,StaffID,StartDate});
+  renderStarters();
+  byId('stName').value=''; byId('stId').value=''; byId('stDate').value='';
+};
+byId('clearStarters').onclick=()=>{ if(confirm('Clear starters?')){ starters=[]; renderStarters(); } };
+byId('exportStarters').onclick=()=>{
+  const header=['Name','StaffID','StartDate'];
+  const csv=[header.join(',')].concat(starters.map(s=>[s.Name,s.StaffID||'',s.StartDate].join(','))).join('\n');
+  download('starters.csv',csv);
+};
+byId('importStartersBtn').onclick=()=>byId('importStarters').click();
+byId('importStarters').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const fr=new FileReader();
+  fr.onload=()=>{ const lines=fr.result.split(/\r?\n/).filter(Boolean); lines.shift(); starters=lines.map(l=>{const [Name,StaffID,StartDate]=l.split(','); return {Name,StaffID,StartDate};}); renderStarters(); };
+  fr.readAsText(f);
+};
+
+/* blocks */
+let shuffle=false; byId('shuffleBlocks').onclick=()=>{ shuffle=!shuffle; alert('Shuffle per-starter: '+(shuffle?'ON':'OFF')); };
+function getBlocks(){ return [
+  {outlet:"Oasis Food",count:Math.max(0,+byId('blk_food').value||0)},
+  {outlet:"Oasis Bar",count:Math.max(0,+byId('blk_obar').value||0)},
+  {outlet:"SOV South Floor",count:Math.max(3,+byId('blk_floor').value||0)},
+  {outlet:"SOV North Floor",count:Math.max(0,+byId('blk_nfloor').value||0)},
+  {outlet:"SOV South Bar",count:Math.max(0,+byId('blk_bar').value||0)},
+  {outlet:"SOV Dining",count:Math.max(0,+byId('blk_dining').value||0)},
+]; }
+
+/* builder and fast counters */
+const MIN_SHIFTS=15;
+byId('buildAll').onclick=buildAll;
+const placedByStarter=new Map();
+const placedByStarterOutlet=new Map();
+function incPlaced(starterName,outlet){
+  placedByStarter.set(starterName,(placedByStarter.get(starterName)||0)+1);
+  if(!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName,new Map());
+  const m=placedByStarterOutlet.get(starterName);
+  m.set(outlet,(m.get(outlet)||0)+1);
+}
+function getPlaced(starterName){return placedByStarter.get(starterName)||0;}
+function getPlacedOutlet(starterName,outlet){return placedByStarterOutlet.get(starterName)?.get(outlet)||0;}
+function pickTime(outlet,i){const times=RULES[outlet]||["09:00"];return times[i%times.length];}
+function addRow(r){allRows.push(r);incPlaced(r.Starter,r.Outlet);}
+function makeRow(starter,dateObj,start,outlet,step){
+  const [hh,mm]=start.split(":").map(Number); const endH=(hh+5)%24,endM=mm;
+  return {Starter:starter.Name,StaffID:starter.StaffID||'',Date:toYMD(dateObj),Start:start,End:pad2(endH)+":"+pad2(endM),Outlet:outlet,Step:step,Shift:start.replace(":","")+"-"+pad2(endH)+pad2(endM)+" "+outlet+" TRN"};
+}
+function buildAll(){
+  if(!base.length){ alert('Base is empty — click Restore Preloaded Base.'); return; }
+  if(!starters.length){ alert('Add starters.'); return; }
+
+  allRows=[]; placedByStarter.clear(); placedByStarterOutlet.clear();
+  const used=new Set();
+
+  const norm=starters.map(s=>{ let d=parseYMD(s.StartDate); while(isSun(d)||isMon(d)) d.setDate(d.getDate()+1); return {...s,NormStart:d}; });
+  const groups={}; for(const s of norm){ const k=toYMD(s.NormStart); (groups[k] ||= []).push(s); }
+
+  for(const dayKey of Object.keys(groups).sort()){
+    let day1=parseYMD(dayKey); if(isSun(day1)) day1=nextWorking(day1);
+    let day2=addWorkDay(day1);
+    for(const s of groups[dayKey]){
+      addRow(makeRow(s,day1,MANDATORY_SESSIONS[0].start,MANDATORY_SESSIONS[0].label,1));
+      addRow(makeRow(s,day2,MANDATORY_SESSIONS[1].start,MANDATORY_SESSIONS[1].label,2));
+      s.__state={currentOutlet:null,remaining:0,nextDate:addWorkDay(day2)};
+    }
+  }
+
+  const baseCounts=getBlocks().reduce((m,b)=>(m[b.outlet]=b.count,m),{});
+  let progress=true,safety=0; const everyone=Object.values(groups).flat();
+  while(progress && safety<5000){
+    progress=false; safety++;
+    for(const s of everyone){
+      if(getPlaced(s.Name)>=MIN_SHIFTS){ s.__state=null; continue; }
+      if(!s.__state) continue;
+      let st=s.__state; let cur=nextWorking(st.nextDate); let curKey=toYMD(cur);
+      let outlet=st.currentOutlet;
+
+      if(st.remaining<=0){
+        let candidates=Object.keys(baseCounts).filter(o=> getPlacedOutlet(s.Name,o)<baseCounts[o]);
+        if(!candidates.length){ s.__state=null; continue; }
+        if(shuffle) candidates=shuffled(candidates);
+        const allowedToday=candidates.filter(o=> !used.has(curKey+"|"+o) && isOutletAllowedOnDate(o,cur));
+        outlet = allowedToday[0] || (shuffle ? shuffled(candidates)[0] : candidates[0]);
+        st.currentOutlet=outlet;
+        st.remaining=Math.max(0, baseCounts[outlet]-getPlacedOutlet(s.Name,outlet));
+      }
+
+      while( used.has(curKey+"|"+outlet) || !isOutletAllowedOnDate(outlet,cur) || !canWorkThisDay(s.Name,cur) ){
+        cur=addWorkDay(cur); curKey=toYMD(cur); if(++safety>5000) break;
+      }
+
+      const t=pickTime(outlet,allRows.length);
+      addRow(makeRow(s,cur,t,outlet,getPlaced(s.Name)+1));
+      used.add(curKey+"|"+outlet);
+      st.remaining-=1; st.nextDate=addWorkDay(cur); progress=true;
+    }
+  }
+
+  for(const s of everyone){
+    let placed=getPlaced(s.Name); if(placed>=MIN_SHIFTS) continue;
+    let last=allRows.filter(r=>r.Starter===s.Name).map(r=>r.Date).sort().pop();
+    let cur=last?addWorkDay(parseYMD(last)):nextWorking(s.NormStart);
+    let rot=0, guard=0; const PREF=["SOV South Floor","SOV South Bar","Oasis Food","Oasis Bar","SOV North Floor","SOV Dining"];
+    while(placed<MIN_SHIFTS && guard<5000){
+      guard++; const key=toYMD(cur);
+      let outlet=PREF.find(o=> !used.has(key+"|"+o) && isOutletAllowedOnDate(o,cur));
+      if(!outlet || !canWorkThisDay(s.Name,cur)){ cur=addWorkDay(cur); continue; }
+      const t=pickTime(outlet,rot++);
+      addRow(makeRow(s,cur,t,outlet,getPlaced(s.Name)+1));
+      used.add(key+"|"+outlet); placed++; cur=addWorkDay(cur);
+    }
+  }
+
+  allRows.sort((a,b)=> a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
+  byId('conflicts').textContent=`Built ${allRows.length} shifts • ${starters.length} starter(s) • Base: ${base.length} steps`;
+  renderSched(allRows);
+}
+function renderSched(rows){
+  const tb=document.querySelector('#schedTbl tbody'); tb.innerHTML='';
+  let curStarter=null;
+  for(const r of rows){
+    if(r.Starter!==curStarter){
+      curStarter=r.Starter;
+      const trHead=document.createElement('tr'); trHead.className='group-row';
+      trHead.innerHTML=`<td colspan="7"><b>${r.Starter}</b> — <span class="sub">StaffID:</span> ${r.StaffID||''}</td>`;
+      tb.appendChild(trHead);
+    }
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.Starter}</td><td>${r.StaffID||''}</td><td>${r.Date}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+/* exports */
+byId('exportAllCsv').onclick=()=>{
+  if(!allRows.length){ alert('Build first'); return; }
+  const header=['Starter','StaffID','Date','Start','End','Outlet','Step','Shift'];
+  const csv=[header.join(',')].concat(allRows.map(r=>[r.Starter,r.StaffID||'',r.Date,r.Start,r.End,r.Outlet,r.Step,r.Shift].join(','))).join('\n');
+  download('schedules.csv',csv);
+};
+byId('exportAllXls').onclick=()=>{
+  if(!allRows.length){ alert('Build first'); return; }
+  const wsSchedule=XLSX.utils.json_to_sheet(allRows.map(r=>({
+    Starter:r.Starter,StaffID:r.StaffID||'',Date:r.Date,Start:r.Start,End:r.End,Outlet:r.Outlet,Step:r.Step,Shift:r.Shift
+  })));
+  const wsStarters=XLSX.utils.json_to_sheet(starters.map(s=>({
+    Name:s.Name,StaffID:s.StaffID||'',StartDate:s.StartDate
+  })));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,wsSchedule,"Roster");
+  XLSX.utils.book_append_sheet(wb,wsStarters,"Starters");
+  XLSX.writeFile(wb,"roster_and_starters.xlsx");
+};
+function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download=name; a.click(); }
+
+/* PWA: register service worker */
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("/sw.js"); }
+</script>
+</body>
+</html>
