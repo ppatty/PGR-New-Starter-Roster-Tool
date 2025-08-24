@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>PGR Roster Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="A Copilot-powered, professional, feature-rich roster creator for PGR at The Star Gold Coast.">
+  <meta name="description" content="A modern, fast, and deterministic roster creator for PGR at The Star Gold Coast.">
   <meta name="theme-color" content="#111827" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,71 +16,342 @@
     /* --- CSS Variables & Base Styles --- */
     :root {
       --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-      --bg-primary: #030712; --bg-secondary: #111827; --bg-tertiary: #1f2937; --surface: #1a2332;
-      --text-primary: #f9fafb; --text-secondary: #9ca3af; --text-muted: #6b7280;
-      --border-primary: #374151; --border-secondary: #4b5563;
-      --brand-primary: #3b82f6; --brand-secondary: #14b8a6; --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
-      --warn-primary: #f59e0b; --ok-primary: #22c55e;
-      --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+      
+      --bg-primary: #030712;    /* Near black */
+      --bg-secondary: #111827; /* Dark gray-blue */
+      --bg-tertiary: #1f2937;  /* Lighter gray-blue */
+      --surface: #1a2332;      /* Card backgrounds */
+      
+      --text-primary: #f9fafb;  /* Off-white */
+      --text-secondary: #9ca3af;/* Medium gray */
+      --text-muted: #6b7280;    /* Darker gray */
+
+      --border-primary: #374151;
+      --border-secondary: #4b5563;
+
+      --brand-primary: #3b82f6; /* Vibrant Blue */
+      --brand-secondary: #14b8a6;/* Teal */
+      --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+
+      --warn-primary: #f59e0b; /* Amber */
+      --ok-primary: #22c55e;   /* Green */
+
+      --radius-sm: 0.375rem; /* 6px */
+      --radius-md: 0.5rem;   /* 8px */
+      --radius-lg: 0.75rem;  /* 12px */
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
     }
+
     *, *::before, *::after { box-sizing: border-box; }
+
     html { scroll-behavior: smooth; }
-    body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--text-primary); background-color: var(--bg-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-    .app { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
-    .side { position: sticky; top: 0; height: 100vh; padding: 1.5rem; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); display: flex; flex-direction: column; gap: 2rem; }
-    .main { padding: 2rem; display: grid; gap: 1.5rem; align-content: start; }
-    .brand { display: flex; align-items: center; gap: 0.75rem; }
-    .logo { width: 40px; height: 40px; color: var(--brand-primary); }
-    .brand .product h1 { font-size: 1rem; font-weight: 600; margin: 0; line-height: 1.2; }
-    .brand .product .subbrand { font-size: 0.75rem; color: var(--text-secondary); }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      background-color: var(--bg-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* --- App Layout --- */
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 1.5rem;
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .main {
+      padding: 2rem;
+      display: grid;
+      gap: 1.5rem;
+      align-content: start;
+    }
+
+    /* --- Brand & Logo --- */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .logo {
+      width: 40px;
+      height: 40px;
+      color: var(--brand-primary);
+    }
+    .brand .product h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+    .brand .product .subbrand {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    
+    /* --- Navigation & Summary Chips --- */
     .nav-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .nav-group h2 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
+    .nav-group h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin: 0 0 0.5rem;
+      padding: 0 0.5rem;
+    }
     .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .chip { display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; border-radius: var(--radius-md); background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
-    .toolbar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 1rem; margin: -2rem -2rem 0; background: linear-gradient(180deg, rgba(3, 7, 18, 0.95) 70%, transparent 100%); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-primary); }
-    #conflicts { margin-left: auto; font-size: 0.875rem; color: var(--text-secondary); background-color: var(--bg-tertiary); padding: 0.5rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-primary); }
-    .card { background-color: var(--surface); border: 1px solid var(--border-primary); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
-    .card .hd { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-primary); background-color: var(--bg-tertiary); }
-    .card .hd h2 { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; color: var(--text-secondary); }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.375rem 0.75rem;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-primary);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* --- Main Toolbar --- */
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 1rem;
+      margin: -2rem -2rem 0;
+      background: linear-gradient(180deg, rgba(3, 7, 18, 0.95) 70%, transparent 100%);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-primary);
+    }
+    #conflicts {
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      background-color: var(--bg-tertiary);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-primary);
+    }
+
+    /* --- Card Component --- */
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .card .hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-primary);
+      background-color: var(--bg-tertiary);
+    }
+    .card .hd h2 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+      color: var(--text-secondary);
+    }
     .card .hd .sub { font-size: 0.875rem; color: var(--text-muted); }
     .card .bd { padding: 1.5rem; }
+
+    /* --- Form Elements --- */
     .grid { display: grid; gap: 1rem; }
     .g2 { grid-template-columns: repeat(2, 1fr); }
     .g3 { grid-template-columns: repeat(3, 1fr); }
     .g4 { grid-template-columns: repeat(4, 1fr); }
-    label { display: block; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.5rem; }
-    input, textarea, select { width: 100%; font-family: inherit; font-size: 0.875rem; color: var(--text-primary); background-color: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 0.625rem 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; }
-    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary); }
+    .g-col-span-2 { grid-column: span 2 / span 2; }
+    
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    input, textarea, select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-md);
+      padding: 0.625rem 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary);
+    }
     textarea { min-height: 160px; resize: vertical; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit; font-size: 0.875rem; font-weight: 600; padding: 0.625rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary); cursor: pointer; transition: all 0.15s ease-in-out; user-select: none; }
+
+    /* --- Button Component --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.625rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-secondary);
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
     .btn:hover { background-color: #374151; border-color: #4b5563; }
     .btn:active { transform: scale(0.98); }
-    .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary); }
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary);
+    }
     .btn .ico { width: 16px; height: 16px; }
-    .btn.primary { background-image: var(--brand-gradient); border: none; color: white; box-shadow: var(--shadow-md); }
+
+    .btn.primary {
+      background-image: var(--brand-gradient);
+      border: none;
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
     .btn.primary:hover { filter: brightness(1.1); }
-    .btn.warn { background-color: #422006; border-color: #78350f; color: var(--warn-primary); }
+    
+    .btn.warn {
+      background-color: #422006;
+      border-color: #78350f;
+      color: var(--warn-primary);
+    }
     .btn.warn:hover { background-color: #522a08; }
-    .btn.ghost { background-color: transparent; border-color: transparent; color: var(--text-secondary); }
+
+    .btn.ghost {
+      background-color: transparent;
+      border-color: transparent;
+      color: var(--text-secondary);
+    }
     .btn.ghost:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
-    .table-wrapper { overflow: auto; border: 1px solid var(--border-primary); border-radius: var(--radius-lg); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-primary); white-space: nowrap; }
-    thead th { position: sticky; top: 0; background-color: var(--bg-tertiary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); z-index: 2; }
+
+    /* --- Table Styles --- */
+    .table-wrapper {
+      overflow: auto;
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-primary);
+      white-space: nowrap;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: var(--bg-tertiary);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      z-index: 2;
+    }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background-color: #1f293799; }
-    tbody tr.editable-shift:hover { cursor: pointer; background-color: #374151; }
-    .group-row td { position: sticky; top: 48px; background-color: #1a2332; font-weight: 600; color: var(--text-primary); z-index: 1; }
+    .group-row td {
+      position: sticky;
+      top: 48px; 
+      background-color: #1a2332;
+      font-weight: 600;
+      color: var(--text-primary);
+      z-index: 1;
+    }
+    
+    /* --- Utility Classes --- */
     .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); }
     .mt-4 { margin-top: 1rem; }
-    .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
-    .modal-overlay.visible { opacity: 1; visibility: visible; }
-    .modal-content { background-color: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border-primary); box-shadow: var(--shadow-lg); padding: 2rem; width: 100%; max-width: 400px; transform: scale(0.95); transition: transform 0.3s; }
-    .modal-overlay.visible .modal-content { transform: scale(1); }
-    .modal-content h3 { margin: 0 0 0.5rem; font-size: 1.125rem; font-weight: 600; }
-    .modal-content p { margin: 0 0 1.5rem; color: var(--text-secondary); }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
+
+    /* --- Modal Styles --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background-color: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-primary);
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+      transform: scale(0.95);
+      transition: transform 0.3s;
+    }
+    .modal-overlay.visible .modal-content {
+      transform: scale(1);
+    }
+    .modal-content h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+    .modal-content p {
+      margin: 0 0 1.5rem;
+      color: var(--text-secondary);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+    
+    /* NEW: Calendar Modal Styles */
     #calendar-modal .modal-content { max-width: 340px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
@@ -89,12 +360,25 @@
     .calendar-day:not(.empty) { cursor: pointer; transition: background-color 0.2s; }
     .calendar-day:not(.empty):hover { background-color: var(--bg-tertiary); }
     .calendar-day.blackout { background-color: var(--warn-primary); color: #422006; font-weight: 600; }
-    #copilot-modal .modal-content { max-width: 600px; }
-    #copilot-content { white-space: pre-wrap; line-height: 1.6; max-height: 60vh; overflow-y: auto; }
-    #copilot-content h4 { margin: 1.5rem 0 0.5rem; font-size: 1rem; color: var(--brand-secondary); }
-    #copilot-content ul { padding-left: 1.5rem; }
-    @media (max-width: 1024px) { .app { grid-template-columns: 1fr; } .side { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border-primary); } .toolbar { margin: -2rem -2rem 0; } }
-    @media (max-width: 768px) { .main { padding: 1.5rem; } .toolbar { margin: -1.5rem -1.5rem 0; } .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+
+    /* --- Responsive Design --- */
+    @media (max-width: 1024px) {
+      .app { grid-template-columns: 1fr; }
+      .side {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-primary);
+      }
+      .toolbar { margin: -2rem -2rem 0; }
+    }
+    @media (max-width: 768px) {
+      .main { padding: 1.5rem; }
+      .toolbar { margin: -1.5rem -1.5rem 0; }
+      .g2, .g3, .g4 { grid-template-columns: 1fr; }
+      .g-col-span-2 { grid-column: span 1 / span 1; }
+      .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    }
   </style>
 </head>
 <body>
@@ -111,69 +395,151 @@
     </div>
     <div class="nav-group">
       <h2>Summary</h2>
-      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div></div>
+      <div class="nav-chips">
+        <div class="chip">One shift/day</div>
+        <div class="chip">No Sundays</div>
+        <div class="chip">Mon off</div>
+        <div class="chip">Min 15 shifts</div>
+        <div class="chip">≥2 off / 10d</div>
+        <div class="chip">Capacity 1/day/outlet</div>
+      </div>
     </div>
   </aside>
 
   <main class="main">
     <div class="toolbar" role="region" aria-label="Global actions">
-      <button id="buildAll" class="btn primary" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>Build Roster</button>
-      <button id="saveSessionBtn" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>Save</button>
-      <button id="loadSessionBtn" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5"/></svg>Load</button>
-      <button id="exportAllCsv" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>CSV</button>
-      <button id="exportAllXls" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>Excel</button>
+      <button id="buildAll" class="btn primary" type="button">
+        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        Build Roster
+      </button>
+      <button id="exportAllCsv" class="btn" type="button">
+        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        CSV
+      </button>
+      <button id="exportAllXls" class="btn" type="button">
+        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>
+        Excel (.xlsx)
+      </button>
       <span id="conflicts" aria-live="polite">—</span>
     </div>
 
-    <!-- NEW: Global Settings Card -->
-    <section class="card" aria-labelledby="settings-h">
-      <div class="hd"><h2 id="settings-h">Global Settings</h2><span class="sub">Dates and rules for all starters</span></div>
-      <div class="bd grid g4">
-        <div><label for="welcomeDate">Welcome Day Date</label><input id="welcomeDate" type="date"></div>
-        <div><label for="onboardingDate">Onboarding Day Date</label><input id="onboardingDate" type="date"></div>
-        <div><label for="shiftDuration">Shift Duration (hours)</label><input type="number" id="shiftDuration" value="5" min="1" max="12"></div>
-        <div><label>Shuffle per-starter</label><button id="shuffleBlocks" class="btn" type="button">Toggle Shuffle: OFF</button></div>
+    <section class="card" aria-labelledby="base-h">
+      <div class="hd"><h2 id="base-h">Base Plan</h2><span class="sub">Preloaded. Import optional.</span></div>
+      <div class="bd grid g2">
+        <div>
+          <label for="baseInput">Edit base CSV</label>
+          <textarea id="baseInput" spellcheck="false"></textarea>
+        </div>
+        <div>
+          <label>Actions</label>
+          <div class="grid g2">
+            <button id="importBaseBtn" class="btn" type="button">Import CSV</button>
+            <button id="applyBase" class="btn" type="button">Apply</button>
+            <button id="exportBase" class="btn" type="button">Export CSV</button>
+            <button id="restoreBase" class="btn warn" type="button">Restore Preloaded</button>
+            <input type="file" id="importBase" accept=".csv" class="visually-hidden" />
+          </div>
+          <div class="text-sm text-muted mt-4">
+            <b>Rules Snapshot:</b>
+            <ul style="margin:0.5rem 0 0; padding-left:1rem; color: var(--text-secondary);">
+              <li>First two days fixed 09:00: Welcome Day, PGR F&B On boarding</li>
+              <li>SOV North Floor 18:00 Fri/Sat only</li>
+              <li>Blocks remain consecutive per outlet</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="card" aria-labelledby="starters-h"><div class="hd"><h2 id="starters-h">Starters</h2><span class="sub">Add, import, or clear</span></div><div class="bd"><div class="grid g3"><div><label for="stName">Name</label><input id="stName" placeholder="Dakota Parata"></div><div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div><div><label for="stDate">Start Date</label><input id="stDate" type="date"></div></div><div class="grid g4 mt-4"><button id="addStarter" class="btn primary" type="button">Add Starter</button><button id="importStartersBtn" class="btn" type="button">Import CSV</button><button id="exportStartersBtn" class="btn" type="button">Export CSV</button><button id="clearStarters" class="btn" type="button">Clear All</button><input type="file" id="importStarters" accept=".csv" class="visually-hidden" /></div><div class="mt-4 table-wrapper"><table id="startersTbl"><thead><tr><th>#</th><th>Name</th><th>StaffID</th><th>Start</th><th>Blackouts</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
-
-    <section class="card" aria-labelledby="blocks-h"><div class="hd"><h2 id="blocks-h">Default Training Blocks</h2><span class="sub">Set the number of shifts per outlet</span></div><div class="bd">
-      <div class="grid g3">
-        <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
-        <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0"></div>
-        <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
-        <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
-        <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="2" min="0"></div>
-        <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
+    <section class="card" aria-labelledby="starters-h">
+      <div class="hd"><h2 id="starters-h">Starters</h2><span class="sub">Add, import, or clear</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <div><label for="stName">Name</label><input id="stName" placeholder="Dakota Parata"></div>
+          <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
+          <div><label for="stDate">Start Date</label><input id="stDate" type="date"></div>
+        </div>
+        <div class="grid g4 mt-4">
+          <button id="addStarter" class="btn primary" type="button">Add Starter</button>
+          <button id="importStartersBtn" class="btn" type="button">Import CSV</button>
+          <button id="exportStartersBtn" class="btn" type="button">Export CSV</button>
+          <button id="clearStarters" class="btn" type="button">Clear All</button>
+          <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
+        </div>
+        <div class="mt-4 table-wrapper">
+          <table id="startersTbl">
+            <thead><tr><th>#</th><th>Name</th><th>StaffID</th><th>Start</th><th>Unavailabilities</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
-    </div></section>
+    </section>
+
+    <section class="card" aria-labelledby="blocks-h">
+      <div class="hd"><h2 id="blocks-h">Default Blocks</h2><span class="sub">Consecutive per outlet. Shuffle optional.</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
+          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="2" min="0"></div>
+          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
+          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="1" min="0"></div>
+          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="1" min="0"></div>
+          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
+        </div>
+        <div class="mt-4">
+          <button id="shuffleBlocks" class="btn" type="button">Toggle Shuffle (Per-Starter)</button>
+        </div>
+      </div>
+    </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd">
-        <div style="display: flex; flex-direction: column;">
-          <h2 id="schedule-h">Generated Schedule</h2>
-          <span class="sub">Click a shift to manually edit</span>
+      <div class="hd"><h2 id="schedule-h">Generated Schedule</h2><span class="sub">Grouped by starter</span></div>
+      <div class="bd" style="padding: 0;">
+        <div class="table-wrapper">
+          <table id="schedTbl">
+            <thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead>
+            <tbody></tbody>
+          </table>
         </div>
-        <button id="copilotHealthCheckBtn" class="btn" type="button" style="display: none;">✨ Run Copilot Health Check</button>
       </div>
-      <div class="bd" style="padding: 0;"><div class="table-wrapper"><table id="schedTbl"><thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead><tbody></tbody></table></div></div>
     </section>
   </main>
 </div>
 
-<!-- Modals -->
-<div id="modal" class="modal-overlay"><div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title"><h3 id="modal-title"></h3><p id="modal-text"></p><div class="modal-actions"><button id="modal-cancel" class="btn">Cancel</button><button id="modal-confirm" class="btn primary">Confirm</button></div></div></div>
-<div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost">&gt;</button></div><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary">Done</button></div></div></div>
-<div id="edit-shift-modal" class="modal-overlay"><div class="modal-content"><h3 id="edit-shift-title">Edit Shift</h3><div class="grid g2"><div><label for="edit-shift-outlet">Outlet</label><select id="edit-shift-outlet"></select></div><div><label for="edit-shift-start">Start Time</label><select id="edit-shift-start"></select></div></div><div class="modal-actions" style="margin-top: 1.5rem;"><button id="edit-shift-cancel" class="btn">Cancel</button><button id="edit-shift-save" class="btn primary">Save Changes</button></div></div></div>
-<div id="copilot-modal" class="modal-overlay"><div class="modal-content"><h3 id="copilot-title"></h3><div id="copilot-content"></div><div class="modal-actions" style="margin-top: 1.5rem;"><button id="copilot-close" class="btn primary">Close</button></div></div></div>
+<!-- Modal for Alerts/Confirms -->
+<div id="modal" class="modal-overlay">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h3 id="modal-title">Modal Title</h3>
+    <p id="modal-text">Modal message goes here.</p>
+    <div class="modal-actions">
+      <button id="modal-cancel" class="btn">Cancel</button>
+      <button id="modal-confirm" class="btn primary">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW: Calendar Modal -->
+<div id="calendar-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="calendar-header">
+      <button id="prev-month" class="btn ghost">&lt;</button>
+      <h3 id="calendar-title"></h3>
+      <button id="next-month" class="btn ghost">&gt;</button>
+    </div>
+    <div class="calendar-grid" id="calendar-weekdays"></div>
+    <div class="calendar-grid" id="calendar-days"></div>
+    <div class="modal-actions" style="margin-top: 1rem;">
+      <button id="calendar-close" class="btn primary">Done</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-
+</body>
 <script>
 // --- APP INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
+window.onload = () => {
     // --- GLOBAL VARIABLES & CONSTANTS ---
     let base = [];
     let starters = [];
@@ -182,10 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let modalResolve;
     let activeStarterIndex = -1;
     let currentCalendarDate = new Date();
-    let activeShiftIndex = -1;
 
     const MIN_SHIFTS = 15;
-    const SESSION_KEY = 'pgrRosterSession';
     const MANDATORY_SESSIONS = [
         { name: 'Welcome Day', label: 'Welcome Day', start: '09:00' },
         { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' }
@@ -198,12 +562,13 @@ document.addEventListener('DOMContentLoaded', () => {
         "SOV South Bar": ["06:00", "10:00", "14:00", "18:00", "22:00"],
         "SOV Dining": ["17:00"]
     };
-    const PRELOADED_BASE = `Path,Step,OffsetDays,Shift\nOasis Food (5h),1,0,0800-1300 Oasis Food TRN\nOasis Food (5h),2,0,1100-1600 Oasis Food TRN\nOasis Food (5h),3,0,1600-2100 Oasis Food TRN\nSOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN\nSOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN\nSOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN\nSOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN\nSOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN\nSOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN\nSOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN\nSOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN\nSOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN\nSOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN\nSOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN\nSOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN\nSOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN\nSOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN\nSOV Dining (5h),18,0,1700-2200 SOV Dining TRN\nSOV South Bar (5h),19,0,0600-1100 SOV South Bar TRN\nSOV South Bar (5h),20,0,1000-1500 SOV South Bar TRN\nSOV South Bar (5h),21,0,1400-1900 SOV South Bar TRN\nSOV South Bar (5h),22,0,1800-2300 SOV South Bar TRN\nSOV South Bar (5h),23,0,2200-0300 SOV South Bar TRN\nOasis Bar (5h),24,0,0600-1100 Oasis Bar TRN\nOasis Bar (5h),25,0,1700-2200 Oasis Bar TRN\nSOV North Floor (5h),26,0,1800-2300 SOV North Floor TRN`;
+    const PRELOADED_BASE = `Path,Step,OffsetDays,Shift\nOasis Food (5h),1,0,0800-1300 Oasis Food TRN\nOasis Food (5h),2,0,1100-1600 Oasis Food TRN\nOasis Food (5h),3,0,1600-2100 Oasis Food TRN\nSOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN\nSOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN\nSOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN\nSOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN\nSOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN\nSOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN\nSOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN\nSOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN\nSOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN\nSOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN\nSOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN\nSOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN\nSOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN\nSOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN\nSOV Dining (5h),18,0,1700-2200 SOV Dining TRN\nSOV South Bar (5h),19,0,1800-2300 SOV South Bar TRN\nOasis Bar (5h),20,0,0600-1100 Oasis Bar TRN\nOasis Bar (5h),21,0,1700-2200 Oasis Bar TRN\nSOV North Floor (5h),22,0,1800-2300 SOV North Floor TRN`;
 
     // --- HELPER FUNCTIONS ---
     const byId = id => document.getElementById(id);
     const pad2 = n => (n < 10 ? "0" : "") + n;
     const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const toDMY = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
     const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
     const isMon = d => d.getDay() === 1;
     const isSun = d => d.getDay() === 0;
@@ -238,42 +603,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function canWorkThisDay(starterName, dateObj) { return shiftsInLastNDaysFor(starterName, dateObj, 10) < 8; }
 
     // --- UI & VISUALS ---
-    function fireConfetti() { const count = 200; const defaults = { origin: { y: 0.7 }, colors: ['#3b82f6', '#14b8a6', '#f9fafb', '#9ca3af'] }; function fire(particleRatio, opts) { confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) }); } fire(0.25, { spread: 26, startVelocity: 55 }); fire(0.2, { spread: 60 }); fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 }); fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 }); fire(0.1, { spread: 120, startVelocity: 45 }); }
+    function fireChampagnePop() {
+        const end = Date.now() + (2 * 1000);
+        const colors = ['#f9fafb', '#f59e0b'];
 
-    // --- COPILOT (LLM) FUNCTIONS ---
-    function showCopilotModal(title, content) {
-        byId('copilot-title').textContent = title;
-        byId('copilot-content').innerHTML = content;
-        byId('copilot-modal').classList.add('visible');
-    }
-    async function callCopilot(prompt, button) {
-        const originalText = button.innerHTML;
-        button.innerHTML = 'Asking Copilot...';
-        button.disabled = true;
-        try {
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyCZW6mOD2gZ-2wkBO4aAPodgLyEBjZFw4g";
-            if (!apiKey || apiKey === "PASTE_YOUR_API_KEY_HERE") {
-                showModal("API Key Missing", "An API key is required for Copilot features. Please ask the developer to add one.");
-                return null;
+        (function frame() {
+            confetti({
+                particleCount: 2,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors
+            });
+            confetti({
+                particleCount: 2,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
             }
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) { throw new Error(`API request failed with status ${response.status}`); }
-            const result = await response.json();
-            if (result.candidates && result.candidates.length > 0) {
-                return result.candidates[0].content.parts[0].text;
-            } else {
-                return "Copilot couldn't provide a response. Please try again.";
-            }
-        } catch (error) {
-            console.error("Copilot API call failed:", error);
-            return `There was an error contacting Copilot: ${error.message}. Please check the console for details.`;
-        } finally {
-            button.innerHTML = originalText;
-            button.disabled = false;
-        }
+        }());
     }
 
     // --- CALENDAR FUNCTIONS ---
@@ -307,65 +660,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- SESSION MANAGEMENT ---
-    function saveSession() {
-        const sessionData = { starters: starters, blocks: { food: byId('blk_food').value, obar: byId('blk_obar').value, floor: byId('blk_floor').value, nfloor: byId('blk_nfloor').value, bar: byId('blk_bar').value, dining: byId('blk_dining').value }, duration: byId('shiftDuration').value, welcomeDate: byId('welcomeDate').value, onboardingDate: byId('onboardingDate').value };
-        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-        showModal('Session Saved', 'Your current starters and settings have been saved to this browser.');
-    }
-    async function loadSession() {
-        const savedData = localStorage.getItem(SESSION_KEY);
-        if (!savedData) { showModal('No Saved Session', 'No previously saved session was found in this browser.'); return; }
-        const confirmed = await showModal('Load Session', 'This will overwrite your current settings. Are you sure?', true);
-        if (confirmed) {
-            const sessionData = JSON.parse(savedData);
-            starters = sessionData.starters || [];
-            starters.forEach(s => { if (!s.blackoutDates) s.blackoutDates = []; });
-            const blocks = sessionData.blocks || {};
-            byId('blk_food').value = blocks.food || 3; byId('blk_obar').value = blocks.obar || 0; byId('blk_floor').value = blocks.floor || 3; byId('blk_nfloor').value = blocks.nfloor || 0; byId('blk_bar').value = blocks.bar || 2; byId('blk_dining').value = blocks.dining || 4;
-            byId('shiftDuration').value = sessionData.duration || 5;
-            byId('welcomeDate').value = sessionData.welcomeDate || toYMD(new Date());
-            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-            byId('onboardingDate').value = sessionData.onboardingDate || toYMD(tomorrow);
-            renderStarters();
-            showModal('Session Loaded', 'Your saved session has been restored.');
-        }
-    }
-
-    // --- SHIFT EDITING ---
-    function openEditShiftModal(shiftIndex) {
-        activeShiftIndex = shiftIndex;
-        const shift = allRows[shiftIndex];
-        if (!shift || isMandatory(shift)) { showModal('Edit Not Allowed', 'Mandatory shifts like Welcome Day cannot be edited.'); return; }
-        byId('edit-shift-title').textContent = `Edit Shift for ${shift.Starter}`;
-        const shiftDate = parseYMD(shift.Date);
-        const editShiftOutlet = byId('edit-shift-outlet');
-        const editShiftStart = byId('edit-shift-start');
-        editShiftOutlet.innerHTML = Object.keys(RULES).filter(outlet => isOutletAllowedOnDate(outlet, shiftDate)).map(outlet => `<option value="${outlet}" ${outlet === shift.Outlet ? 'selected' : ''}>${outlet}</option>`).join('');
-        function populateStartTimes() {
-            const selectedOutlet = editShiftOutlet.value;
-            editShiftStart.innerHTML = (RULES[selectedOutlet] || []).map(time => `<option value="${time}" ${time === shift.Start ? 'selected' : ''}>${time}</option>`).join('');
-        }
-        populateStartTimes();
-        editShiftOutlet.onchange = populateStartTimes;
-        byId('edit-shift-modal').classList.add('visible');
-    }
-    function saveShiftEdit() {
-        const shift = allRows[activeShiftIndex];
-        shift.Outlet = byId('edit-shift-outlet').value;
-        shift.Start = byId('edit-shift-start').value;
-        const duration = +byId('shiftDuration').value || 5;
-        const [hh, mm] = shift.Start.split(':').map(Number);
-        shift.End = `${pad2((hh + duration) % 24)}:${pad2(mm)}`;
-        renderSched(allRows);
-        byId('edit-shift-modal').classList.remove('visible');
-    }
+    // --- BASE PLAN MANAGEMENT ---
+    function parseBase(text) { const rows = []; text.split(/\r?\n/).forEach(line => { const t = line.trim(); if (!t) return; const parts = t.split(','); if (parts.length < 4) return; const [Path, Step, OffsetDays, ...ShiftParts] = parts; const Shift = ShiftParts.join(',').trim(); rows.push({ Path: Path.trim(), Step: +Step, OffsetDays: +OffsetDays, Shift }); }); rows.sort((a, b) => a.Path.localeCompare(b.Path) || a.Step - b.Step); return rows; }
+    function applyBase() { base = parseBase(byId('baseInput').value); if (!base.length) showModal('Base Plan Error', 'No valid base steps found.'); }
+    function exportBase() { const header = ['Path', 'Step', 'OffsetDays', 'Shift']; const csv = [header.join(',')].concat(base.map(r => [r.Path, r.Step, r.OffsetDays, r.Shift].join(','))).join('\n'); download('base_plan_export.csv', csv); }
+    function restoreBase(auto = false) { const ta = byId('baseInput'); if (!ta) return; if (auto && ta.value.trim()) return; ta.value = PRELOADED_BASE; applyBase(); }
+    function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
 
     // --- STARTER MANAGEMENT ---
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
         if (starters.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`; return; }
-        tb.innerHTML = starters.map((s, i) => `<tr><td>${i + 1}</td><td>${s.Name}</td><td>${s.StaffID || 'N/A'}</td><td>${s.StartDate}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`).join('');
+        tb.innerHTML = starters.map((s, i) => `<tr><td>${i + 1}</td><td>${s.Name}</td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => { activeStarterIndex = +b.dataset.i; currentCalendarDate = parseYMD(starters[activeStarterIndex].StartDate); renderCalendar(); byId('calendar-modal').classList.add('visible'); });
     }
@@ -378,37 +684,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; renderStarters(); } }
     function importStarters(e) { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { const lines = fr.result.split(/\r?\n/).filter(Boolean); lines.shift(); starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate, blackoutDates: [] }; }); renderStarters(); }; fr.readAsText(f); }
-
-    // --- BASE PLAN MANAGEMENT ---
-    function parseBase(text) { const rows = []; text.split(/\r?\n/).forEach(line => { const t = line.trim(); if (!t) return; const parts = t.split(','); if (parts.length < 4) return; const [Path, Step, OffsetDays, ...ShiftParts] = parts; const Shift = ShiftParts.join(',').trim(); rows.push({ Path: Path.trim(), Step: +Step, OffsetDays: +OffsetDays, Shift }); }); rows.sort((a, b) => a.Path.localeCompare(b.Path) || a.Step - b.Step); return rows; }
-    function applyBase() { base = parseBase(byId('baseInput').value); if (!base.length) showModal('Base Plan Error', 'No valid base steps found.'); }
-    function exportBase() { const header = ['Path', 'Step', 'OffsetDays', 'Shift']; const csv = [header.join(',')].concat(base.map(r => [r.Path, r.Step, r.OffsetDays, r.Shift].join(','))).join('\n'); download('base_plan_export.csv', csv); }
-    function restoreBase(auto = false) { const ta = byId('baseInput'); if (!ta) return; if (auto && ta.value.trim()) return; ta.value = PRELOADED_BASE; applyBase(); }
-    function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
+    function exportStarters() {
+        if (starters.length === 0) { showModal('No Starters', 'There are no starters to export.'); return; }
+        const header = ['Name', 'StaffID', 'StartDate'];
+        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate].join(','))).join('\n');
+        download('starters.csv', csv);
+    }
 
     // --- BUILDER & RENDER LOGIC ---
     function buildAll() {
         if (!base.length) { showModal('Build Error', 'Base Plan is empty. Restore or import one.'); return; }
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
-        const welcomeDateStr = byId('welcomeDate').value;
-        const onboardingDateStr = byId('onboardingDate').value;
-        if (!welcomeDateStr || !onboardingDateStr) { showModal('Configuration Error', 'Please set both the Welcome Day and Onboarding Day dates in Global Settings.'); return; }
         allRows = []; const placedByStarter = new Map(); const placedByStarterOutlet = new Map();
         const used = new Set();
-        const welcomeDate = parseYMD(welcomeDateStr);
-        const onboardingDate = parseYMD(onboardingDateStr);
-        const lastMandatoryDate = new Date(Math.max(welcomeDate, onboardingDate));
-        starters.forEach(s => {
-            addRow(makeRow(s, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
-            addRow(makeRow(s, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
-            s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(lastMandatoryDate) };
-        });
+        const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d) || isMon(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
+        const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
+        for (const dayKey of Object.keys(groups).sort()) {
+            let day1 = parseYMD(dayKey); if (isSun(day1)) day1 = nextWorking(day1);
+            let day2 = addWorkDay(day1);
+            for (const s of groups[dayKey]) {
+                addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
+                addRow(makeRow(s, day2, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
+                s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(day2) };
+            }
+        }
         const baseCounts = getBlocks().reduce((m, b) => (m[b.outlet] = b.count, m), {});
-        let progress = true, safety = 0;
+        let progress = true, safety = 0; const everyone = Object.values(groups).flat();
         while (progress && safety < 5000) {
             progress = false; safety++;
-            for (const s of starters) {
-                if (getPlaced(s.Name) >= (MIN_SHIFTS + 2)) { s.__state = null; continue; }
+            for (const s of everyone) {
+                if (getPlaced(s.Name) >= MIN_SHIFTS) { s.__state = null; continue; }
                 if (!s.__state) continue;
                 let st = s.__state; let cur = nextWorking(st.nextDate); let curKey = toYMD(cur);
                 let outlet = st.currentOutlet;
@@ -428,12 +733,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 st.remaining -= 1; st.nextDate = addWorkDay(cur); progress = true;
             }
         }
-        for (const s of starters) {
-            let placed = getPlaced(s.Name); if (placed >= (MIN_SHIFTS + 2)) continue;
+        for (const s of everyone) {
+            let placed = getPlaced(s.Name); if (placed >= MIN_SHIFTS) continue;
             let last = allRows.filter(r => r.Starter === s.Name).map(r => r.Date).sort().pop();
-            let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(lastMandatoryDate);
+            let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(s.NormStart);
             let rot = 0, guard = 0; const PREF = ["SOV South Floor", "SOV South Bar", "Oasis Food", "Oasis Bar", "SOV North Floor", "SOV Dining"];
-            while (placed < (MIN_SHIFTS + 2) && guard < 5000) {
+            while (placed < MIN_SHIFTS && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
@@ -446,14 +751,13 @@ document.addEventListener('DOMContentLoaded', () => {
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
         byId('conflicts').textContent = `Built ${allRows.length} shifts for ${starters.length} starter(s)`;
         renderSched(allRows);
-        byId('copilotHealthCheckBtn').style.display = 'inline-flex';
-        fireConfetti();
+        fireChampagnePop();
     }
     function renderSched(rows) {
         const tb = document.querySelector('#schedTbl tbody'); tb.innerHTML = '';
         if (rows.length === 0) { tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`; return; }
         let curStarter = null;
-        rows.forEach((r, index) => {
+        for (const r of rows) {
             if (r.Starter !== curStarter) {
                 curStarter = r.Starter;
                 const trHead = document.createElement('tr'); trHead.className = 'group-row';
@@ -461,51 +765,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 tb.appendChild(trHead);
             }
             const tr = document.createElement('tr');
-            tr.className = 'editable-shift';
-            tr.dataset.shiftIndex = index;
-            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${r.Date}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
+            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
             tb.appendChild(tr);
-        });
-        tb.onclick = (e) => { const row = e.target.closest('.editable-shift'); if (row && row.dataset.shiftIndex) { openEditShiftModal(parseInt(row.dataset.shiftIndex, 10)); } };
+        }
     }
-    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) },]; }
-    function makeRow(starter, dateObj, start, outlet, step) { const duration = +byId('shiftDuration').value || 5; const [hh, mm] = start.split(":").map(Number); const endH = (hh + duration) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
-
+    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
+    function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
+    const placedByStarter = new Map(); const placedByStarterOutlet = new Map();
+    function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
+    function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
+    function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
+    function pickTime(outlet, i) { const times = RULES[outlet] || ["09:00"]; return times[i % times.length]; }
+    function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
+    
     // --- ATTACH EVENT LISTENERS ---
     byId('modal-cancel').onclick = () => { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(false); };
     byId('modal-confirm').onclick = () => { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(true); };
     byId('modal').onclick = (e) => { if (e.target === byId('modal')) { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(false); } };
-    byId('copilot-close').onclick = () => byId('copilot-modal').classList.remove('visible');
-    byId('copilot-modal').onclick = (e) => { if (e.target === byId('copilot-modal')) byId('copilot-modal').classList.remove('visible'); };
-    byId('copilotHealthCheckBtn').onclick = (e) => {
-        if (allRows.length === 0) { showModal('No Roster', 'Please build a roster before generating a health check.'); return; }
-        const rosterCSV = ['Starter', 'Date', 'Start', 'Outlet'].concat(allRows.map(r => [r.Starter, r.Date, r.Start, r.Outlet].join(','))).join('\n');
-        const prompt = `You are an expert rostering supervisor for a high-end casino. Analyze the following roster data for new trainees. Identify potential issues related to: 1. **Burnout Risk**: Anyone with more than 5 consecutive workdays. 2. **Fairness**: Is there an equitable distribution of weekend (Fri/Sat) shifts? 3. **Variety**: Is any starter stuck in one outlet for too many shifts in a row (more than 3)? Provide a concise, bullet-pointed report of your findings. Start your response with a brief one-sentence overview.`;
-        callCopilot(prompt, e.target).then(response => { if (response) { showCopilotModal('Copilot Roster Health Check', response); } });
-    };
     byId('prev-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
     byId('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
     byId('calendar-close').onclick = () => byId('calendar-modal').classList.remove('visible');
     byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) byId('calendar-modal').classList.remove('visible'); };
-    byId('saveSessionBtn').onclick = saveSession;
-    byId('loadSessionBtn').onclick = loadSession;
-    byId('edit-shift-cancel').onclick = () => byId('edit-shift-modal').classList.remove('visible');
-    byId('edit-shift-modal').onclick = (e) => { if (e.target === byId('edit-shift-modal')) byId('edit-shift-modal').classList.remove('visible'); };
-    byId('edit-shift-save').onclick = saveShiftEdit;
     byId('addStarter').onclick = addStarter;
     byId('clearStarters').onclick = clearStarters;
     byId('importStartersBtn').onclick = () => byId('importStarters').click();
     byId('importStarters').onchange = importStarters;
-    byId('exportStartersBtn').onclick = () => {
-        if (starters.length === 0) { showModal('No Starters', 'There are no starters to export.'); return; }
-        const header = ['Name', 'StaffID', 'StartDate'];
-        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate].join(','))).join('\n');
-        download('starters.csv', csv);
-    };
+    byId('exportStartersBtn').onclick = exportStarters;
     byId('shuffleBlocks').onclick = () => {
         shuffle = !shuffle;
         const btn = byId('shuffleBlocks');
-        btn.textContent = 'Toggle Shuffle: ' + (shuffle ? 'ON' : 'OFF');
         btn.style.borderColor = shuffle ? 'var(--brand-secondary)' : 'var(--border-secondary)';
         showModal('Shuffle Toggled', 'Shuffle per-starter is now ' + (shuffle ? 'ON' : 'OFF'));
     };
@@ -515,18 +803,14 @@ document.addEventListener('DOMContentLoaded', () => {
     byId('applyBase').onclick = applyBase;
     byId('exportBase').onclick = exportBase;
     byId('restoreBase').onclick = () => restoreBase(false);
-    byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', r.Date, r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
-    byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: r.Date, Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
+    byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
+    byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
 
     // --- INITIAL SETUP ---
     restoreBase(true);
     renderStarters();
     renderSched([]);
-    byId('welcomeDate').value = toYMD(new Date());
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    byId('onboardingDate').value = toYMD(tomorrow);
-});
+};
 
 /* --- PWA: register service worker --- */
 if("serviceWorker" in navigator && window.location.protocol === 'https:') {
@@ -535,5 +819,4 @@ if("serviceWorker" in navigator && window.location.protocol === 'https:') {
   });
 }
 </script>
-</body>
 </html>
