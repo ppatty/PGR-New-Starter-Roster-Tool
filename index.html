@@ -136,6 +136,7 @@
       top: 0;
       z-index: 10;
       display: flex;
+      flex-wrap: wrap;
       gap: 0.75rem;
       align-items: center;
       padding: 1rem;
@@ -186,7 +187,6 @@
     .g2 { grid-template-columns: repeat(2, 1fr); }
     .g3 { grid-template-columns: repeat(3, 1fr); }
     .g4 { grid-template-columns: repeat(4, 1fr); }
-    .g-col-span-2 { grid-column: span 2 / span 2; }
     
     label {
       display: block;
@@ -376,7 +376,6 @@
       .main { padding: 1.5rem; }
       .toolbar { margin: -1.5rem -1.5rem 0; }
       .g2, .g3, .g4 { grid-template-columns: 1fr; }
-      .g-col-span-2 { grid-column: span 1 / span 1; }
       .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
     }
   </style>
@@ -412,6 +411,7 @@
         <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
         Build Roster
       </button>
+      <button id="clearRosterBtn" class="btn warn" type="button">Clear Roster</button>
       <button id="exportAllCsv" class="btn" type="button">
         <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         CSV
@@ -518,7 +518,7 @@
   </div>
 </div>
 
-<!-- NEW: Calendar Modal -->
+<!-- Calendar Modal -->
 <div id="calendar-modal" class="modal-overlay">
   <div class="modal-content">
     <div class="calendar-header">
@@ -683,7 +683,19 @@ window.onload = () => {
         byId('stName').value = ''; byId('stId').value = ''; byId('stDate').value = '';
     }
     async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; renderStarters(); } }
-    function importStarters(e) { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { const lines = fr.result.split(/\r?\n/).filter(Boolean); lines.shift(); starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate, blackoutDates: [] }; }); renderStarters(); }; fr.readAsText(f); }
+    function importStarters(e) { 
+        const f = e.target.files[0]; 
+        if (!f) return; 
+        const fr = new FileReader(); 
+        fr.onload = () => { 
+            const lines = fr.result.split(/\r?\n/).filter(Boolean); 
+            lines.shift(); 
+            starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate, blackoutDates: [] }; }); 
+            renderStarters(); 
+        }; 
+        fr.readAsText(f);
+        e.target.value = null;
+    }
     function exportStarters() {
         if (starters.length === 0) { showModal('No Starters', 'There are no starters to export.'); return; }
         const header = ['Name', 'StaffID', 'StartDate'];
@@ -692,10 +704,24 @@ window.onload = () => {
     }
 
     // --- BUILDER & RENDER LOGIC ---
-    function buildAll() {
+    async function buildAll() {
+        if (allRows.length > 0) {
+            const confirmed = await showModal('Roster Exists', 'A schedule already exists. Do you want to replace it?', true);
+            if (!confirmed) return;
+        }
         if (!base.length) { showModal('Build Error', 'Base Plan is empty. Restore or import one.'); return; }
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
-        allRows = []; const placedByStarter = new Map(); const placedByStarterOutlet = new Map();
+        
+        // FIX: Reset tracking variables before every build
+        allRows = []; 
+        const placedByStarter = new Map(); 
+        const placedByStarterOutlet = new Map();
+        
+        function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
+        function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
+        function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
+        function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
+
         const used = new Set();
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d) || isMon(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
@@ -753,6 +779,18 @@ window.onload = () => {
         renderSched(allRows);
         fireChampagnePop();
     }
+    async function clearRoster() {
+        if (allRows.length === 0) {
+            showModal('Roster Empty', 'There is no schedule to clear.');
+            return;
+        }
+        const confirmed = await showModal('Clear Roster', 'Are you sure you want to clear the entire generated schedule?', true);
+        if (confirmed) {
+            allRows = [];
+            renderSched([]);
+            byId('conflicts').textContent = '—';
+        }
+    }
     function renderSched(rows) {
         const tb = document.querySelector('#schedTbl tbody'); tb.innerHTML = '';
         if (rows.length === 0) { tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`; return; }
@@ -771,12 +809,7 @@ window.onload = () => {
     }
     function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
     function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
-    const placedByStarter = new Map(); const placedByStarterOutlet = new Map();
-    function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
-    function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
-    function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
     function pickTime(outlet, i) { const times = RULES[outlet] || ["09:00"]; return times[i % times.length]; }
-    function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
     
     // --- ATTACH EVENT LISTENERS ---
     byId('modal-cancel').onclick = () => { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(false); };
@@ -798,6 +831,7 @@ window.onload = () => {
         showModal('Shuffle Toggled', 'Shuffle per-starter is now ' + (shuffle ? 'ON' : 'OFF'));
     };
     byId('buildAll').onclick = buildAll;
+    byId('clearRosterBtn').onclick = clearRoster;
     byId('importBaseBtn').onclick = () => byId('importBase').click();
     byId('importBase').onchange = e => { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { byId('baseInput').value = fr.result; applyBase(); }; fr.readAsText(f); };
     byId('applyBase').onclick = applyBase;
