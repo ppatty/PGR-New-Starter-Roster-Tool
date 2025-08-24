@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>PGR Roster Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="A modern, fast, and deterministic roster creator for PGR at The Star Gold Coast.">
+  <meta name="description" content="A professional, feature-rich roster creator for PGR at The Star Gold Coast.">
   <meta name="theme-color" content="#111827" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,361 +16,81 @@
     /* --- CSS Variables & Base Styles --- */
     :root {
       --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-      
-      --bg-primary: #030712;    /* Near black */
-      --bg-secondary: #111827; /* Dark gray-blue */
-      --bg-tertiary: #1f2937;  /* Lighter gray-blue */
-      --surface: #1a2332;      /* Card backgrounds */
-      
-      --text-primary: #f9fafb;  /* Off-white */
-      --text-secondary: #9ca3af;/* Medium gray */
-      --text-muted: #6b7280;    /* Darker gray */
-
-      --border-primary: #374151;
-      --border-secondary: #4b5563;
-
-      --brand-primary: #3b82f6; /* Vibrant Blue */
-      --brand-secondary: #14b8a6;/* Teal */
-      --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
-
-      --warn-primary: #f59e0b; /* Amber */
-      --ok-primary: #22c55e;   /* Green */
-
-      --radius-sm: 0.375rem; /* 6px */
-      --radius-md: 0.5rem;   /* 8px */
-      --radius-lg: 0.75rem;  /* 12px */
-
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+      --bg-primary: #030712; --bg-secondary: #111827; --bg-tertiary: #1f2937; --surface: #1a2332;
+      --text-primary: #f9fafb; --text-secondary: #9ca3af; --text-muted: #6b7280;
+      --border-primary: #374151; --border-secondary: #4b5563;
+      --brand-primary: #3b82f6; --brand-secondary: #14b8a6; --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+      --warn-primary: #f59e0b; --ok-primary: #22c55e;
+      --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
     }
-
     *, *::before, *::after { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      font-family: var(--font-sans);
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--text-primary);
-      background-color: var(--bg-primary);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* --- App Layout --- */
-    .app {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      min-height: 100vh;
-    }
-    .side {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      padding: 1.5rem;
-      background-color: var(--bg-secondary);
-      border-right: 1px solid var(--border-primary);
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-    .main {
-      padding: 2rem;
-      display: grid;
-      gap: 1.5rem;
-      align-content: start;
-    }
-
-    /* --- Brand & Logo --- */
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .logo {
-      width: 40px;
-      height: 40px;
-      color: var(--brand-primary);
-    }
-    .brand .product h1 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin: 0;
-      line-height: 1.2;
-    }
-    .brand .product .subbrand {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-    
-    /* --- Navigation & Summary Chips --- */
+    body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--text-primary); background-color: var(--bg-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    .app { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+    .side { position: sticky; top: 0; height: 100vh; padding: 1.5rem; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); display: flex; flex-direction: column; gap: 2rem; }
+    .main { padding: 2rem; display: grid; gap: 1.5rem; align-content: start; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .logo { width: 40px; height: 40px; color: var(--brand-primary); }
+    .brand .product h1 { font-size: 1rem; font-weight: 600; margin: 0; line-height: 1.2; }
+    .brand .product .subbrand { font-size: 0.75rem; color: var(--text-secondary); }
     .nav-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .nav-group h2 {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin: 0 0 0.5rem;
-      padding: 0 0.5rem;
-    }
+    .nav-group h2 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
     .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.375rem 0.75rem;
-      border-radius: var(--radius-md);
-      background-color: var(--bg-tertiary);
-      border: 1px solid var(--border-primary);
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
-    /* --- Main Toolbar --- */
-    .toolbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      padding: 1rem;
-      margin: -2rem -2rem 0;
-      background: linear-gradient(180deg, rgba(3, 7, 18, 0.95) 70%, transparent 100%);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border-primary);
-    }
-    #conflicts {
-      margin-left: auto;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      background-color: var(--bg-tertiary);
-      padding: 0.5rem 1rem;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-primary);
-    }
-
-    /* --- Card Component --- */
-    .card {
-      background-color: var(--surface);
-      border: 1px solid var(--border-primary);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-    }
-    .card .hd {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--border-primary);
-      background-color: var(--bg-tertiary);
-    }
-    .card .hd h2 {
-      font-size: 0.875rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin: 0;
-      color: var(--text-secondary);
-    }
+    .chip { display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; border-radius: var(--radius-md); background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+    .toolbar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 1rem; margin: -2rem -2rem 0; background: linear-gradient(180deg, rgba(3, 7, 18, 0.95) 70%, transparent 100%); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-primary); }
+    #conflicts { margin-left: auto; font-size: 0.875rem; color: var(--text-secondary); background-color: var(--bg-tertiary); padding: 0.5rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-primary); }
+    .card { background-color: var(--surface); border: 1px solid var(--border-primary); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+    .card .hd { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-primary); background-color: var(--bg-tertiary); }
+    .card .hd h2 { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; color: var(--text-secondary); }
     .card .hd .sub { font-size: 0.875rem; color: var(--text-muted); }
     .card .bd { padding: 1.5rem; }
-
-    /* --- Form Elements --- */
     .grid { display: grid; gap: 1rem; }
     .g2 { grid-template-columns: repeat(2, 1fr); }
     .g3 { grid-template-columns: repeat(3, 1fr); }
-    .g-col-span-2 { grid-column: span 2 / span 2; }
-    
-    label {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: 0.5rem;
-    }
-    input, textarea, select {
-      width: 100%;
-      font-family: inherit;
-      font-size: 0.875rem;
-      color: var(--text-primary);
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-primary);
-      border-radius: var(--radius-md);
-      padding: 0.625rem 0.75rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: var(--brand-primary);
-      box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary);
-    }
+    .g4 { grid-template-columns: repeat(4, 1fr); }
+    label { display: block; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    input, textarea, select { width: 100%; font-family: inherit; font-size: 0.875rem; color: var(--text-primary); background-color: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 0.625rem 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary); }
     textarea { min-height: 160px; resize: vertical; }
-
-    /* --- Button Component --- */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      font-family: inherit;
-      font-size: 0.875rem;
-      font-weight: 600;
-      padding: 0.625rem 1rem;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-secondary);
-      background-color: var(--bg-tertiary);
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: all 0.15s ease-in-out;
-      user-select: none;
-    }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit; font-size: 0.875rem; font-weight: 600; padding: 0.625rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary); cursor: pointer; transition: all 0.15s ease-in-out; user-select: none; }
     .btn:hover { background-color: #374151; border-color: #4b5563; }
     .btn:active { transform: scale(0.98); }
-    .btn:focus-visible {
-      outline: none;
-      box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary);
-    }
+    .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary); }
     .btn .ico { width: 16px; height: 16px; }
-
-    .btn.primary {
-      background-image: var(--brand-gradient);
-      border: none;
-      color: white;
-      box-shadow: var(--shadow-md);
-    }
+    .btn.primary { background-image: var(--brand-gradient); border: none; color: white; box-shadow: var(--shadow-md); }
     .btn.primary:hover { filter: brightness(1.1); }
-    
-    .btn.warn {
-      background-color: #422006;
-      border-color: #78350f;
-      color: var(--warn-primary);
-    }
+    .btn.warn { background-color: #422006; border-color: #78350f; color: var(--warn-primary); }
     .btn.warn:hover { background-color: #522a08; }
-
-    .btn.ghost {
-      background-color: transparent;
-      border-color: transparent;
-      color: var(--text-secondary);
-    }
+    .btn.ghost { background-color: transparent; border-color: transparent; color: var(--text-secondary); }
     .btn.ghost:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
-
-    /* --- Table Styles --- */
-    .table-wrapper {
-      overflow: auto;
-      border: 1px solid var(--border-primary);
-      border-radius: var(--radius-lg);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.875rem;
-    }
-    th, td {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border-primary);
-      white-space: nowrap;
-    }
-    thead th {
-      position: sticky;
-      top: 0;
-      background-color: var(--bg-tertiary);
-      font-weight: 600;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-secondary);
-      z-index: 2;
-    }
+    .table-wrapper { overflow: auto; border: 1px solid var(--border-primary); border-radius: var(--radius-lg); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-primary); white-space: nowrap; }
+    thead th { position: sticky; top: 0; background-color: var(--bg-tertiary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); z-index: 2; }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background-color: #1f293799; }
-    .group-row td {
-      position: sticky;
-      /* FIX: Increased top offset to fully clear the header */
-      top: 48px; 
-      background-color: #1a2332;
-      font-weight: 600;
-      color: var(--text-primary);
-      z-index: 1;
-    }
-    
-    /* --- Utility Classes --- */
+    tbody tr.editable-shift:hover { cursor: pointer; background-color: #374151; }
+    .group-row td { position: sticky; top: 48px; background-color: #1a2332; font-weight: 600; color: var(--text-primary); z-index: 1; }
     .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); }
-    .text-sm { font-size: 0.875rem; }
-    .text-muted { color: var(--text-muted); }
     .mt-4 { margin-top: 1rem; }
-
-    /* --- Modal Styles --- */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      z-index: 50;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s, visibility 0.3s;
-    }
-    .modal-overlay.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-    .modal-content {
-      background-color: var(--surface);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-primary);
-      box-shadow: var(--shadow-lg);
-      padding: 2rem;
-      width: 100%;
-      max-width: 400px;
-      transform: scale(0.95);
-      transition: transform 0.3s;
-    }
-    .modal-overlay.visible .modal-content {
-      transform: scale(1);
-    }
-    .modal-content h3 {
-      margin: 0 0 0.5rem;
-      font-size: 1.125rem;
-      font-weight: 600;
-    }
-    .modal-content p {
-      margin: 0 0 1.5rem;
-      color: var(--text-secondary);
-    }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
-    }
-
-    /* --- Responsive Design --- */
-    @media (max-width: 1024px) {
-      .app { grid-template-columns: 1fr; }
-      .side {
-        position: static;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid var(--border-primary);
-      }
-      .toolbar { margin: -2rem -2rem 0; }
-    }
-    @media (max-width: 768px) {
-      .main { padding: 1.5rem; }
-      .toolbar { margin: -1.5rem -1.5rem 0; }
-      .g2, .g3 { grid-template-columns: 1fr; }
-      .g-col-span-2 { grid-column: span 1 / span 1; }
-      .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
-    }
+    .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+    .modal-overlay.visible { opacity: 1; visibility: visible; }
+    .modal-content { background-color: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border-primary); box-shadow: var(--shadow-lg); padding: 2rem; width: 100%; max-width: 400px; transform: scale(0.95); transition: transform 0.3s; }
+    .modal-overlay.visible .modal-content { transform: scale(1); }
+    .modal-content h3 { margin: 0 0 0.5rem; font-size: 1.125rem; font-weight: 600; }
+    .modal-content p { margin: 0 0 1.5rem; color: var(--text-secondary); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
+    #calendar-modal .modal-content { max-width: 340px; }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .calendar-day, .calendar-weekday { display: flex; align-items: center; justify-content: center; height: 36px; border-radius: var(--radius-md); }
+    .calendar-weekday { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+    .calendar-day:not(.empty) { cursor: pointer; transition: background-color 0.2s; }
+    .calendar-day:not(.empty):hover { background-color: var(--bg-tertiary); }
+    .calendar-day.blackout { background-color: var(--warn-primary); color: #422006; font-weight: 600; }
+    @media (max-width: 1024px) { .app { grid-template-columns: 1fr; } .side { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border-primary); } .toolbar { margin: -2rem -2rem 0; } }
+    @media (max-width: 768px) { .main { padding: 1.5rem; } .toolbar { margin: -1.5rem -1.5rem 0; } .g2, .g3, .g4 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -378,141 +98,55 @@
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M2 7L12 12M12 22V12M22 7L12 12M17 4.5L7 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <div class="product">
-        <h1>PGR Roster Creator</h1>
-        <div class="subbrand">The Star Gold Coast</div>
-      </div>
+      <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7L12 12M12 22V12M22 7L12 12M17 4.5L7 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="product"><h1>PGR Roster Creator</h1><div class="subbrand">The Star Gold Coast</div></div>
     </div>
-    
     <div class="nav-group">
       <h2>Summary</h2>
-      <div class="nav-chips">
-        <div class="chip">One shift/day</div>
-        <div class="chip">No Sundays</div>
-        <div class="chip">Mon off</div>
-        <div class="chip">Min 15 shifts</div>
-        <div class="chip">≥2 off / 10d</div>
-        <div class="chip">Capacity 1/day/outlet</div>
-      </div>
+      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div></div>
     </div>
   </aside>
 
   <main class="main">
     <div class="toolbar" role="region" aria-label="Global actions">
-      <button id="buildAll" class="btn primary" type="button">
-        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-        Build Roster
-      </button>
-      <button id="exportAllCsv" class="btn" type="button">
-        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        CSV
-      </button>
-      <button id="exportAllXls" class="btn" type="button">
-        <svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>
-        Excel (.xlsx)
-      </button>
+      <button id="buildAll" class="btn primary" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>Build Roster</button>
+      <!-- FEATURE: Save/Load Session Buttons -->
+      <button id="saveSessionBtn" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>Save</button>
+      <button id="loadSessionBtn" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5"/></svg>Load</button>
+      <button id="exportAllCsv" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>CSV</button>
+      <button id="exportAllXls" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>Excel</button>
       <span id="conflicts" aria-live="polite">—</span>
     </div>
 
-    <section class="card" aria-labelledby="base-h">
-      <div class="hd"><h2 id="base-h">Base Plan</h2><span class="sub">Preloaded. Import optional.</span></div>
-      <div class="bd grid g2">
-        <div>
-          <label for="baseInput">Edit base CSV</label>
-          <textarea id="baseInput" spellcheck="false"></textarea>
-        </div>
-        <div>
-          <label>Actions</label>
-          <div class="grid g2">
-            <button id="importBaseBtn" class="btn" type="button">Import CSV</button>
-            <button id="applyBase" class="btn" type="button">Apply</button>
-            <button id="exportBase" class="btn" type="button">Export CSV</button>
-            <button id="restoreBase" class="btn warn" type="button">Restore Preloaded</button>
-            <input type="file" id="importBase" accept=".csv" class="visually-hidden" />
-          </div>
-          <div class="text-sm text-muted mt-4">
-            <b>Rules Snapshot:</b>
-            <ul style="margin:0.5rem 0 0; padding-left:1rem; color: var(--text-secondary);">
-              <li>First two days fixed 09:00: Welcome Day, PGR F&B On boarding</li>
-              <li>SOV North Floor 18:00 Fri/Sat only</li>
-              <li>Blocks remain consecutive per outlet</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
+    <section class="card" aria-labelledby="base-h"><div class="hd"><h2 id="base-h">Base Plan</h2><span class="sub">Preloaded. Import optional.</span></div><div class="bd grid g2"><div><label for="baseInput">Edit base CSV</label><textarea id="baseInput" spellcheck="false"></textarea></div><div><label>Actions</label><div class="grid g2"><button id="importBaseBtn" class="btn" type="button">Import CSV</button><button id="applyBase" class="btn" type="button">Apply</button><button id="exportBase" class="btn" type="button">Export CSV</button><button id="restoreBase" class="btn warn" type="button">Restore Preloaded</button><input type="file" id="importBase" accept=".csv" class="visually-hidden" /></div><div class="text-sm text-muted mt-4"><b>Rules Snapshot:</b><ul style="margin:0.5rem 0 0; padding-left:1rem; color: var(--text-secondary);"><li>First two days fixed 09:00: Welcome Day, PGR F&B On boarding</li><li>SOV North Floor 18:00 Fri/Sat only</li><li>Blocks remain consecutive per outlet</li></ul></div></div></div></section>
 
-    <section class="card" aria-labelledby="starters-h">
-      <div class="hd"><h2 id="starters-h">Starters</h2><span class="sub">Add, import, or clear</span></div>
-      <div class="bd">
-        <div class="grid g3">
-          <div><label for="stName">Name</label><input id="stName" placeholder="Dakota Parata"></div>
-          <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
-          <div><label for="stDate">Start Date</label><input id="stDate" type="date"></div>
-        </div>
-        <div class="grid g3 mt-4">
-          <button id="addStarter" class="btn primary" type="button">Add Starter</button>
-          <button id="importStartersBtn" class="btn" type="button">Import CSV</button>
-          <button id="clearStarters" class="btn" type="button">Clear All</button>
-          <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
-        </div>
-        <div class="mt-4 table-wrapper">
-          <table id="startersTbl">
-            <thead><tr><th>#</th><th>Name</th><th>StaffID</th><th>Start</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <section class="card" aria-labelledby="starters-h"><div class="hd"><h2 id="starters-h">Starters</h2><span class="sub">Add, import, or clear</span></div><div class="bd"><div class="grid g3"><div><label for="stName">Name</label><input id="stName" placeholder="Dakota Parata"></div><div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div><div><label for="stDate">Start Date</label><input id="stDate" type="date"></div></div><div class="grid g3 mt-4"><button id="addStarter" class="btn primary" type="button">Add Starter</button><button id="importStartersBtn" class="btn" type="button">Import CSV</button><button id="clearStarters" class="btn" type="button">Clear All</button><input type="file" id="importStarters" accept=".csv" class="visually-hidden" /></div><div class="mt-4 table-wrapper"><table id="startersTbl"><thead><tr><th>#</th><th>Name</th><th>StaffID</th><th>Start</th><th>Blackouts</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
 
-    <section class="card" aria-labelledby="blocks-h">
-      <div class="hd"><h2 id="blocks-h">Default Blocks</h2><span class="sub">Consecutive per outlet. Shuffle optional.</span></div>
-      <div class="bd">
-        <div class="grid g3">
-          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
-          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0"></div>
-          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
-          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
-          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="2" min="0"></div>
-          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
-        </div>
-        <div class="mt-4">
-          <button id="shuffleBlocks" class="btn" type="button">Toggle Shuffle (Per-Starter)</button>
-        </div>
+    <section class="card" aria-labelledby="blocks-h"><div class="hd"><h2 id="blocks-h">Default Blocks & Duration</h2><span class="sub">Configure roster generation rules</span></div><div class="bd">
+      <!-- FEATURE: Shift Duration Input -->
+      <div class="grid g4">
+        <div><label for="shiftDuration">Shift Duration (hours)</label><input type="number" id="shiftDuration" value="5" min="1" max="12"></div>
+        <div style="grid-column: span 3;"><label>Shuffle per-starter</label><button id="shuffleBlocks" class="btn" type="button">Toggle Shuffle: OFF</button></div>
+        <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
+        <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0"></div>
+        <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
+        <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
+        <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="2" min="0"></div>
+        <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
       </div>
-    </section>
+    </div></section>
 
-    <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Generated Schedule</h2><span class="sub">Grouped by starter</span></div>
-      <div class="bd" style="padding: 0;">
-        <div class="table-wrapper">
-          <table id="schedTbl">
-            <thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <section class="card" aria-labelledby="schedule-h"><div class="hd"><h2 id="schedule-h">Generated Schedule</h2><span class="sub">Click a shift to manually edit</span></div><div class="bd" style="padding: 0;"><div class="table-wrapper"><table id="schedTbl"><thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead><tbody></tbody></table></div></div></section>
   </main>
 </div>
 
-<!-- Custom Modal for Alerts/Confirms -->
-<div id="modal" class="modal-overlay">
-  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <h3 id="modal-title">Modal Title</h3>
-    <p id="modal-text">Modal message goes here.</p>
-    <div class="modal-actions">
-      <button id="modal-cancel" class="btn">Cancel</button>
-      <button id="modal-confirm" class="btn primary">Confirm</button>
-    </div>
-  </div>
-</div>
+<!-- Modals -->
+<div id="modal" class="modal-overlay"><div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title"><h3 id="modal-title"></h3><p id="modal-text"></p><div class="modal-actions"><button id="modal-cancel" class="btn">Cancel</button><button id="modal-confirm" class="btn primary">Confirm</button></div></div></div>
+<!-- FEATURE: Blackout Dates Calendar Modal -->
+<div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost">&gt;</button></div><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary">Done</button></div></div></div>
+<!-- FEATURE: Manual Shift Edit Modal -->
+<div id="edit-shift-modal" class="modal-overlay"><div class="modal-content"><h3 id="edit-shift-title">Edit Shift</h3><div class="grid g2"><div><label for="edit-shift-outlet">Outlet</label><select id="edit-shift-outlet"></select></div><div><label for="edit-shift-start">Start Time</label><select id="edit-shift-start"></select></div></div><div class="modal-actions" style="margin-top: 1.5rem;"><button id="edit-shift-cancel" class="btn">Cancel</button><button id="edit-shift-save" class="btn primary">Save Changes</button></div></div></div>
 
-<!-- SheetJS for .xlsx export -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <script>
@@ -533,230 +167,270 @@ function isOutletAllowedOnDate(outlet, dateObj){
   return true;
 }
 
-/* --- MODAL LOGIC --- */
+/* --- GENERIC MODAL LOGIC --- */
 const modal = byId('modal');
 const modalTitle = byId('modal-title');
 const modalText = byId('modal-text');
 const modalCancel = byId('modal-cancel');
 const modalConfirm = byId('modal-confirm');
 let modalResolve;
-
 function showModal(title, text, showCancel = false) {
   modalTitle.textContent = title;
   modalText.textContent = text;
   modalCancel.style.display = showCancel ? 'inline-flex' : 'none';
   modal.classList.add('visible');
-  
-  return new Promise(resolve => {
-    modalResolve = resolve;
-  });
+  return new Promise(resolve => { modalResolve = resolve; });
+}
+modalCancel.onclick = () => { modal.classList.remove('visible'); if (modalResolve) modalResolve(false); };
+modalConfirm.onclick = () => { modal.classList.remove('visible'); if (modalResolve) modalResolve(true); };
+modal.onclick = (e) => { if (e.target === modal) { modal.classList.remove('visible'); if (modalResolve) modalResolve(false); } };
+
+/* --- CORE DATA & RULES --- */
+let base=[];
+let starters=[];
+let allRows=[];
+let shuffle=false;
+const MIN_SHIFTS=15;
+const MANDATORY_SESSIONS=[ {name:'Welcome Day',label:'Welcome Day',start:'09:00'}, {name:'PGR F&B On boarding',label:'PGR F&B On boarding',start:'09:00'} ];
+const RULES={ "Oasis Food":["08:00","11:00","16:00"], "Oasis Bar":["06:00","08:00","10:00","14:00","16:00","17:00","18:00","19:00","22:00"], "SOV South Floor":Array.from({length:14},(_,k)=>(9+k).toString().padStart(2,'0')+":00"), "SOV North Floor":["18:00"], "SOV South Bar":["06:00","10:00","14:00","18:00","22:00"], "SOV Dining":["17:00"] };
+
+/* --- FEATURE 1: STARTER AVAILABILITY (CALENDAR MODAL) --- */
+const calendarModal = byId('calendar-modal');
+const calendarTitle = byId('calendar-title');
+const calendarDays = byId('calendar-days');
+const weekdaysContainer = byId('calendar-weekdays');
+let currentCalendarDate = new Date();
+let activeStarterIndex = -1;
+
+function renderCalendar() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    calendarTitle.textContent = `${currentCalendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
+    
+    calendarDays.innerHTML = '';
+    weekdaysContainer.innerHTML = ['S','M','T','W','T','F','S'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
+
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const starter = starters[activeStarterIndex];
+    if (!starter) return;
+
+    for (let i = 0; i < firstDayOfMonth; i++) {
+        calendarDays.innerHTML += `<div class="calendar-day empty"></div>`;
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = i;
+        const dateStr = toYMD(new Date(year, month, i));
+        if (starter.blackoutDates.includes(dateStr)) {
+            dayEl.classList.add('blackout');
+        }
+        dayEl.onclick = () => {
+            const index = starter.blackoutDates.indexOf(dateStr);
+            if (index > -1) {
+                starter.blackoutDates.splice(index, 1);
+            } else {
+                starter.blackoutDates.push(dateStr);
+            }
+            renderStarters();
+            dayEl.classList.toggle('blackout');
+        };
+        calendarDays.appendChild(dayEl);
+    }
 }
 
-modalCancel.onclick = () => {
-  modal.classList.remove('visible');
-  if (modalResolve) modalResolve(false);
+byId('prev-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
+byId('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
+byId('calendar-close').onclick = () => calendarModal.classList.remove('visible');
+calendarModal.onclick = (e) => { if (e.target === calendarModal) calendarModal.classList.remove('visible'); };
+
+
+/* --- FEATURE 2: SAVE & LOAD SESSION --- */
+const SESSION_KEY = 'pgrRosterSession';
+byId('saveSessionBtn').onclick = () => {
+    const sessionData = {
+        starters: starters,
+        blocks: {
+            food: byId('blk_food').value, obar: byId('blk_obar').value, floor: byId('blk_floor').value,
+            nfloor: byId('blk_nfloor').value, bar: byId('blk_bar').value, dining: byId('blk_dining').value
+        },
+        duration: byId('shiftDuration').value
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+    showModal('Session Saved', 'Your current starters and settings have been saved to this browser.');
 };
-modalConfirm.onclick = () => {
-  modal.classList.remove('visible');
-  if (modalResolve) modalResolve(true);
-};
-modal.onclick = (e) => {
-    if (e.target === modal) {
-        modal.classList.remove('visible');
-        if (modalResolve) modalResolve(false);
+
+byId('loadSessionBtn').onclick = async () => {
+    const savedData = localStorage.getItem(SESSION_KEY);
+    if (!savedData) {
+        showModal('No Saved Session', 'No previously saved session was found in this browser.');
+        return;
+    }
+    const confirmed = await showModal('Load Session', 'This will overwrite your current settings. Are you sure?', true);
+    if (confirmed) {
+        const sessionData = JSON.parse(savedData);
+        starters = sessionData.starters || [];
+        // Ensure blackoutDates is always an array
+        starters.forEach(s => { if (!s.blackoutDates) s.blackoutDates = []; });
+        
+        const blocks = sessionData.blocks || {};
+        byId('blk_food').value = blocks.food || 3;
+        byId('blk_obar').value = blocks.obar || 0;
+        byId('blk_floor').value = blocks.floor || 3;
+        byId('blk_nfloor').value = blocks.nfloor || 0;
+        byId('blk_bar').value = blocks.bar || 2;
+        byId('blk_dining').value = blocks.dining || 4;
+        byId('shiftDuration').value = sessionData.duration || 5;
+        
+        renderStarters();
+        showModal('Session Loaded', 'Your saved session has been restored.');
     }
 };
 
-/* --- MANDATORY SESSIONS & COUNTERS --- */
-const MANDATORY_SESSIONS=[
-  {name:'Welcome Day',label:'Welcome Day',start:'09:00'},
-  {name:'PGR F&B On boarding',label:'PGR F&B On boarding',start:'09:00'}
-];
-let allRows=[];
-function isMandatory(r){ return r.Outlet===MANDATORY_SESSIONS[0].label||r.Outlet===MANDATORY_SESSIONS[1].label; }
-function shiftsInLastNDaysFor(starterName,dateObj,n){
-  const start=new Date(dateObj); start.setDate(start.getDate()-(n-1));
-  const startKey=toYMD(start), endKey=toYMD(dateObj);
-  let count=0;
-  for(const r of allRows){
-    if(r.Starter!==starterName) continue;
-    if(isMandatory(r)) continue;
-    if(r.Date>=startKey && r.Date<=endKey) count++;
-  }
-  return count;
-}
-function canWorkThisDay(starterName,dateObj){ return shiftsInLastNDaysFor(starterName,dateObj,10)<8; }
+/* --- FEATURE 3: MANUAL SHIFT EDIT --- */
+const editShiftModal = byId('edit-shift-modal');
+const editShiftOutlet = byId('edit-shift-outlet');
+const editShiftStart = byId('edit-shift-start');
+let activeShiftIndex = -1;
 
-/* --- BASE PLAN --- */
-let base=[];
-function parseBase(text){
-  const rows=[];
-  text.split(/\r?\n/).forEach(line=>{
-    const t=line.trim(); if(!t) return;
-    const parts=t.split(','); if(parts.length<4) return;
-    const [Path,Step,OffsetDays,...ShiftParts]=parts;
-    const Shift=ShiftParts.join(',').trim();
-    rows.push({Path:Path.trim(),Step:+Step,OffsetDays:+OffsetDays,Shift});
-  });
-  rows.sort((a,b)=> a.Path.localeCompare(b.Path)||a.Step-b.Step);
-  return rows;
-}
-byId('importBaseBtn').onclick=()=>byId('importBase').click();
-byId('importBase').onchange=e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const fr=new FileReader();
-  fr.onload=()=>{ byId('baseInput').value=fr.result; applyBase(); };
-  fr.readAsText(f);
-};
-byId('applyBase').onclick=applyBase;
-function applyBase(){
-  base=parseBase(byId('baseInput').value);
-  if(!base.length) showModal('Base Plan Error', 'No valid base steps were found in the provided text.');
-}
-byId('exportBase').onclick=()=>{
-  const header=['Path','Step','OffsetDays','Shift'];
-  const csv=[header.join(',')].concat(base.map(r=>[r.Path,r.Step,r.OffsetDays,r.Shift].join(','))).join('\n');
-  download('base_plan_export.csv',csv);
-};
-const PRELOADED_BASE=`Path,Step,OffsetDays,Shift
-Oasis Food (5h),1,0,0800-1300 Oasis Food TRN
-Oasis Food (5h),2,0,1100-1600 Oasis Food TRN
-Oasis Food (5h),3,0,1600-2100 Oasis Food TRN
-SOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN
-SOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN
-SOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN
-SOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN
-SOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN
-SOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN
-SOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN
-SOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN
-SOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN
-SOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN
-SOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN
-SOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN
-SOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN
-SOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN
-SOV Dining (5h),18,0,1700-2200 SOV Dining TRN
-SOV South Bar (5h),19,0,0600-1100 SOV South Bar TRN
-SOV South Bar (5h),20,0,1000-1500 SOV South Bar TRN
-SOV South Bar (5h),21,0,1400-1900 SOV South Bar TRN
-SOV South Bar (5h),22,0,1800-2300 SOV South Bar TRN
-SOV South Bar (5h),23,0,2200-0300 SOV South Bar TRN
-Oasis Bar (5h),24,0,0600-1100 Oasis Bar TRN
-Oasis Bar (5h),25,0,1700-2200 Oasis Bar TRN
-SOV North Floor (5h),26,0,1800-2300 SOV North Floor TRN`;
-function restoreBase(auto=false){
-  const ta=byId('baseInput'); if(!ta) return;
-  if(auto && ta.value.trim()) return;
-  ta.value=PRELOADED_BASE;
-  const btn=byId('applyBase'); if(btn) btn.click();
-}
-byId('restoreBase').onclick=()=>restoreBase(false);
-document.addEventListener('DOMContentLoaded', () => {
-    restoreBase(true);
-});
+function openEditShiftModal(shiftIndex) {
+    activeShiftIndex = shiftIndex;
+    const shift = allRows[shiftIndex];
+    if (!shift || isMandatory(shift)) {
+        showModal('Edit Not Allowed', 'Mandatory shifts like Welcome Day cannot be edited.');
+        return;
+    }
 
+    byId('edit-shift-title').textContent = `Edit Shift for ${shift.Starter}`;
+    const shiftDate = parseYMD(shift.Date);
+    
+    // Populate outlets
+    editShiftOutlet.innerHTML = Object.keys(RULES)
+        .filter(outlet => isOutletAllowedOnDate(outlet, shiftDate))
+        .map(outlet => `<option value="${outlet}" ${outlet === shift.Outlet ? 'selected' : ''}>${outlet}</option>`)
+        .join('');
 
-/* --- LEGAL START TIMES --- */
-const RULES={
-  "Oasis Food":["08:00","11:00","16:00"],
-  "Oasis Bar":["06:00","08:00","10:00","14:00","16:00","17:00","18:00","19:00","22:00"],
-  "SOV South Floor":Array.from({length:14},(_,k)=>(9+k).toString().padStart(2,'0')+":00"),
-  "SOV North Floor":["18:00"],
-  "SOV South Bar":["06:00","10:00","14:00","18:00","22:00"],
-  "SOV Dining":["17:00"]
+    // Populate start times for the selected outlet
+    function populateStartTimes() {
+        const selectedOutlet = editShiftOutlet.value;
+        editShiftStart.innerHTML = (RULES[selectedOutlet] || [])
+            .map(time => `<option value="${time}" ${time === shift.Start ? 'selected' : ''}>${time}</option>`)
+            .join('');
+    }
+    populateStartTimes();
+    editShiftOutlet.onchange = populateStartTimes;
+
+    editShiftModal.classList.add('visible');
+}
+
+byId('edit-shift-cancel').onclick = () => editShiftModal.classList.remove('visible');
+editShiftModal.onclick = (e) => { if (e.target === editShiftModal) editShiftModal.classList.remove('visible'); };
+
+byId('edit-shift-save').onclick = () => {
+    const shift = allRows[activeShiftIndex];
+    const newOutlet = editShiftOutlet.value;
+    const newStart = editShiftStart.value;
+
+    shift.Outlet = newOutlet;
+    shift.Start = newStart;
+    
+    // Recalculate end time based on new start time and duration
+    const duration = +byId('shiftDuration').value || 5;
+    const [hh, mm] = newStart.split(':').map(Number);
+    const endH = (hh + duration) % 24;
+    shift.End = `${pad2(endH)}:${pad2(mm)}`;
+    
+    renderSched(allRows);
+    editShiftModal.classList.remove('visible');
 };
 
-/* --- STARTERS --- */
-let starters=[];
+/* --- STARTERS LOGIC --- */
 function renderStarters(){
   const tb=document.querySelector('#startersTbl tbody');
   if (starters.length === 0) {
-    tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
     return;
   }
   tb.innerHTML=starters.map((s,i)=>`
     <tr>
       <td>${i+1}</td><td>${s.Name}</td><td>${s.StaffID||'N/A'}</td><td>${s.StartDate}</td>
-      <td style="text-align:right"><button data-i='${i}' class='btn ghost remove-starter' type="button" aria-label="Remove ${s.Name}">Remove</button></td>
+      <td>${s.blackoutDates.length} day(s)</td>
+      <td style="text-align:right">
+        <button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button>
+        <button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button>
+      </td>
     </tr>`).join('');
+  
   tb.querySelectorAll('.remove-starter').forEach(b=> b.onclick= async ()=>{ 
     const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true);
-    if (confirmed) {
-      starters.splice(+b.dataset.i,1); 
-      renderStarters(); 
-    }
+    if (confirmed) { starters.splice(+b.dataset.i,1); renderStarters(); }
+  });
+  
+  tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
+      activeStarterIndex = +b.dataset.i;
+      currentCalendarDate = parseYMD(starters[activeStarterIndex].StartDate);
+      renderCalendar();
+      calendarModal.classList.add('visible');
   });
 }
 byId('addStarter').onclick=()=>{
   const Name=byId('stName').value.trim();
   const StaffID=byId('stId').value.trim();
   const StartDate=byId('stDate').value;
-  if(!Name||!StartDate){ showModal('Missing Information', 'Both Name and Start Date are required to add a starter.'); return; }
-  starters.push({Name,StaffID,StartDate});
+  if(!Name||!StartDate){ showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
+  starters.push({Name,StaffID,StartDate, blackoutDates: []}); // Add blackoutDates array
   renderStarters();
   byId('stName').value=''; byId('stId').value=''; byId('stDate').value='';
 };
 byId('clearStarters').onclick= async ()=>{ 
-  if (starters.length === 0) {
-    showModal('No Starters', 'There are no starters to clear.');
-    return;
-  }
-  const confirmed = await showModal('Confirm Clear', 'Are you sure you want to clear all starters?', true);
+  if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; }
+  const confirmed = await showModal('Confirm Clear', 'Are you sure?', true);
   if(confirmed){ starters=[]; renderStarters(); } 
 };
 byId('importStartersBtn').onclick=()=>byId('importStarters').click();
 byId('importStarters').onchange=e=>{
   const f=e.target.files[0]; if(!f) return;
   const fr=new FileReader();
-  fr.onload=()=>{ const lines=fr.result.split(/\r?\n/).filter(Boolean); lines.shift(); starters=lines.map(l=>{const [Name,StaffID,StartDate]=l.split(','); return {Name,StaffID,StartDate};}); renderStarters(); };
+  fr.onload=()=>{ const lines=fr.result.split(/\r?\n/).filter(Boolean); lines.shift(); starters=lines.map(l=>{const [Name,StaffID,StartDate]=l.split(','); return {Name,StaffID,StartDate, blackoutDates:[]};}); renderStarters(); };
   fr.readAsText(f);
 };
-document.addEventListener('DOMContentLoaded', renderStarters);
 
-
-/* --- BLOCKS --- */
-let shuffle=false; 
+/* --- BLOCKS & DURATION LOGIC --- */
 byId('shuffleBlocks').onclick=()=>{ 
-  shuffle=!shuffle; 
+  shuffle=!shuffle;
+  const btn = byId('shuffleBlocks');
+  btn.textContent = 'Toggle Shuffle: ' + (shuffle ? 'ON' : 'OFF');
+  btn.style.borderColor = shuffle ? 'var(--brand-secondary)' : 'var(--border-secondary)';
   showModal('Shuffle Toggled', 'Shuffle per-starter is now '+(shuffle?'ON':'OFF')); 
-  byId('shuffleBlocks').style.borderColor = shuffle ? 'var(--brand-secondary)' : 'var(--border-secondary)';
 };
 function getBlocks(){ return [
-  {outlet:"Oasis Food",count:Math.max(0,+byId('blk_food').value||0)},
-  {outlet:"Oasis Bar",count:Math.max(0,+byId('blk_obar').value||0)},
-  {outlet:"SOV South Floor",count:Math.max(3,+byId('blk_floor').value||0)},
-  {outlet:"SOV North Floor",count:Math.max(0,+byId('blk_nfloor').value||0)},
-  {outlet:"SOV South Bar",count:Math.max(0,+byId('blk_bar').value||0)},
-  {outlet:"SOV Dining",count:Math.max(0,+byId('blk_dining').value||0)},
+  {outlet:"Oasis Food",count:Math.max(0,+byId('blk_food').value||0)}, {outlet:"Oasis Bar",count:Math.max(0,+byId('blk_obar').value||0)},
+  {outlet:"SOV South Floor",count:Math.max(3,+byId('blk_floor').value||0)}, {outlet:"SOV North Floor",count:Math.max(0,+byId('blk_nfloor').value||0)},
+  {outlet:"SOV South Bar",count:Math.max(0,+byId('blk_bar').value||0)}, {outlet:"SOV Dining",count:Math.max(0,+byId('blk_dining').value||0)},
 ]; }
 
-/* --- BUILDER --- */
-const MIN_SHIFTS=15;
-byId('buildAll').onclick=buildAll;
+/* --- BUILDER LOGIC (HEAVILY MODIFIED) --- */
 const placedByStarter=new Map();
 const placedByStarterOutlet=new Map();
-function incPlaced(starterName,outlet){
-  placedByStarter.set(starterName,(placedByStarter.get(starterName)||0)+1);
-  if(!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName,new Map());
-  const m=placedByStarterOutlet.get(starterName);
-  m.set(outlet,(m.get(outlet)||0)+1);
-}
+function incPlaced(starterName,outlet){ placedByStarter.set(starterName,(placedByStarter.get(starterName)||0)+1); if(!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName,new Map()); const m=placedByStarterOutlet.get(starterName); m.set(outlet,(m.get(outlet)||0)+1); }
 function getPlaced(starterName){return placedByStarter.get(starterName)||0;}
 function getPlacedOutlet(starterName,outlet){return placedByStarterOutlet.get(starterName)?.get(outlet)||0;}
 function pickTime(outlet,i){const times=RULES[outlet]||["09:00"];return times[i%times.length];}
 function addRow(r){allRows.push(r);incPlaced(r.Starter,r.Outlet);}
 function makeRow(starter,dateObj,start,outlet,step){
-  const [hh,mm]=start.split(":").map(Number); const endH=(hh+5)%24,endM=mm;
+  // FEATURE 4: Use dynamic shift duration
+  const duration = +byId('shiftDuration').value || 5;
+  const [hh,mm]=start.split(":").map(Number); const endH=(hh+duration)%24,endM=mm;
   return {Starter:starter.Name,StaffID:starter.StaffID||'',Date:toYMD(dateObj),Start:start,End:pad2(endH)+":"+pad2(endM),Outlet:outlet,Step:step,Shift:start.replace(":","")+"-"+pad2(endH)+pad2(endM)+" "+outlet+" TRN"};
 }
+byId('buildAll').onclick=buildAll;
 function buildAll(){
-  if(!base.length){ showModal('Build Error', 'The Base Plan is empty. Please restore the preloaded base plan or import a valid one.'); return; }
-  if(!starters.length){ showModal('Build Error', 'Please add at least one starter before building the roster.'); return; }
+  if(!base.length){ showModal('Build Error', 'Base Plan is empty. Restore or import one.'); return; }
+  if(!starters.length){ showModal('Build Error', 'Add at least one starter.'); return; }
 
   allRows=[]; placedByStarter.clear(); placedByStarterOutlet.clear();
   const used=new Set();
-
   const norm=starters.map(s=>{ let d=parseYMD(s.StartDate); while(isSun(d)||isMon(d)) d.setDate(d.getDate()+1); return {...s,NormStart:d}; });
   const groups={}; for(const s of norm){ const k=toYMD(s.NormStart); (groups[k] ||= []).push(s); }
 
@@ -790,7 +464,8 @@ function buildAll(){
         st.remaining=Math.max(0, baseCounts[outlet]-getPlacedOutlet(s.Name,outlet));
       }
 
-      while( used.has(curKey+"|"+outlet) || !isOutletAllowedOnDate(outlet,cur) || !canWorkThisDay(s.Name,cur) ){
+      // FEATURE 1 Check: Skip day if it's a blackout date or other restrictions apply
+      while( s.blackoutDates.includes(curKey) || used.has(curKey+"|"+outlet) || !isOutletAllowedOnDate(outlet,cur) || !canWorkThisDay(s.Name,cur) ){
         cur=addWorkDay(cur); curKey=toYMD(cur); if(++safety>5000) break;
       }
 
@@ -808,6 +483,8 @@ function buildAll(){
     let rot=0, guard=0; const PREF=["SOV South Floor","SOV South Bar","Oasis Food","Oasis Bar","SOV North Floor","SOV Dining"];
     while(placed<MIN_SHIFTS && guard<5000){
       guard++; const key=toYMD(cur);
+      // FEATURE 1 Check: Also check for blackouts in fill-in logic
+      if (s.blackoutDates.includes(key)) { cur=addWorkDay(cur); continue; }
       let outlet=PREF.find(o=> !used.has(key+"|"+o) && isOutletAllowedOnDate(o,cur));
       if(!outlet || !canWorkThisDay(s.Name,cur)){ cur=addWorkDay(cur); continue; }
       const t=pickTime(outlet,rot++);
@@ -823,11 +500,11 @@ function buildAll(){
 function renderSched(rows){
   const tb=document.querySelector('#schedTbl tbody'); tb.innerHTML='';
   if (rows.length === 0) {
-    tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet. Click "Build Roster".</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`;
     return;
   }
   let curStarter=null;
-  for(const r of rows){
+  rows.forEach((r, index) => {
     if(r.Starter!==curStarter){
       curStarter=r.Starter;
       const trHead=document.createElement('tr'); trHead.className='group-row';
@@ -835,33 +512,40 @@ function renderSched(rows){
       tb.appendChild(trHead);
     }
     const tr=document.createElement('tr');
+    // FEATURE 3 Hook: Add class and data attribute for editing
+    tr.className = 'editable-shift';
+    tr.dataset.shiftIndex = index;
     tr.innerHTML=`<td>${r.Starter}</td><td>${r.StaffID||'N/A'}</td><td>${r.Date}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
     tb.appendChild(tr);
-  }
+  });
+  // FEATURE 3 Hook: Add single event listener to the table body
+  tb.onclick = (e) => {
+      const row = e.target.closest('.editable-shift');
+      if (row && row.dataset.shiftIndex) {
+          openEditShiftModal(parseInt(row.dataset.shiftIndex, 10));
+      }
+  };
 }
-document.addEventListener('DOMContentLoaded', () => renderSched([]));
 
-/* --- EXPORTS --- */
-byId('exportAllCsv').onclick=()=>{
-  if(!allRows.length){ showModal('Export Error', 'You must build a schedule before exporting.'); return; }
-  const header=['Starter','StaffID','Date','Start','End','Outlet','Step','Shift'];
-  const csv=[header.join(',')].concat(allRows.map(r=>[r.Starter,r.StaffID||'',r.Date,r.Start,r.End,r.Outlet,r.Step,r.Shift].join(','))).join('\n');
-  download('schedules.csv',csv);
-};
-byId('exportAllXls').onclick=()=>{
-  if(!allRows.length){ showModal('Export Error', 'You must build a schedule before exporting.'); return; }
-  const wsSchedule=XLSX.utils.json_to_sheet(allRows.map(r=>({
-    Starter:r.Starter,StaffID:r.StaffID||'',Date:r.Date,Start:r.Start,End:r.End,Outlet:r.Outlet,Step:r.Step,Shift:r.Shift
-  })));
-  const wsStarters=XLSX.utils.json_to_sheet(starters.map(s=>({
-    Name:s.Name,StaffID:s.StaffID||'',StartDate:s.StartDate
-  })));
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,wsSchedule,"Roster");
-  XLSX.utils.book_append_sheet(wb,wsStarters,"Starters");
-  XLSX.writeFile(wb,"roster_and_starters.xlsx");
-};
+/* --- BASE PLAN & EXPORTS (Largely Unchanged) --- */
+function parseBase(text){ const rows=[]; text.split(/\r?\n/).forEach(line=>{ const t=line.trim(); if(!t) return; const parts=t.split(','); if(parts.length<4) return; const [Path,Step,OffsetDays,...ShiftParts]=parts; const Shift=ShiftParts.join(',').trim(); rows.push({Path:Path.trim(),Step:+Step,OffsetDays:+OffsetDays,Shift}); }); rows.sort((a,b)=> a.Path.localeCompare(b.Path)||a.Step-b.Step); return rows; }
+byId('importBaseBtn').onclick=()=>byId('importBase').click();
+byId('importBase').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ byId('baseInput').value=fr.result; applyBase(); }; fr.readAsText(f); };
+byId('applyBase').onclick=applyBase; function applyBase(){ base=parseBase(byId('baseInput').value); if(!base.length) showModal('Base Plan Error', 'No valid base steps found.'); }
+byId('exportBase').onclick=()=>{ const header=['Path','Step','OffsetDays','Shift']; const csv=[header.join(',')].concat(base.map(r=>[r.Path,r.Step,r.OffsetDays,r.Shift].join(','))).join('\n'); download('base_plan_export.csv',csv); };
+const PRELOADED_BASE=`Path,Step,OffsetDays,Shift\nOasis Food (5h),1,0,0800-1300 Oasis Food TRN\nOasis Food (5h),2,0,1100-1600 Oasis Food TRN\nOasis Food (5h),3,0,1600-2100 Oasis Food TRN\nSOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN\nSOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN\nSOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN\nSOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN\nSOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN\nSOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN\nSOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN\nSOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN\nSOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN\nSOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN\nSOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN\nSOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN\nSOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN\nSOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN\nSOV Dining (5h),18,0,1700-2200 SOV Dining TRN\nSOV South Bar (5h),19,0,0600-1100 SOV South Bar TRN\nSOV South Bar (5h),20,0,1000-1500 SOV South Bar TRN\nSOV South Bar (5h),21,0,1400-1900 SOV South Bar TRN\nSOV South Bar (5h),22,0,1800-2300 SOV South Bar TRN\nSOV South Bar (5h),23,0,2200-0300 SOV South Bar TRN\nOasis Bar (5h),24,0,0600-1100 Oasis Bar TRN\nOasis Bar (5h),25,0,1700-2200 Oasis Bar TRN\nSOV North Floor (5h),26,0,1800-2300 SOV North Floor TRN`;
+function restoreBase(auto=false){ const ta=byId('baseInput'); if(!ta) return; if(auto && ta.value.trim()) return; ta.value=PRELOADED_BASE; const btn=byId('applyBase'); if(btn) btn.click(); }
+byId('restoreBase').onclick=()=>restoreBase(false);
+byId('exportAllCsv').onclick=()=>{ if(!allRows.length){ showModal('Export Error', 'Build a schedule first.'); return; } const header=['Starter','StaffID','Date','Start','End','Outlet','Step','Shift']; const csv=[header.join(',')].concat(allRows.map(r=>[r.Starter,r.StaffID||'',r.Date,r.Start,r.End,r.Outlet,r.Step,r.Shift].join(','))).join('\n'); download('schedules.csv',csv); };
+byId('exportAllXls').onclick=()=>{ if(!allRows.length){ showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule=XLSX.utils.json_to_sheet(allRows.map(r=>({ Starter:r.Starter,StaffID:r.StaffID||'',Date:r.Date,Start:r.Start,End:r.End,Outlet:r.Outlet,Step:r.Step,Shift:r.Shift }))); const wsStarters=XLSX.utils.json_to_sheet(starters.map(s=>({ Name:s.Name,StaffID:s.StaffID||'',StartDate:s.StartDate }))); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,wsSchedule,"Roster"); XLSX.utils.book_append_sheet(wb,wsStarters,"Starters"); XLSX.writeFile(wb,"roster_and_starters.xlsx"); };
 function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download=name; a.click(); }
+
+/* --- INITIALIZATION --- */
+document.addEventListener('DOMContentLoaded', () => {
+    restoreBase(true);
+    renderStarters();
+    renderSched([]);
+});
 
 /* --- PWA: register service worker --- */
 if("serviceWorker" in navigator && window.location.protocol === 'https:') {
