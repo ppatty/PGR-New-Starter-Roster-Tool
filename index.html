@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>PGR Roster Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="An AI-powered, professional, feature-rich roster creator for PGR at The Star Gold Coast.">
+  <meta name="description" content="A professional tool for creating new team member training rosters for PGR at The Star Gold Coast.">
   <meta name="theme-color" content="#111827" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -88,10 +88,6 @@
     .calendar-day:not(.empty) { cursor: pointer; transition: background-color 0.2s; }
     .calendar-day:not(.empty):hover { background-color: var(--bg-tertiary); }
     .calendar-day.blackout { background-color: var(--warn-primary); color: #422006; font-weight: 600; }
-    #ai-modal .modal-content { max-width: 600px; }
-    #ai-content { white-space: pre-wrap; line-height: 1.6; max-height: 60vh; overflow-y: auto; }
-    #ai-content h4 { margin: 1.5rem 0 0.5rem; font-size: 1rem; color: var(--brand-secondary); }
-    #ai-content ul { padding-left: 1.5rem; }
     @media (max-width: 1024px) { .app { grid-template-columns: 1fr; } .side { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border-primary); } .toolbar { margin: -2rem -2rem 0; } }
     @media (max-width: 768px) { .main { padding: 1.5rem; } .toolbar { margin: -1.5rem -1.5rem 0; } .g2, .g3, .g4 { grid-template-columns: 1fr; } .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; } }
   </style>
@@ -106,10 +102,11 @@
         <h1>PGR Roster Creator</h1>
         <div class="subbrand">The Star Gold Coast</div>
         <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Created by Patrick Price 2025</div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Version 7.0</div>
       </div>
     </div>
     <div class="nav-group">
-      <h2>Summary</h2>
+      <h2>Roster Rules</h2>
       <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div></div>
     </div>
   </aside>
@@ -117,33 +114,94 @@
   <main class="main">
     <div class="toolbar" role="region" aria-label="Global actions">
       <button id="buildAll" class="btn primary" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>Build Roster</button>
-      <button id="huddleTopicsBtn" class="btn" type="button">✨ Suggest Huddle Topics</button>
-      <button id="exportAllCsv" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>CSV</button>
-      <button id="exportAllXls" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>Excel</button>
+      <button id="clearRosterBtn" class="btn warn" type="button">Clear Roster</button>
+      <button id="exportAllCsv" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export CSV</button>
+      <button id="exportAllXls" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>Export Excel</button>
       <span id="conflicts" aria-live="polite">—</span>
     </div>
 
-    <section class="card" aria-labelledby="base-h"><div class="hd"><h2 id="base-h">Base Plan</h2><span class="sub">Preloaded. Import optional.</span></div><div class="bd grid g2"><div><label for="baseInput">Edit base CSV</label><textarea id="baseInput" spellcheck="false"></textarea></div><div><label>Actions</label><div class="grid g2"><button id="importBaseBtn" class="btn" type="button">Import CSV</button><button id="applyBase" class="btn" type="button">Apply</button><button id="exportBase" class="btn" type="button">Export CSV</button><button id="restoreBase" class="btn warn" type="button">Restore Preloaded</button><input type="file" id="importBase" accept=".csv" class="visually-hidden" /></div><div class="text-sm text-muted mt-4"><b>Rules Snapshot:</b><ul style="margin:0.5rem 0 0; padding-left:1rem; color: var(--text-secondary);"><li>First two days fixed 09:00: Welcome Day, PGR F&B On boarding</li><li>SOV North Floor 18:00 Fri/Sat only</li><li>Blocks remain consecutive per outlet</li></ul></div></div></div></section>
+    <section class="card" aria-labelledby="base-h">
+      <div class="hd"><h2 id="base-h">Training Plan</h2><span class="sub">This is the template for all training rosters</span></div>
+      <div class="bd grid g2">
+        <div>
+          <label for="baseInput">Edit the CSV for the Training Plan</label>
+          <textarea id="baseInput" spellcheck="false"></textarea>
+        </div>
+        <div>
+          <label>Actions</label>
+          <div class="grid g2">
+            <button id="importBaseBtn" class="btn" type="button">Import Plan</button>
+            <button id="applyBase" class="btn" type="button">Apply Changes</button>
+            <button id="exportBase" class="btn" type="button">Export Plan</button>
+            <button id="restoreBase" class="btn warn" type="button">Restore Default</button>
+            <input type="file" id="importBase" accept=".csv" class="visually-hidden" />
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <section class="card" aria-labelledby="starters-h"><div class="hd"><h2 id="starters-h">Starters</h2><span class="sub">Add, import, or clear</span></div><div class="bd"><div class="grid g3"><div><label for="stName">Name</label><input id="stName" placeholder="Dakota Parata"></div><div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div><div><label for="stDate">Start Date</label><input id="stDate" type="date"></div></div><div class="grid g4 mt-4"><button id="addStarter" class="btn primary" type="button">Add Starter</button><button id="importStartersBtn" class="btn" type="button">Import CSV</button><button id="exportStartersBtn" class="btn" type="button">Export CSV</button><button id="clearStarters" class="btn" type="button">Clear All</button><input type="file" id="importStarters" accept=".csv" class="visually-hidden" /></div><div class="mt-4 table-wrapper"><table id="startersTbl"><thead><tr><th>#</th><th>Name</th><th>StaffID</th><th>Start</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
+    <section class="card" aria-labelledby="starters-h">
+      <div class="hd"><h2 id="starters-h">Step 1: Add New Team Members</h2><span class="sub">Add manually or import a CSV file</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <div><label for="stName">Full Name</label><input id="stName" placeholder="Dakota Parata"></div>
+          <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
+          <div><label for="stDate">First Day of Work</label><input id="stDate" type="date"></div>
+        </div>
+        <div class="grid g4 mt-4">
+          <button id="addStarter" class="btn primary" type="button">Add Person</button>
+          <button id="importStartersBtn" class="btn" type="button">Import from CSV</button>
+          <button id="exportStartersBtn" class="btn" type="button">Export to CSV</button>
+          <button id="clearStarters" class="btn" type="button">Clear All People</button>
+          <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
+        </div>
+        <div class="mt-4 table-wrapper">
+          <table id="startersTbl">
+            <thead><tr><th>#</th><th>Name</th><th>Staff ID</th><th>Start Date</th><th>Days Off</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-    <section class="card" aria-labelledby="blocks-h"><div class="hd"><h2 id="blocks-h">Default Blocks</h2><span class="sub">Consecutive per outlet. Shuffle optional.</span></div><div class="bd"><div class="grid g3"><div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div><div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0"></div><div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div><div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div><div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="2" min="0"></div><div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div></div><div class="mt-4"><button id="shuffleBlocks" class="btn" type="button">Toggle Shuffle (Per-Starter)</button></div></div></section>
+    <section class="card" aria-labelledby="blocks-h">
+      <div class="hd"><h2 id="blocks-h">Step 2: Set Training Shifts</h2><span class="sub">Set how many training shifts each person gets per area</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
+          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="2" min="0"></div>
+          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
+          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="1" min="0"></div>
+          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="1" min="0"></div>
+          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
+        </div>
+        <div class="mt-4">
+          <label>Randomize Shift Order?</label>
+          <button id="shuffleBlocks" class="btn" type="button">Shuffle: OFF</button>
+        </div>
+      </div>
+    </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd">
-        <h2 id="schedule-h">Generated Schedule</h2>
-        <button id="aiSummaryBtn" class="btn" type="button" style="display: none;">✨ Generate AI Summary</button>
+      <div class="hd"><h2 id="schedule-h">Step 3: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="bd" style="padding: 0;">
+        <div class="table-wrapper">
+          <table id="schedTbl">
+            <thead><tr><th>Team Member</th><th>Staff ID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Shift #</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
-      <div class="bd" style="padding: 0;"><div class="table-wrapper"><table id="schedTbl"><thead><tr><th>Starter</th><th>StaffID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th></tr></thead><tbody></tbody></table></div></div>
     </section>
   </main>
 </div>
 
 <!-- Modals -->
 <div id="modal" class="modal-overlay"><div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title"><h3 id="modal-title"></h3><p id="modal-text"></p><div class="modal-actions"><button id="modal-cancel" class="btn">Cancel</button><button id="modal-confirm" class="btn primary">Confirm</button></div></div></div>
-<div id="ai-modal" class="modal-overlay"><div class="modal-content"><h3 id="ai-title"></h3><div id="ai-content"></div><div class="modal-actions" style="margin-top: 1.5rem;"><button id="ai-close" class="btn primary">Close</button></div></div></div>
+<div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost">&gt;</button></div><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary">Done</button></div></div></div>
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 </body>
 <script>
 // --- APP INITIALIZATION ---
@@ -154,6 +212,8 @@ window.onload = () => {
     let allRows = [];
     let shuffle = false;
     let modalResolve;
+    let activeStarterIndex = -1;
+    let currentCalendarDate = new Date();
 
     const MIN_SHIFTS = 15;
     const MANDATORY_SESSIONS = [
@@ -168,12 +228,13 @@ window.onload = () => {
         "SOV South Bar": ["06:00", "10:00", "14:00", "18:00", "22:00"],
         "SOV Dining": ["17:00"]
     };
-    const PRELOADED_BASE = `Path,Step,OffsetDays,Shift\nOasis Food (5h),1,0,0800-1300 Oasis Food TRN\nOasis Food (5h),2,0,1100-1600 Oasis Food TRN\nOasis Food (5h),3,0,1600-2100 Oasis Food TRN\nSOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN\nSOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN\nSOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN\nSOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN\nSOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN\nSOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN\nSOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN\nSOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN\nSOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN\nSOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN\nSOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN\nSOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN\nSOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN\nSOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN\nSOV Dining (5h),18,0,1700-2200 SOV Dining TRN\nSOV South Bar (5h),19,0,0600-1100 SOV South Bar TRN\nSOV South Bar (5h),20,0,1000-1500 SOV South Bar TRN\nSOV South Bar (5h),21,0,1400-1900 SOV South Bar TRN\nSOV South Bar (5h),22,0,1800-2300 SOV South Bar TRN\nSOV South Bar (5h),23,0,2200-0300 SOV South Bar TRN\nOasis Bar (5h),24,0,0600-1100 Oasis Bar TRN\nOasis Bar (5h),25,0,1700-2200 Oasis Bar TRN\nSOV North Floor (5h),26,0,1800-2300 SOV North Floor TRN`;
+    const PRELOADED_BASE = `Path,Step,OffsetDays,Shift\nOasis Food (5h),1,0,0800-1300 Oasis Food TRN\nOasis Food (5h),2,0,1100-1600 Oasis Food TRN\nOasis Food (5h),3,0,1600-2100 Oasis Food TRN\nSOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN\nSOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN\nSOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN\nSOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN\nSOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN\nSOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN\nSOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN\nSOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN\nSOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN\nSOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN\nSOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN\nSOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN\nSOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN\nSOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN\nSOV Dining (5h),18,0,1700-2200 SOV Dining TRN\nSOV South Bar (5h),19,0,1800-2300 SOV South Bar TRN\nOasis Bar (5h),20,0,0600-1100 Oasis Bar TRN\nOasis Bar (5h),21,0,1700-2200 Oasis Bar TRN\nSOV North Floor (5h),22,0,1800-2300 SOV North Floor TRN`;
 
     // --- HELPER FUNCTIONS ---
     const byId = id => document.getElementById(id);
     const pad2 = n => (n < 10 ? "0" : "") + n;
     const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const toDMY = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
     const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
     const isMon = d => d.getDay() === 1;
     const isSun = d => d.getDay() === 0;
@@ -192,38 +253,6 @@ window.onload = () => {
         return new Promise(resolve => { modalResolve = resolve; });
     }
 
-    // --- GEMINI API FUNCTIONS ---
-    function showAIModal(title, content) {
-        byId('ai-title').textContent = title;
-        byId('ai-content').innerHTML = content;
-        byId('ai-modal').classList.add('visible');
-    }
-    async function callGemini(prompt, button) {
-        const originalText = button.innerHTML;
-        button.innerHTML = 'Thinking...';
-        button.disabled = true;
-        try {
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            const apiKey = ""; // Handled by environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) { throw new Error(`API request failed with status ${response.status}`); }
-            const result = await response.json();
-            if (result.candidates && result.candidates.length > 0) {
-                return result.candidates[0].content.parts[0].text;
-            } else {
-                return "The AI couldn't provide a response. Please try again.";
-            }
-        } catch (error) {
-            console.error("Gemini API call failed:", error);
-            return `There was an error contacting the AI: ${error.message}.`;
-        } finally {
-            button.innerHTML = originalText;
-            button.disabled = false;
-        }
-    }
-
     // --- CORE ROSTERING FUNCTIONS ---
     function isMandatory(r) { return r.Outlet === MANDATORY_SESSIONS[0].label || r.Outlet === MANDATORY_SESSIONS[1].label; }
     function shiftsInLastNDaysFor(starterName, dateObj, n) {
@@ -239,6 +268,64 @@ window.onload = () => {
     }
     function canWorkThisDay(starterName, dateObj) { return shiftsInLastNDaysFor(starterName, dateObj, 10) < 8; }
 
+    // --- UI & VISUALS ---
+    function fireChampagnePop() {
+        const end = Date.now() + (2 * 1000);
+        const colors = ['#f9fafb', '#f59e0b'];
+
+        (function frame() {
+            confetti({
+                particleCount: 2,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors
+            });
+            confetti({
+                particleCount: 2,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    }
+
+    // --- CALENDAR FUNCTIONS ---
+    function renderCalendar() {
+        const calendarTitle = byId('calendar-title');
+        const calendarDays = byId('calendar-days');
+        const weekdaysContainer = byId('calendar-weekdays');
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+        calendarTitle.textContent = `${currentCalendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
+        calendarDays.innerHTML = '';
+        weekdaysContainer.innerHTML = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const starter = starters[activeStarterIndex];
+        if (!starter) return;
+        for (let i = 0; i < firstDayOfMonth; i++) { calendarDays.innerHTML += `<div class="calendar-day empty"></div>`; }
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+            dayEl.textContent = i;
+            const dateStr = toYMD(new Date(year, month, i));
+            if (starter.blackoutDates.includes(dateStr)) { dayEl.classList.add('blackout'); }
+            dayEl.onclick = () => {
+                const index = starter.blackoutDates.indexOf(dateStr);
+                if (index > -1) { starter.blackoutDates.splice(index, 1); } else { starter.blackoutDates.push(dateStr); }
+                renderStarters();
+                dayEl.classList.toggle('blackout');
+            };
+            calendarDays.appendChild(dayEl);
+        }
+    }
+
     // --- BASE PLAN MANAGEMENT ---
     function parseBase(text) { const rows = []; text.split(/\r?\n/).forEach(line => { const t = line.trim(); if (!t) return; const parts = t.split(','); if (parts.length < 4) return; const [Path, Step, OffsetDays, ...ShiftParts] = parts; const Shift = ShiftParts.join(',').trim(); rows.push({ Path: Path.trim(), Step: +Step, OffsetDays: +OffsetDays, Shift }); }); rows.sort((a, b) => a.Path.localeCompare(b.Path) || a.Step - b.Step); return rows; }
     function applyBase() { base = parseBase(byId('baseInput').value); if (!base.length) showModal('Base Plan Error', 'No valid base steps found.'); }
@@ -249,14 +336,15 @@ window.onload = () => {
     // --- STARTER MANAGEMENT ---
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
-        if (starters.length === 0) { tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`; return; }
-        tb.innerHTML = starters.map((s, i) => `<tr><td>${i + 1}</td><td>${s.Name}</td><td>${s.StaffID || 'N/A'}</td><td>${s.StartDate}</td><td style="text-align:right"><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`).join('');
+        if (starters.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`; return; }
+        tb.innerHTML = starters.map((s, i) => `<tr><td>${i + 1}</td><td>${s.Name}</td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); renderStarters(); } });
+        tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => { activeStarterIndex = +b.dataset.i; currentCalendarDate = parseYMD(starters[activeStarterIndex].StartDate); renderCalendar(); byId('calendar-modal').classList.add('visible'); });
     }
     function addStarter() {
         const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = byId('stDate').value;
         if (!Name || !StartDate) { showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
-        starters.push({ Name, StaffID, StartDate });
+        starters.push({ Name, StaffID, StartDate, blackoutDates: [] });
         renderStarters();
         byId('stName').value = ''; byId('stId').value = ''; byId('stDate').value = '';
     }
@@ -268,7 +356,7 @@ window.onload = () => {
         fr.onload = () => { 
             const lines = fr.result.split(/\r?\n/).filter(Boolean); 
             lines.shift(); 
-            starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate }; }); 
+            starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate, blackoutDates: [] }; }); 
             renderStarters(); 
         }; 
         fr.readAsText(f);
@@ -282,10 +370,24 @@ window.onload = () => {
     }
 
     // --- BUILDER & RENDER LOGIC ---
-    function buildAll() {
+    async function buildAll() {
+        if (allRows.length > 0) {
+            const confirmed = await showModal('Roster Exists', 'A schedule already exists. Do you want to replace it?', true);
+            if (!confirmed) return;
+        }
         if (!base.length) { showModal('Build Error', 'Base Plan is empty. Restore or import one.'); return; }
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
-        allRows = []; const placedByStarter = new Map(); const placedByStarterOutlet = new Map();
+        
+        // FIX: Reset tracking variables before every build
+        allRows = []; 
+        const placedByStarter = new Map(); 
+        const placedByStarterOutlet = new Map();
+        
+        function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
+        function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
+        function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
+        function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
+
         const used = new Set();
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d) || isMon(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
@@ -316,7 +418,7 @@ window.onload = () => {
                     st.currentOutlet = outlet;
                     st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
-                while (used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
+                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
                 const t = pickTime(outlet, allRows.length);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(curKey + "|" + outlet);
@@ -330,6 +432,7 @@ window.onload = () => {
             let rot = 0, guard = 0; const PREF = ["SOV South Floor", "SOV South Bar", "Oasis Food", "Oasis Bar", "SOV North Floor", "SOV Dining"];
             while (placed < MIN_SHIFTS && guard < 5000) {
                 guard++; const key = toYMD(cur);
+                if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
                 if (!outlet || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); continue; }
                 const t = pickTime(outlet, rot++);
@@ -340,7 +443,19 @@ window.onload = () => {
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
         byId('conflicts').textContent = `Built ${allRows.length} shifts for ${starters.length} starter(s)`;
         renderSched(allRows);
-        byId('aiSummaryBtn').style.display = 'inline-flex';
+        fireChampagnePop();
+    }
+    async function clearRoster() {
+        if (allRows.length === 0) {
+            showModal('Roster Empty', 'There is no schedule to clear.');
+            return;
+        }
+        const confirmed = await showModal('Clear Roster', 'Are you sure you want to clear the entire generated schedule?', true);
+        if (confirmed) {
+            allRows = [];
+            renderSched([]);
+            byId('conflicts').textContent = '—';
+        }
     }
     function renderSched(rows) {
         const tb = document.querySelector('#schedTbl tbody'); tb.innerHTML = '';
@@ -354,25 +469,22 @@ window.onload = () => {
                 tb.appendChild(trHead);
             }
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${r.Date}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
+            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
             tb.appendChild(tr);
         }
     }
     function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
     function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
-    const placedByStarter = new Map(); const placedByStarterOutlet = new Map();
-    function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
-    function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
-    function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
     function pickTime(outlet, i) { const times = RULES[outlet] || ["09:00"]; return times[i % times.length]; }
-    function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
     
     // --- ATTACH EVENT LISTENERS ---
     byId('modal-cancel').onclick = () => { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(false); };
     byId('modal-confirm').onclick = () => { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(true); };
     byId('modal').onclick = (e) => { if (e.target === byId('modal')) { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(false); } };
-    byId('ai-close').onclick = () => byId('ai-modal').classList.remove('visible');
-    byId('ai-modal').onclick = (e) => { if (e.target === byId('ai-modal')) byId('ai-modal').classList.remove('visible'); };
+    byId('prev-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
+    byId('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
+    byId('calendar-close').onclick = () => byId('calendar-modal').classList.remove('visible');
+    byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) byId('calendar-modal').classList.remove('visible'); };
     byId('addStarter').onclick = addStarter;
     byId('clearStarters').onclick = clearStarters;
     byId('importStartersBtn').onclick = () => byId('importStarters').click();
@@ -385,25 +497,14 @@ window.onload = () => {
         showModal('Shuffle Toggled', 'Shuffle per-starter is now ' + (shuffle ? 'ON' : 'OFF'));
     };
     byId('buildAll').onclick = buildAll;
+    byId('clearRosterBtn').onclick = clearRoster;
     byId('importBaseBtn').onclick = () => byId('importBase').click();
     byId('importBase').onchange = e => { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { byId('baseInput').value = fr.result; applyBase(); }; fr.readAsText(f); };
     byId('applyBase').onclick = applyBase;
     byId('exportBase').onclick = exportBase;
     byId('restoreBase').onclick = () => restoreBase(false);
-    byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', r.Date, r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
-    byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: r.Date, Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
-    byId('huddleTopicsBtn').onclick = async (e) => {
-        const prompt = "You are a helpful assistant for a supervisor in a high-end casino's Private Gaming Rooms (PGR). Suggest three distinct, concise huddle topics for a pre-shift briefing. Format the response with a title for each topic. 1. A topic focused on exceptional guest service. 2. A topic focused on teamwork and communication. 3. A fun, lighthearted icebreaker question to ask the team.";
-        const response = await callGemini(prompt, e.target);
-        showAIModal('AI Huddle Topics', response);
-    };
-    byId('aiSummaryBtn').onclick = async (e) => {
-        if (allRows.length === 0) { showModal('No Roster', 'Please build a roster before generating a summary.'); return; }
-        const rosterCSV = ['Starter','Date','Start','Outlet'].concat(allRows.map(r=>[r.Starter,r.Date,r.Start,r.Outlet].join(','))).join('\n');
-        const prompt = `You are a helpful assistant for a supervisor in a high-end casino's Private Gaming Rooms (PGR). Below is a roster in CSV format for new trainees. Provide a concise, professional summary of the roster. Highlight the number of starters, the date range of the roster, and identify any days that might be challenging (e.g., many people starting, or key outlets being busy). Do not just list the shifts. Provide a high-level overview.\n\nROSTER DATA:\n${rosterCSV}`;
-        const response = await callGemini(prompt, e.target);
-        showAIModal('AI Roster Summary', response);
-    };
+    byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
+    byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
 
     // --- INITIAL SETUP ---
     restoreBase(true);
