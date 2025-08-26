@@ -7,7 +7,7 @@
   <meta name="description" content="A professional tool for creating new team member training rosters for PGR at The Star Gold Coast.">
   <meta name="theme-color" content="#1a1a1a" />
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="https://i.imgur.com/O1hP4y5.jpeg">
+  <link rel="apple-touch-icon" href="logo.jpg">
 
   <style>
     /* --- Modern Font: Inter --- */
@@ -119,7 +119,7 @@
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <img src="https://i.imgur.com/O1hP4y5.jpeg" alt="PGR Logo" class="logo">
+      <img src="logo.jpg" alt="PGR Logo" class="logo">
       <div class="product">
         <h1>PGR</h1>
         <div class="subbrand">Private Gaming Rooms</div>
@@ -198,7 +198,6 @@
   </main>
 </div>
 
-<!-- Modals -->
 <div id="modal" class="modal-overlay"><div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title"><h3 id="modal-title"></h3><p id="modal-text"></p><div class="modal-actions"><button id="modal-cancel" class="btn">Cancel</button><button id="modal-confirm" class="btn primary">Confirm</button></div></div></div>
 <div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost">&gt;</button></div><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary">Done</button></div></div></div>
 
@@ -215,6 +214,7 @@ window.onload = () => {
     let modalResolve;
     let activeStarterIndex = -1;
     let currentCalendarDate = new Date();
+    let base = [];
 
     const MIN_SHIFTS = 15;
     const MANDATORY_SESSIONS = [
@@ -361,6 +361,7 @@ window.onload = () => {
         const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate].join(','))).join('\n');
         download('starters.csv', csv);
     }
+    function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
 
     // --- BUILDER & RENDER LOGIC ---
     async function buildAll() {
