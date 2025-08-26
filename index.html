@@ -5,24 +5,46 @@
   <title>PGR Roster Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="A professional tool for creating new team member training rosters for PGR at The Star Gold Coast.">
-  <meta name="theme-color" content="#111827" />
+  <meta name="theme-color" content="#1a1a1a" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <style>
     /* --- Modern Font: Inter --- */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
 
     /* --- CSS Variables & Base Styles --- */
     :root {
-      --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-      --bg-primary: #030712; --bg-secondary: #111827; --bg-tertiary: #1f2937; --surface: #1a2332;
-      --text-primary: #f9fafb; --text-secondary: #9ca3af; --text-muted: #6b7280;
-      --border-primary: #374151; --border-secondary: #4b5563;
-      --brand-primary: #3b82f6; --brand-secondary: #14b8a6; --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
-      --warn-primary: #f59e0b; --ok-primary: #22c55e;
-      --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+      --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      --font-serif: 'Cinzel', serif;
+      
+      --bg-primary: #100c0c;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #2c2c2c;
+      --surface: #222222;
+      
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-muted: #737373;
+
+      --border-primary: #404040;
+      --border-secondary: #525252;
+
+      --brand-primary: #B92B27; /* Deep Red */
+      --brand-secondary: #D4AF37;/* Rich Gold */
+      --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, #E74C3C 100%);
+
+      --warn-primary: #f59e0b;
+      --ok-primary: #22c55e;
+
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
     }
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -31,18 +53,18 @@
     .side { position: sticky; top: 0; height: 100vh; padding: 1.5rem; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); display: flex; flex-direction: column; gap: 2rem; }
     .main { padding: 2rem; display: grid; gap: 1.5rem; align-content: start; }
     .brand { display: flex; align-items: center; gap: 0.75rem; }
-    .logo { width: 40px; height: 40px; color: var(--brand-primary); }
-    .brand .product h1 { font-size: 1rem; font-weight: 600; margin: 0; line-height: 1.2; }
+    .logo { width: 50px; height: 50px; border-radius: var(--radius-md); }
+    .brand .product h1 { font-family: var(--font-serif); font-size: 1.25rem; font-weight: 700; margin: 0; line-height: 1.2; color: var(--brand-secondary); }
     .brand .product .subbrand { font-size: 0.75rem; color: var(--text-secondary); }
     .nav-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .nav-group h2 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
+    .nav-group h2 { font-family: var(--font-serif); font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
     .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .chip { display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; border-radius: var(--radius-md); background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
-    .toolbar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 1rem; margin: -2rem -2rem 0; background: linear-gradient(180deg, rgba(3, 7, 18, 0.95) 70%, transparent 100%); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-primary); }
+    .toolbar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 1rem; margin: -2rem -2rem 0; background: linear-gradient(180deg, rgba(16, 12, 12, 0.95) 70%, transparent 100%); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-primary); }
     #conflicts { margin-left: auto; font-size: 0.875rem; color: var(--text-secondary); background-color: var(--bg-tertiary); padding: 0.5rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-primary); }
     .card { background-color: var(--surface); border: 1px solid var(--border-primary); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
     .card .hd { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-primary); background-color: var(--bg-tertiary); }
-    .card .hd h2 { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; color: var(--text-secondary); }
+    .card .hd h2 { font-family: var(--font-serif); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; color: var(--text-secondary); }
     .card .hd .sub { font-size: 0.875rem; color: var(--text-muted); }
     .card .bd { padding: 1.5rem; }
     .grid { display: grid; gap: 1rem; }
@@ -69,15 +91,15 @@
     th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-primary); white-space: nowrap; }
     thead th { position: sticky; top: 0; background-color: var(--bg-tertiary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); z-index: 2; }
     tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background-color: #1f293799; }
-    .group-row td { position: sticky; top: 48px; background-color: #1a2332; font-weight: 600; color: var(--text-primary); z-index: 1; }
+    tbody tr:hover { background-color: #2c2c2c; }
+    .group-row td { position: sticky; top: 48px; background-color: #222222; font-weight: 700; color: var(--brand-secondary); z-index: 1; }
     .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); }
     .mt-4 { margin-top: 1rem; }
     .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
     .modal-overlay.visible { opacity: 1; visibility: visible; }
     .modal-content { background-color: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border-primary); box-shadow: var(--shadow-lg); padding: 2rem; width: 100%; max-width: 400px; transform: scale(0.95); transition: transform 0.3s; }
     .modal-overlay.visible .modal-content { transform: scale(1); }
-    .modal-content h3 { margin: 0 0 0.5rem; font-size: 1.125rem; font-weight: 600; }
+    .modal-content h3 { font-family: var(--font-serif); margin: 0 0 0.5rem; font-size: 1.25rem; font-weight: 700; color: var(--brand-secondary); }
     .modal-content p { margin: 0 0 1.5rem; color: var(--text-secondary); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
     #calendar-modal .modal-content { max-width: 340px; }
@@ -87,7 +109,7 @@
     .calendar-weekday { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
     .calendar-day:not(.empty) { cursor: pointer; transition: background-color 0.2s; }
     .calendar-day:not(.empty):hover { background-color: var(--bg-tertiary); }
-    .calendar-day.blackout { background-color: var(--warn-primary); color: #422006; font-weight: 600; }
+    .calendar-day.blackout { background-color: var(--brand-primary); color: var(--text-primary); font-weight: 600; }
     @media (max-width: 1024px) { .app { grid-template-columns: 1fr; } .side { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border-primary); } .toolbar { margin: -2rem -2rem 0; } }
     @media (max-width: 768px) { .main { padding: 1.5rem; } .toolbar { margin: -1.5rem -1.5rem 0; } .g2, .g3, .g4 { grid-template-columns: 1fr; } .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; } }
   </style>
@@ -97,10 +119,10 @@
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7L12 12M12 22V12M22 7L12 12M17 4.5L7 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <img src="https://i.imgur.com/O1hP4y5.jpeg" alt="PGR Logo" class="logo">
       <div class="product">
-        <h1>PGR Roster Creator</h1>
-        <div class="subbrand">The Star Gold Coast</div>
+        <h1>PGR</h1>
+        <div class="subbrand">Private Gaming Rooms</div>
         <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Created by Patrick Price 2025</div>
         <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Version 7.0</div>
       </div>
@@ -114,31 +136,11 @@
   <main class="main">
     <div class="toolbar" role="region" aria-label="Global actions">
       <button id="buildAll" class="btn primary" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>Build Roster</button>
-      <button id="clearRosterBtn" class="btn warn" type="button">Clear Roster</button>
+      <button id="clearRosterBtn" class="btn" type="button">Clear Roster</button>
       <button id="exportAllCsv" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export CSV</button>
       <button id="exportAllXls" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>Export Excel</button>
       <span id="conflicts" aria-live="polite">—</span>
     </div>
-
-    <section class="card" aria-labelledby="base-h">
-      <div class="hd"><h2 id="base-h">Training Plan</h2><span class="sub">This is the template for all training rosters</span></div>
-      <div class="bd grid g2">
-        <div>
-          <label for="baseInput">Edit the CSV for the Training Plan</label>
-          <textarea id="baseInput" spellcheck="false"></textarea>
-        </div>
-        <div>
-          <label>Actions</label>
-          <div class="grid g2">
-            <button id="importBaseBtn" class="btn" type="button">Import Plan</button>
-            <button id="applyBase" class="btn" type="button">Apply Changes</button>
-            <button id="exportBase" class="btn" type="button">Export Plan</button>
-            <button id="restoreBase" class="btn warn" type="button">Restore Default</button>
-            <input type="file" id="importBase" accept=".csv" class="visually-hidden" />
-          </div>
-        </div>
-      </div>
-    </section>
 
     <section class="card" aria-labelledby="starters-h">
       <div class="hd"><h2 id="starters-h">Step 1: Add New Team Members</h2><span class="sub">Add manually or import a CSV file</span></div>
@@ -228,8 +230,7 @@ window.onload = () => {
         "SOV South Bar": ["06:00", "10:00", "14:00", "18:00", "22:00"],
         "SOV Dining": ["17:00"]
     };
-    const PRELOADED_BASE = `Path,Step,OffsetDays,Shift\nOasis Food (5h),1,0,0800-1300 Oasis Food TRN\nOasis Food (5h),2,0,1100-1600 Oasis Food TRN\nOasis Food (5h),3,0,1600-2100 Oasis Food TRN\nSOV South Floor (5h),4,0,0900-1400 SOV South Floor TRN\nSOV South Floor (5h),5,0,1000-1500 SOV South Floor TRN\nSOV South Floor (5h),6,0,1100-1600 SOV South Floor TRN\nSOV South Floor (5h),7,0,1200-1700 SOV South Floor TRN\nSOV South Floor (5h),8,0,1300-1800 SOV South Floor TRN\nSOV South Floor (5h),9,0,1400-1900 SOV South Floor TRN\nSOV South Floor (5h),10,0,1500-2000 SOV South Floor TRN\nSOV South Floor (5h),11,0,1600-2100 SOV South Floor TRN\nSOV South Floor (5h),12,0,1700-2200 SOV South Floor TRN\nSOV South Floor (5h),13,0,1800-2300 SOV South Floor TRN\nSOV South Floor (5h),14,0,1900-0000 SOV South Floor TRN\nSOV South Floor (5h),15,0,2000-0100 SOV South Floor TRN\nSOV South Floor (5h),16,0,2100-0200 SOV South Floor TRN\nSOV South Floor (5h),17,0,2200-0300 SOV South Floor TRN\nSOV Dining (5h),18,0,1700-2200 SOV Dining TRN\nSOV South Bar (5h),19,0,1800-2300 SOV South Bar TRN\nOasis Bar (5h),20,0,0600-1100 Oasis Bar TRN\nOasis Bar (5h),21,0,1700-2200 Oasis Bar TRN\nSOV North Floor (5h),22,0,1800-2300 SOV North Floor TRN`;
-
+    
     // --- HELPER FUNCTIONS ---
     const byId = id => document.getElementById(id);
     const pad2 = n => (n < 10 ? "0" : "") + n;
@@ -326,13 +327,6 @@ window.onload = () => {
         }
     }
 
-    // --- BASE PLAN MANAGEMENT ---
-    function parseBase(text) { const rows = []; text.split(/\r?\n/).forEach(line => { const t = line.trim(); if (!t) return; const parts = t.split(','); if (parts.length < 4) return; const [Path, Step, OffsetDays, ...ShiftParts] = parts; const Shift = ShiftParts.join(',').trim(); rows.push({ Path: Path.trim(), Step: +Step, OffsetDays: +OffsetDays, Shift }); }); rows.sort((a, b) => a.Path.localeCompare(b.Path) || a.Step - b.Step); return rows; }
-    function applyBase() { base = parseBase(byId('baseInput').value); if (!base.length) showModal('Base Plan Error', 'No valid base steps found.'); }
-    function exportBase() { const header = ['Path', 'Step', 'OffsetDays', 'Shift']; const csv = [header.join(',')].concat(base.map(r => [r.Path, r.Step, r.OffsetDays, r.Shift].join(','))).join('\n'); download('base_plan_export.csv', csv); }
-    function restoreBase(auto = false) { const ta = byId('baseInput'); if (!ta) return; if (auto && ta.value.trim()) return; ta.value = PRELOADED_BASE; applyBase(); }
-    function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
-
     // --- STARTER MANAGEMENT ---
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
@@ -375,10 +369,8 @@ window.onload = () => {
             const confirmed = await showModal('Roster Exists', 'A schedule already exists. Do you want to replace it?', true);
             if (!confirmed) return;
         }
-        if (!base.length) { showModal('Build Error', 'Base Plan is empty. Restore or import one.'); return; }
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
         
-        // FIX: Reset tracking variables before every build
         allRows = []; 
         const placedByStarter = new Map(); 
         const placedByStarterOutlet = new Map();
@@ -493,21 +485,15 @@ window.onload = () => {
     byId('shuffleBlocks').onclick = () => {
         shuffle = !shuffle;
         const btn = byId('shuffleBlocks');
+        btn.textContent = 'Shuffle: ' + (shuffle ? 'ON' : 'OFF');
         btn.style.borderColor = shuffle ? 'var(--brand-secondary)' : 'var(--border-secondary)';
-        showModal('Shuffle Toggled', 'Shuffle per-starter is now ' + (shuffle ? 'ON' : 'OFF'));
     };
     byId('buildAll').onclick = buildAll;
     byId('clearRosterBtn').onclick = clearRoster;
-    byId('importBaseBtn').onclick = () => byId('importBase').click();
-    byId('importBase').onchange = e => { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { byId('baseInput').value = fr.result; applyBase(); }; fr.readAsText(f); };
-    byId('applyBase').onclick = applyBase;
-    byId('exportBase').onclick = exportBase;
-    byId('restoreBase').onclick = () => restoreBase(false);
     byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
     byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
 
     // --- INITIAL SETUP ---
-    restoreBase(true);
     renderStarters();
     renderSched([]);
 };
