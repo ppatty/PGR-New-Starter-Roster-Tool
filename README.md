@@ -21,10 +21,10 @@ Flexible Workflow: Clear the generated roster with a single click to start over 
 
 Export Options: Export the final roster to both .csv and .xlsx formats for easy sharing and printing.
 
-Celebration: A festive champagne pop animation celebrates every successful roster build!
+  Configurable Session Days: Choose which weekdays host Welcome Day and PGR Onboarding.
 
 How to Use
-The application is designed around a simple, three-step workflow:
+  The application is designed around a simple, four-step workflow:
 
 Step 1: Add New Team Members
 
@@ -44,7 +44,11 @@ In this section, enter the number of shifts you want each new team member to com
 
 (Optional) Toggle the "Shuffle" button to ON if you want the order of the training blocks to be randomized for each person.
 
-Step 3: Build & Export
+Step 3: Select Session Days
+
+Use the dropdowns to choose which days Welcome Day and PGR Onboarding occur.
+
+Step 4: Build & Export
 
 Click the "Build Roster" button. The application will instantly generate the full schedule in the table at the bottom.
 

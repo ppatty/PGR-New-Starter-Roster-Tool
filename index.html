@@ -184,8 +184,18 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="mandatory-h">
+      <div class="hd"><h2 id="mandatory-h">Step 3: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
+      <div class="bd">
+        <div class="grid g2">
+          <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
+          <div><label for="onboardDaySel">PGR Onboarding</label><select id="onboardDaySel"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3" selected>Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
+        </div>
+      </div>
+    </section>
+
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Step 3: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="hd"><h2 id="schedule-h">Step 4: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
@@ -203,7 +213,6 @@
 <div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost">&gt;</button></div><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary">Done</button></div></div></div>
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 </body>
 <script>
 // --- APP INITIALIZATION ---
@@ -240,6 +249,7 @@ window.onload = () => {
     const isSun = d => d.getDay() === 0;
     const nextWorking = d => { let x = new Date(d); while (isSun(x) || isMon(x)) x.setDate(x.getDate() + 1); return x; };
     function addWorkDay(d) { const x = new Date(d); x.setDate(x.getDate() + 1); return nextWorking(x); }
+    function nextDow(startDate, dow, includeStart = true) { const d = new Date(startDate); if (!includeStart) d.setDate(d.getDate() + 1); while (d.getDay() !== dow) d.setDate(d.getDate() + 1); return d; }
     function shuffled(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
     function isOutletAllowedOnDate(outlet, dateObj) { const dow = dateObj.getDay(); if (dow === 0) return false; if (outlet === "SOV North Floor") return (dow === 5 || dow === 6); return true; }
 
@@ -267,33 +277,6 @@ window.onload = () => {
         return count;
     }
     function canWorkThisDay(starterName, dateObj) { return shiftsInLastNDaysFor(starterName, dateObj, 10) < 8; }
-
-    // --- UI & VISUALS ---
-    function fireChampagnePop() {
-        const end = Date.now() + (2 * 1000);
-        const colors = ['#f9fafb', '#f59e0b'];
-
-        (function frame() {
-            confetti({
-                particleCount: 2,
-                angle: 60,
-                spread: 55,
-                origin: { x: 0 },
-                colors: colors
-            });
-            confetti({
-                particleCount: 2,
-                angle: 120,
-                spread: 55,
-                origin: { x: 1 },
-                colors: colors
-            });
-
-            if (Date.now() < end) {
-                requestAnimationFrame(frame);
-            }
-        }());
-    }
 
     // --- CALENDAR FUNCTIONS ---
     function renderCalendar() {
@@ -381,11 +364,13 @@ window.onload = () => {
         function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
 
         const used = new Set();
-        const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d) || isMon(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
+        const welcomeDow = +byId('welcomeDaySel').value;
+        const onboardDow = +byId('onboardDaySel').value;
+        const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
         for (const dayKey of Object.keys(groups).sort()) {
-            let day1 = parseYMD(dayKey); if (isSun(day1)) day1 = nextWorking(day1);
-            let day2 = addWorkDay(day1);
+            let day1 = nextDow(parseYMD(dayKey), welcomeDow);
+            let day2 = nextDow(day1, onboardDow, false);
             for (const s of groups[dayKey]) {
                 addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
                 addRow(makeRow(s, day2, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
@@ -435,7 +420,6 @@ window.onload = () => {
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
         byId('conflicts').textContent = `Built ${allRows.length} shifts for ${starters.length} starter(s)`;
         renderSched(allRows);
-        fireChampagnePop();
     }
     async function clearRoster() {
         if (allRows.length === 0) {
