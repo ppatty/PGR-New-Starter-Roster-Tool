@@ -129,7 +129,7 @@
     </div>
     <div class="nav-group">
       <h2>Roster Rules</h2>
-      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div></div>
+      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div><div class="chip">Start ≤20:00</div><div class="chip">12h rest</div></div>
     </div>
   </aside>
 
@@ -232,10 +232,10 @@ window.onload = () => {
     ];
     const RULES = {
         "Oasis Food": ["08:00", "11:00", "16:00"],
-        "Oasis Bar": ["06:00", "08:00", "10:00", "14:00", "16:00", "17:00", "18:00", "19:00", "22:00"],
-        "SOV South Floor": Array.from({ length: 14 }, (_, k) => (9 + k).toString().padStart(2, '0') + ":00"),
+        "Oasis Bar": ["06:00", "08:00", "10:00", "14:00", "16:00", "17:00", "18:00", "19:00"],
+        "SOV South Floor": Array.from({ length: 12 }, (_, k) => (9 + k).toString().padStart(2, '0') + ":00"),
         "SOV North Floor": ["18:00"],
-        "SOV South Bar": ["06:00", "10:00", "14:00", "18:00", "22:00"],
+        "SOV South Bar": ["06:00", "10:00", "14:00", "18:00"],
         "SOV Dining": ["17:00"]
     };
     
@@ -355,13 +355,31 @@ window.onload = () => {
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
         
         allRows = []; 
-        const placedByStarter = new Map(); 
+        const placedByStarter = new Map();
         const placedByStarterOutlet = new Map();
-        
+        const lastEndByStarter = new Map();
+
         function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
         function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
         function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
-        function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
+        function has12hGap(starterName, dateObj, startTime) {
+            const last = lastEndByStarter.get(starterName);
+            if (!last) return true;
+            const [hh, mm] = startTime.split(":").map(Number);
+            const start = new Date(dateObj);
+            start.setHours(hh, mm, 0, 0);
+            return (start - last) >= 12 * 60 * 60 * 1000;
+        }
+        function addRow(r) {
+            allRows.push(r);
+            incPlaced(r.Starter, r.Outlet);
+            const endDate = parseYMD(r.Date);
+            const [eh, em] = r.End.split(":").map(Number);
+            const [sh] = r.Start.split(":").map(Number);
+            if (eh < sh) endDate.setDate(endDate.getDate() + 1);
+            endDate.setHours(eh, em, 0, 0);
+            lastEndByStarter.set(r.Starter, endDate);
+        }
 
         const used = new Set();
         const welcomeDow = +byId('welcomeDaySel').value;
@@ -395,8 +413,8 @@ window.onload = () => {
                     st.currentOutlet = outlet;
                     st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
-                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
                 const t = pickTime(outlet, allRows.length);
+                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !has12hGap(s.Name, cur, t)) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(curKey + "|" + outlet);
                 st.remaining -= 1; st.nextDate = addWorkDay(cur); progress = true;
@@ -413,6 +431,7 @@ window.onload = () => {
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
                 if (!outlet || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); continue; }
                 const t = pickTime(outlet, rot++);
+                if (!has12hGap(s.Name, cur, t)) { cur = addWorkDay(cur); continue; }
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(key + "|" + outlet); placed++; cur = addWorkDay(cur);
             }
