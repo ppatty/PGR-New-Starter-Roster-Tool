@@ -282,6 +282,26 @@ window.onload = () => {
     }
     function canWorkThisDay(starterName, dateObj) { return shiftsInLastNDaysFor(starterName, dateObj, 10) < 8; }
 
+    function lastShiftEnd(starterName) {
+        let last = null;
+        for (const r of allRows) {
+            if (r.Starter !== starterName) continue;
+            const d = parseYMD(r.Date);
+            const [hh, mm] = r.End.split(":").map(Number);
+            d.setHours(hh, mm, 0, 0);
+            if (!last || d > last) last = d;
+        }
+        return last;
+    }
+    function hasMinRest(starterName, dateObj, startTime) {
+        const last = lastShiftEnd(starterName);
+        if (!last) return true;
+        const start = new Date(dateObj);
+        const [hh, mm] = startTime.split(":").map(Number);
+        start.setHours(hh, mm, 0, 0);
+        return (start - last) >= 12 * 60 * 60 * 1000;
+    }
+
     // --- CALENDAR FUNCTIONS ---
     function renderCalendar() {
         const calendarTitle = byId('calendar-title');
@@ -399,7 +419,7 @@ window.onload = () => {
                     st.currentOutlet = outlet;
                     st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
-                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
+                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
                 const t = pickTime(outlet, allRows.length);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(curKey + "|" + outlet);
@@ -415,7 +435,7 @@ window.onload = () => {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
-                if (!outlet || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); continue; }
+                if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { cur = addWorkDay(cur); continue; }
                 const t = pickTime(outlet, rot++);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(key + "|" + outlet); placed++; cur = addWorkDay(cur);
