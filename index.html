@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>PGR New Starter Roster Creation Tool</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="A professional tool for creating new team member training rosters for PGR at The Star Gold Coast.">
+  <meta name="description" content="A professional tool for creating new team member training rosters for PGR at The Star Gold Coast." />
   <meta name="theme-color" content="#1a1a1a" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="logo.png">
@@ -203,7 +203,7 @@
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
-            <thead><tr><th>Team Member</th><th>Staff ID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Shift #</th></tr></thead>
+            <thead><tr><th>Team Member</th><th>Staff ID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th><th>Shift</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -439,17 +439,17 @@ window.onload = () => {
     }
     function renderSched(rows) {
         const tb = document.querySelector('#schedTbl tbody'); tb.innerHTML = '';
-        if (rows.length === 0) { tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`; return; }
+        if (rows.length === 0) { tb.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`; return; }
         let curStarter = null;
         for (const r of rows) {
             if (r.Starter !== curStarter) {
                 curStarter = r.Starter;
                 const trHead = document.createElement('tr'); trHead.className = 'group-row';
-                trHead.innerHTML = `<td colspan="7"><b>${r.Starter}</b> &nbsp;&middot;&nbsp; <span class="text-muted">StaffID: ${r.StaffID || 'N/A'}</span></td>`;
+                trHead.innerHTML = `<td colspan="8"><b>${r.Starter}</b> &nbsp;&middot;&nbsp; <span class="text-muted">StaffID: ${r.StaffID || 'N/A'}</span></td>`;
                 tb.appendChild(trHead);
             }
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
+            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td><td>${r.Shift}</td>`;
             tb.appendChild(tr);
         }
     }
