@@ -203,7 +203,7 @@
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
-            <thead><tr><th>Team Member</th><th>Staff ID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Shift #</th></tr></thead>
+            <thead><tr><th>Team Member</th><th>Staff ID</th><th>Date</th><th>Start</th><th>End</th><th>Outlet</th><th>Step</th><th>Shift</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -281,6 +281,26 @@ window.onload = () => {
         return count;
     }
     function canWorkThisDay(starterName, dateObj) { return shiftsInLastNDaysFor(starterName, dateObj, 10) < 8; }
+
+    function lastShiftEnd(starterName) {
+        let last = null;
+        for (const r of allRows) {
+            if (r.Starter !== starterName) continue;
+            const d = parseYMD(r.Date);
+            const [hh, mm] = r.End.split(":").map(Number);
+            d.setHours(hh, mm, 0, 0);
+            if (!last || d > last) last = d;
+        }
+        return last;
+    }
+    function hasMinRest(starterName, dateObj, startTime) {
+        const last = lastShiftEnd(starterName);
+        if (!last) return true;
+        const start = new Date(dateObj);
+        const [hh, mm] = startTime.split(":").map(Number);
+        start.setHours(hh, mm, 0, 0);
+        return (start - last) >= 12 * 60 * 60 * 1000;
+    }
 
     // --- CALENDAR FUNCTIONS ---
     function renderCalendar() {
@@ -399,7 +419,7 @@ window.onload = () => {
                     st.currentOutlet = outlet;
                     st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
-                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
+                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
                 const t = pickTime(outlet, allRows.length);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(curKey + "|" + outlet);
@@ -415,7 +435,7 @@ window.onload = () => {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
-                if (!outlet || !canWorkThisDay(s.Name, cur)) { cur = addWorkDay(cur); continue; }
+                if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { cur = addWorkDay(cur); continue; }
                 const t = pickTime(outlet, rot++);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(key + "|" + outlet); placed++; cur = addWorkDay(cur);
@@ -439,17 +459,17 @@ window.onload = () => {
     }
     function renderSched(rows) {
         const tb = document.querySelector('#schedTbl tbody'); tb.innerHTML = '';
-        if (rows.length === 0) { tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`; return; }
+        if (rows.length === 0) { tb.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`; return; }
         let curStarter = null;
         for (const r of rows) {
             if (r.Starter !== curStarter) {
                 curStarter = r.Starter;
                 const trHead = document.createElement('tr'); trHead.className = 'group-row';
-                trHead.innerHTML = `<td colspan="7"><b>${r.Starter}</b> &nbsp;&middot;&nbsp; <span class="text-muted">StaffID: ${r.StaffID || 'N/A'}</span></td>`;
+                trHead.innerHTML = `<td colspan="8"><b>${r.Starter}</b> &nbsp;&middot;&nbsp; <span class="text-muted">StaffID: ${r.StaffID || 'N/A'}</span></td>`;
                 tb.appendChild(trHead);
             }
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td>`;
+            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td><td>${r.Shift}</td>`;
             tb.appendChild(tr);
         }
     }
