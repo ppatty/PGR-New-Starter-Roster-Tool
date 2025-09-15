@@ -65,6 +65,10 @@
     .nav-group h2 { font-family: var(--font-serif); font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
     .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .chip { display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; border-radius: var(--radius-md); background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+    .starter-cell { display: inline-flex; align-items: center; gap: 0.5rem; }
+    .starter-avatar { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 1.2rem; }
+    .group-row-header { display: flex; align-items: center; gap: 0.75rem; }
+    .group-row-subtext { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
     .toolbar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 1rem; margin: -2rem -2rem 0; background: linear-gradient(180deg, rgba(16, 12, 12, 0.95) 70%, transparent 100%); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-primary); }
     #conflicts { margin-left: auto; font-size: 0.875rem; color: var(--text-secondary); background-color: var(--bg-tertiary); padding: 0.5rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-primary); }
     .card { background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%); border: 1px solid var(--border-primary); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; }
@@ -244,6 +248,11 @@ window.onload = () => {
         "SOV South Bar": ["06:00", "10:00", "14:00", "18:00"],
         "SOV Dining": ["17:00"]
     };
+    const AVATARS = ['🦊', '🐼', '🦉', '🦁', '🐙', '🐳', '🦄', '🐲', '🌟', '🚀', '🎲', '🎯'];
+    const AVATAR_TOOLTIP = 'This avatar is just for fun and has no effect on scheduling.';
+
+    function getRandomAvatar() { return AVATARS[Math.floor(Math.random() * AVATARS.length)]; }
+    function getAvatarMarkup(avatar) { return avatar ? `<span class="starter-avatar" title="${AVATAR_TOOLTIP}">${avatar}</span>` : ''; }
 
     // --- HELPER FUNCTIONS ---
     const byId = id => document.getElementById(id);
@@ -339,14 +348,18 @@ window.onload = () => {
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
         if (starters.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`; return; }
-        tb.innerHTML = starters.map((s, i) => `<tr><td>${i + 1}</td><td>${s.Name}</td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`).join('');
+        tb.innerHTML = starters.map((s, i) => {
+            if (!s.Avatar) s.Avatar = getRandomAvatar();
+            const avatar = getAvatarMarkup(s.Avatar);
+            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
+        }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => { activeStarterIndex = +b.dataset.i; currentCalendarDate = parseYMD(starters[activeStarterIndex].StartDate); renderCalendar(); byId('calendar-modal').classList.add('visible'); });
     }
     function addStarter() {
         const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = byId('stDate').value;
         if (!Name || !StartDate) { showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
-        starters.push({ Name, StaffID, StartDate, blackoutDates: [] });
+        starters.push({ Name, StaffID, StartDate, blackoutDates: [], Avatar: getRandomAvatar() });
         renderStarters();
         byId('stName').value = ''; byId('stId').value = ''; byId('stDate').value = '';
     }
@@ -358,7 +371,7 @@ window.onload = () => {
         fr.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
-            starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate, blackoutDates: [] }; });
+            starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate, blackoutDates: [], Avatar: getRandomAvatar() }; });
             renderStarters();
         };
         fr.readAsText(f);
@@ -464,19 +477,20 @@ window.onload = () => {
         if (rows.length === 0) { tb.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 2rem;">No schedule generated yet.</td></tr>`; return; }
         let curStarter = null;
         for (const r of rows) {
+            const avatarMarkup = getAvatarMarkup(r.Avatar);
             if (r.Starter !== curStarter) {
                 curStarter = r.Starter;
                 const trHead = document.createElement('tr'); trHead.className = 'group-row';
-                trHead.innerHTML = `<td colspan="8"><b>${r.Starter}</b> &nbsp;&middot;&nbsp; <span class="text-muted">StaffID: ${r.StaffID || 'N/A'}</span></td>`;
+                trHead.innerHTML = `<td colspan="8"><div class="group-row-header">${avatarMarkup}<div><b>${r.Starter}</b><div class="group-row-subtext">Staff ID: ${r.StaffID || 'N/A'}</div></div></div></td>`;
                 tb.appendChild(trHead);
             }
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${r.Starter}</td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td><td>${r.Shift}</td>`;
+            tr.innerHTML = `<td><span class="starter-cell">${avatarMarkup}<span>${r.Starter}</span></span></td><td>${r.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(r.Date))}</td><td>${r.Start}</td><td>${r.End}</td><td>${r.Outlet}</td><td>${r.Step}</td><td>${r.Shift}</td>`;
             tb.appendChild(tr);
         }
     }
     function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
-    function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
+    function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Avatar: starter.Avatar || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
     function pickTime(outlet, i) {
         const times = (RULES[outlet] || ["09:00"]).filter(t => t <= "20:00");
         const safeTimes = times.length ? times : ["20:00"];
