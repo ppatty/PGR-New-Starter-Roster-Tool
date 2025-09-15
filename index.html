@@ -135,7 +135,7 @@
     </div>
     <div class="nav-group">
       <h2>Roster Rules</h2>
-      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div></div>
+      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div><div class="chip">Start ≤20:00</div></div>
     </div>
   </aside>
 
@@ -238,10 +238,10 @@ window.onload = () => {
     ];
     const RULES = {
         "Oasis Food": ["08:00", "11:00", "16:00"],
-        "Oasis Bar": ["06:00", "08:00", "10:00", "14:00", "16:00", "17:00", "18:00", "19:00", "22:00"],
-        "SOV South Floor": Array.from({ length: 14 }, (_, k) => (9 + k).toString().padStart(2, '0') + ":00"),
+        "Oasis Bar": ["06:00", "08:00", "10:00", "14:00", "16:00", "17:00", "18:00", "19:00"],
+        "SOV South Floor": Array.from({ length: 12 }, (_, k) => (9 + k).toString().padStart(2, '0') + ":00"),
         "SOV North Floor": ["18:00"],
-        "SOV South Bar": ["06:00", "10:00", "14:00", "18:00", "22:00"],
+        "SOV South Bar": ["06:00", "10:00", "14:00", "18:00"],
         "SOV Dining": ["17:00"]
     };
 
@@ -477,7 +477,11 @@ window.onload = () => {
     }
     function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
     function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
-    function pickTime(outlet, i) { const times = RULES[outlet] || ["09:00"]; return times[i % times.length]; }
+    function pickTime(outlet, i) {
+        const times = (RULES[outlet] || ["09:00"]).filter(t => t <= "20:00");
+        const safeTimes = times.length ? times : ["20:00"];
+        return safeTimes[i % safeTimes.length];
+    }
 
     // --- ATTACH EVENT LISTENERS ---
     byId('modal-cancel').onclick = () => { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(false); };
