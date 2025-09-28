@@ -69,9 +69,19 @@ Competency Data Bundles
 
 The repository ships with a default competency bundle stored in `data/`:
 
-* `(5) PGR Competency Checklist.txt` – the primary default bundle combining the template and starter dataset as JSON.
+* `pgr_competency_checklist_bundle.json` – auto-generated from the official PDF checklist and used as the default template/dataset bundle.
+* `(5) PGR Competency Checklist.txt` – legacy bundle retained for historical reference.
 * `data/competency-template.json` – legacy standalone template retained for backward compatibility.
 * `data/competency-dataset.json` – legacy standalone dataset retained for backward compatibility.
+
+If the PDF is updated, regenerate the bundle by running:
+
+```
+python scripts/convert_pdf_to_competency_bundle.py
+```
+
+The script parses `(5) PGR Competancy Checklist.pdf` and writes the refreshed JSON bundle to `data/pgr_competency_checklist_bundle.json`.
+It requires the `pypdf` package (`pip install pypdf`).
 
 Supervisors can import updated JSON files at runtime using the controls in **Step 3**. The importer expects valid JSON that follows the same structure as the bundled files. Each starter is matched by `staffId`, falling back to name matching when an ID is not supplied.
 

@@ -50,7 +50,7 @@ test('pickTime enforces 20:00 limit and provides safe fallbacks', () => {
 });
 
 test('competency template maps to starters and exports rows', () => {
-  const bundle = JSON.parse(fs.readFileSync('data/(5) PGR Competency Checklist.txt', 'utf8'));
+  const bundle = JSON.parse(fs.readFileSync('data/pgr_competency_checklist_bundle.json', 'utf8'));
   assert.ok(bundle.template, 'bundle template missing');
   assert.ok(bundle.dataset, 'bundle dataset missing');
   const template = bundle.template;
@@ -77,9 +77,21 @@ test('competency template maps to starters and exports rows', () => {
     { Name: 'Jordan Test', StaffID: '999999', StartDate: '2025-03-01' }
   ];
 
+  const datasetOverrides = new Map([
+    ['123456', {
+      role: 'Private Gaming Host',
+      mentor: 'Jordan Rivers',
+      competencies: {
+        'ensure-grooming-is-up-to-standard-name-badge-id-card': { status: 'Complete', completedOn: '2025-02-03' },
+        'swipe-on-at-the-correct-swiping-station': { status: 'In Progress' }
+      },
+      notes: 'Shadow Jordan for first Sovereign shift.'
+    }]
+  ]);
+
   const checklistMap = new Map();
   for (const starter of starters) {
-    const entry = dataset.people.find(p => (p.staffId || '').toLowerCase() === starter.StaffID.toLowerCase()) || {};
+    const entry = datasetOverrides.get(starter.StaffID) || {};
     const checklist = tools.mapTemplateToStarter(template, starter, entry, dataset.defaults || {});
     assert.ok(checklist, 'checklist not generated');
     assert.strictEqual(checklist.sections.length, template.sections.length, 'section count mismatch');
@@ -87,23 +99,25 @@ test('competency template maps to starters and exports rows', () => {
   }
 
   const dakotaChecklist = checklistMap.get('123456');
-  const mentorItem = dakotaChecklist.sections
-    .flatMap(section => section.items)
-    .find(item => item.id === 'mentor-intro');
-  assert.ok(mentorItem, 'mentor item missing');
-  assert.ok(/Jordan Rivers/.test(mentorItem.label), 'mentor placeholder not resolved');
-  const welcomeItem = dakotaChecklist.sections[0].items.find(item => item.id === 'welcome-day');
-  assert.strictEqual(welcomeItem.status, 'Complete');
+  const mentorMeta = dakotaChecklist.metadata.find(entry => entry.key === 'mentor');
+  assert.ok(mentorMeta, 'mentor metadata missing');
+  assert.strictEqual(mentorMeta.value, 'Jordan Rivers');
+  const groomingItem = dakotaChecklist.sections[0].items.find(item => item.id === 'ensure-grooming-is-up-to-standard-name-badge-id-card');
+  assert.ok(groomingItem, 'expected grooming item missing');
+  assert.strictEqual(groomingItem.status, 'Complete');
 
   const fallbackChecklist = checklistMap.get('999999');
-  const fallbackStatus = fallbackChecklist.sections[0].items[1].status;
-  assert.strictEqual(fallbackStatus, template.sections[0].items[1].defaultStatus || template.defaultStatus, 'default status not applied');
+  const fallbackMentorMeta = fallbackChecklist.metadata.find(entry => entry.key === 'mentor');
+  assert.ok(fallbackMentorMeta, 'fallback mentor metadata missing');
+  assert.strictEqual(fallbackMentorMeta.value, dataset.defaults.mentor || '');
+  const fallbackFirstItem = fallbackChecklist.sections[0].items[0];
+  assert.strictEqual(fallbackFirstItem.status, template.sections[0].items[0].defaultStatus || template.defaultStatus, 'default status not applied');
 
   const rows = tools.flattenChecklistCollection(checklistMap);
   const expectedRowCount = starters.length * template.sections.reduce((sum, section) => sum + (section.items || []).length, 0);
   assert.strictEqual(rows.length, expectedRowCount, 'flattenChecklistCollection produced unexpected row count');
 
-  const dakotaRow = rows.find(row => row.Name === 'Dakota Parata' && row.Item.includes('Attend Welcome Day'));
+  const dakotaRow = rows.find(row => row.Name === 'Dakota Parata' && row.Item.includes('Ensure grooming'));
   assert.ok(dakotaRow, 'expected Dakota row missing');
   assert.strictEqual(dakotaRow.Status, 'Complete');
 });
