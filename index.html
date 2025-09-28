@@ -1097,7 +1097,7 @@ window.onload = () => {
             }
         }
         const baseCounts = getBlocks().reduce((m, b) => (m[b.outlet] = b.count, m), {});
-        const conflicts = { scheduleConflicts: 0, outletConflicts: 0, dateConflicts: 0, fallbackUsed: 0, safetyTriggered: false };
+        const conflicts = { outletConflicts: 0, dateConflicts: 0, fallbackUsed: 0, safetyTriggered: false };
         let progress = true, safety = 0; const everyone = Object.values(groups).flat();
         while (progress && safety < 5000) {
             progress = false; safety++;
