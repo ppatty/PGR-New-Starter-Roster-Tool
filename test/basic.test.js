@@ -121,3 +121,42 @@ test('competency template maps to starters and exports rows', () => {
   assert.ok(dakotaRow, 'expected Dakota row missing');
   assert.strictEqual(dakotaRow.Status, 'Complete');
 });
+
+test('PGR static checklist builds individualized sheets', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const blockMatch = html.match(/const competencyTools = {};[\s\S]*?window.__competencyTools = competencyTools;/);
+  assert.ok(blockMatch, 'competency helper block not found');
+
+  const sandbox = { window: {}, console };
+  vm.createContext(sandbox);
+  const helperPrelude = `
+    const pad2 = n => (n < 10 ? '0' : '') + n;
+    const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+    const toDMY = d => pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear();
+  `;
+  vm.runInContext(helperPrelude + blockMatch[0], sandbox);
+  const tools = sandbox.window.__competencyTools;
+  assert.ok(tools, 'competency tools not exposed');
+  assert.strictEqual(typeof tools.normalizePgrChecklist, 'function', 'normalize function missing');
+  assert.strictEqual(typeof tools.buildStaticChecklistSheet, 'function', 'builder function missing');
+
+  const raw = JSON.parse(fs.readFileSync('pgr_competency_checklist.json', 'utf8'));
+  const normalized = tools.normalizePgrChecklist(raw);
+  assert.ok(Array.isArray(normalized.sections), 'normalized sections missing');
+  const startingShift = normalized.sections.find(section => section.category === 'Starting Shift');
+  assert.ok(startingShift, 'starting shift section missing');
+  assert.ok(startingShift.items.some(item => /grooming/i.test(item.label)), 'expected starting shift item missing');
+
+  const starter = { Name: 'Test User', StaffID: 'T123', StartDate: '2025-05-01' };
+  const { sheetRows, overviewRows } = tools.buildStaticChecklistSheet(normalized, starter, 0);
+  assert.ok(sheetRows.length > 5, 'sheet rows unexpectedly short');
+  const teamRow = sheetRows.find(row => Array.isArray(row) && row[0] === 'Team Member');
+  assert.ok(teamRow, 'team member row missing');
+  assert.strictEqual(teamRow[1], 'Test User', 'team member not populated');
+  const headerRowIndex = sheetRows.findIndex(row => Array.isArray(row) && row[0] === 'Category');
+  assert.ok(headerRowIndex !== -1, 'header row missing');
+  assert.ok(Array.isArray(sheetRows[headerRowIndex + 1]) && sheetRows[headerRowIndex + 1][2], 'first checklist item missing');
+  assert.ok(Array.isArray(overviewRows), 'overview rows missing');
+  assert.ok(overviewRows.length >= startingShift.items.length, 'overview rows shorter than expected');
+  assert.ok(overviewRows.some(row => /Ensure grooming/i.test(row.Item)), 'overview rows missing grooming item');
+});
