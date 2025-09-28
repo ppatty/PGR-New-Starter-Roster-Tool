@@ -712,6 +712,10 @@ window.onload = () => {
 
     function exportAllChecklistsXls() {
         if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
+        if (typeof XLSX === 'undefined') {
+            showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
+            return;
+        }
         const wb = XLSX.utils.book_new();
         const allRows = flattenChecklistCollection(checklistMap);
         if (allRows.length) {
@@ -1243,6 +1247,10 @@ window.onload = () => {
     byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
     byId('exportAllXls').onclick = async () => {
         if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; }
+        if (typeof XLSX === 'undefined') {
+            showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
+            return;
+        }
         let staticTemplate;
         try {
             staticTemplate = await ensureStaticPgrChecklist();
