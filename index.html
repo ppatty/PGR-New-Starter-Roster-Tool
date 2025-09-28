@@ -500,7 +500,18 @@ window.onload = () => {
     }
 
     function buildStaticChecklistSheet(template, starter, index = 0) {
-        if (!template || !starter) return { sheetRows: [], overviewRows: [] };
+        if (!template || !starter) {
+            return {
+                sheetRows: [],
+                overviewRows: [],
+                metaStartRow: 0,
+                metaEndRow: 0,
+                headerRowIndex: 0,
+                dataStartRow: 0,
+                columnCount: 0,
+                columnWidths: []
+            };
+        }
         const displayName = (starter.Name && starter.Name.trim()) || `Starter ${index + 1}`;
         const isoStart = starter.StartDate || '';
         const startDate = isoStart ? toDMY(parseYMD(isoStart)) : '';
@@ -527,12 +538,16 @@ window.onload = () => {
 
         const sheetRows = [['PGR Competency Checklist']];
         sheetRows.push([]);
+        const metaStartRow = sheetRows.length;
         for (const row of metaRows) sheetRows.push(row);
+        const metaEndRow = sheetRows.length - 1;
         sheetRows.push([]);
 
         const header = ['Category', 'Subcategory', 'Item', 'Details', 'Status', 'Completed On', 'Notes', 'Evidence'];
+        const headerRowIndex = sheetRows.length;
         sheetRows.push(header);
 
+        const dataStartRow = sheetRows.length;
         const overviewRows = [];
         for (const section of template.sections || []) {
             const sectionName = section.category || '';
@@ -553,7 +568,16 @@ window.onload = () => {
             }
         }
 
-        return { sheetRows, overviewRows };
+        return {
+            sheetRows,
+            overviewRows,
+            metaStartRow,
+            metaEndRow,
+            headerRowIndex,
+            dataStartRow,
+            columnCount: header.length,
+            columnWidths: [22, 24, 38, 38, 16, 18, 28, 26]
+        };
     }
 
     function sanitizeSheetName(name) {
@@ -710,6 +734,171 @@ window.onload = () => {
         download(`${checklist.name.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}_competency.csv`, csv);
     }
 
+    const EXCEL_THEME = {
+        primary: 'FFB92B27',
+        secondary: 'FFD4AF37',
+        headerFont: 'FFFFFFFF',
+        titleFont: 'FFFFFFFF',
+        textDark: 'FF1F2933',
+        zebraLight: 'FFFFF8F3',
+        zebraDark: 'FFFFFFFF',
+        metaValueFill: 'FFFFFBF7',
+        border: 'FFE5E7EB'
+    };
+
+    function buildBorder(color = EXCEL_THEME.border) {
+        return {
+            top: { style: 'thin', color: { rgb: color } },
+            right: { style: 'thin', color: { rgb: color } },
+            bottom: { style: 'thin', color: { rgb: color } },
+            left: { style: 'thin', color: { rgb: color } }
+        };
+    }
+
+    function setCellStyle(ws, row, col, styleFactory, blankValue = '') {
+        const address = XLSX.utils.encode_cell({ r: row, c: col });
+        let cell = ws[address];
+        if (!cell) {
+            cell = { t: 's', v: blankValue };
+            ws[address] = cell;
+        }
+        const style = typeof styleFactory === 'function' ? styleFactory() : styleFactory;
+        cell.s = style;
+    }
+
+    function createTitleStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 16, bold: true, color: { rgb: EXCEL_THEME.titleFont } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.primary } }
+        };
+    }
+
+    function createHeaderStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 11, bold: true, color: { rgb: EXCEL_THEME.headerFont } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.primary } },
+            border: buildBorder()
+        };
+    }
+
+    function createMetaLabelStyle() {
+        return {
+            font: { name: 'Segoe UI', sz: 10, bold: true, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { horizontal: 'left', vertical: 'center' },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.secondary } },
+            border: buildBorder()
+        };
+    }
+
+    function createMetaValueStyle() {
+        return {
+            font: { name: 'Segoe UI', sz: 10, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.metaValueFill } },
+            border: buildBorder()
+        };
+    }
+
+    function createDataStyle(isAlternate) {
+        return {
+            font: { name: 'Segoe UI', sz: 10, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: isAlternate ? EXCEL_THEME.zebraLight : EXCEL_THEME.zebraDark } },
+            border: buildBorder()
+        };
+    }
+
+    function ensureColumnWidths(columnCount, columnWidths = []) {
+        const widths = [];
+        for (let i = 0; i < columnCount; i++) {
+            widths.push({ wch: columnWidths[i] ?? 20 });
+        }
+        return widths;
+    }
+
+    function styleChecklistWorksheet(ws, {
+        columnCount,
+        columnWidths = [],
+        titleRowIndex = 0,
+        headerRowIndex,
+        metaStartRow,
+        metaEndRow,
+        dataStartRow
+    } = {}) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const colCount = columnCount || (range.e.c - range.s.c + 1);
+        ws['!cols'] = ensureColumnWidths(colCount, columnWidths);
+
+        if (typeof titleRowIndex === 'number') {
+            ws['!merges'] = ws['!merges'] || [];
+            ws['!merges'].push({ s: { r: titleRowIndex, c: 0 }, e: { r: titleRowIndex, c: colCount - 1 } });
+            setCellStyle(ws, titleRowIndex, 0, createTitleStyle);
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][titleRowIndex] = { hpt: 28 };
+        }
+
+        if (typeof metaStartRow === 'number' && typeof metaEndRow === 'number' && metaEndRow >= metaStartRow) {
+            for (let r = metaStartRow; r <= metaEndRow; r++) {
+                setCellStyle(ws, r, 0, createMetaLabelStyle);
+                setCellStyle(ws, r, 1, createMetaValueStyle);
+            }
+        }
+
+        if (typeof headerRowIndex === 'number') {
+            for (let c = 0; c < colCount; c++) {
+                setCellStyle(ws, headerRowIndex, c, createHeaderStyle);
+            }
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][headerRowIndex] = { hpt: 22 };
+        }
+
+        if (typeof dataStartRow === 'number') {
+            const lastRow = range.e.r;
+            if (dataStartRow <= lastRow) {
+                for (let r = dataStartRow; r <= lastRow; r++) {
+                    const isAlternate = (r - dataStartRow) % 2 === 0;
+                    for (let c = 0; c < colCount; c++) {
+                        setCellStyle(ws, r, c, () => createDataStyle(isAlternate));
+                    }
+                }
+            }
+        }
+    }
+
+    function styleTabularWorksheet(ws, {
+        columnWidths = [],
+        headerRowIndex = 0,
+        dataStartRow = headerRowIndex + 1
+    } = {}) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const columnCount = range.e.c - range.s.c + 1;
+        ws['!cols'] = ensureColumnWidths(columnCount, columnWidths);
+
+        if (typeof headerRowIndex === 'number') {
+            for (let c = 0; c < columnCount; c++) {
+                setCellStyle(ws, headerRowIndex, c, createHeaderStyle);
+            }
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][headerRowIndex] = { hpt: 22 };
+        }
+
+        if (typeof dataStartRow === 'number') {
+            const lastRow = range.e.r;
+            if (dataStartRow <= lastRow) {
+                for (let r = dataStartRow; r <= lastRow; r++) {
+                    const isAlternate = (r - dataStartRow) % 2 === 0;
+                    for (let c = 0; c < columnCount; c++) {
+                        setCellStyle(ws, r, c, () => createDataStyle(isAlternate));
+                    }
+                }
+            }
+        }
+    }
+
     function exportAllChecklistsXls() {
         if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
         if (typeof XLSX === 'undefined') {
@@ -717,27 +906,92 @@ window.onload = () => {
             return;
         }
         const wb = XLSX.utils.book_new();
+        const formattingQueue = [];
+
         const allRows = flattenChecklistCollection(checklistMap);
         if (allRows.length) {
-            const wsAll = XLSX.utils.json_to_sheet(allRows);
-            XLSX.utils.book_append_sheet(wb, wsAll, 'All Checklists');
+            const formattedAllRows = allRows.map(row => ({
+                'Name': row.Name,
+                'Staff ID': row.StaffID || '',
+                'Section': row.Section,
+                'Item': row.Item,
+                'Status': row.Status,
+                'Completed On': row.CompletedOn,
+                'Notes': row.Notes,
+                'Evidence': row.Evidence
+            }));
+            const allHeaders = ['Name', 'Staff ID', 'Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence'];
+            const wsAll = XLSX.utils.json_to_sheet(formattedAllRows, { header: allHeaders });
+            const sheetName = 'All Checklists';
+            XLSX.utils.book_append_sheet(wb, wsAll, sheetName);
+            formattingQueue.push({
+                sheetName,
+                type: 'table',
+                options: {
+                    columnWidths: [26, 18, 26, 44, 16, 20, 36, 28],
+                    headerRowIndex: 0,
+                    dataStartRow: 1
+                }
+            });
         }
+
         for (const checklist of checklistMap.values()) {
             const rows = flattenChecklist(checklist);
-            const metaRows = [['Team Member', checklist.name], ['Staff ID', checklist.staffId || ''], ['Template Version', checklist.version], ['Generated On', checklist.generatedOn]];
+            const generated = checklist.generatedOn ? new Date(checklist.generatedOn) : null;
+            const formattedGenerated = generated && Number.isFinite(generated.getTime()) ? toDMY(generated) : (checklist.generatedOn || '');
+            const baseMetaRows = [
+                ['Team Member', checklist.name],
+                ['Staff ID', checklist.staffId || ''],
+                ['Start Date', checklist.startDate ? toDMY(parseYMD(checklist.startDate)) : ''],
+                ['Template Version', checklist.version || ''],
+                ['Checklist Generated On', formattedGenerated]
+            ];
             for (const meta of checklist.metadata || []) {
-                metaRows.push([meta.label, meta.value || '']);
+                baseMetaRows.push([meta.label, meta.value || '']);
             }
-            metaRows.push([]);
-            metaRows.push(['Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence']);
+
+            const matrix = [['PGR Competency Checklist'], []];
+            const metaStartRow = matrix.length;
+            for (const row of baseMetaRows) matrix.push(row);
+            const metaEndRow = matrix.length - 1;
+            matrix.push([]);
+            const headerRowIndex = matrix.length;
+            const headerRow = ['Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence'];
+            matrix.push(headerRow);
+            const dataStartRow = matrix.length;
             for (const row of rows) {
-                metaRows.push([row.Section, row.Item, row.Status, row.CompletedOn, row.Notes, row.Evidence]);
+                matrix.push([row.Section, row.Item, row.Status, row.CompletedOn, row.Notes, row.Evidence]);
             }
-            const ws = XLSX.utils.aoa_to_sheet(metaRows);
+
+            const ws = XLSX.utils.aoa_to_sheet(matrix);
             let sheetName = checklist.name || 'Checklist';
             if (sheetName.length > 28) sheetName = sheetName.slice(0, 28);
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            formattingQueue.push({
+                sheetName,
+                type: 'checklist',
+                options: {
+                    columnCount: headerRow.length,
+                    columnWidths: [26, 42, 18, 20, 34, 28],
+                    titleRowIndex: 0,
+                    metaStartRow,
+                    metaEndRow,
+                    headerRowIndex,
+                    dataStartRow
+                }
+            });
         }
+
+        for (const cfg of formattingQueue) {
+            const ws = wb.Sheets[cfg.sheetName];
+            if (!ws) continue;
+            if (cfg.type === 'table') {
+                styleTabularWorksheet(ws, cfg.options);
+            } else if (cfg.type === 'checklist') {
+                styleChecklistWorksheet(ws, cfg.options);
+            }
+        }
+
         XLSX.writeFile(wb, 'competency-checklists.xlsx');
     }
 
@@ -1259,28 +1513,121 @@ window.onload = () => {
             showModal('Export Error', 'Unable to load the competency checklist data. Please refresh and try again.');
             return;
         }
-        const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift })));
-        const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wsSchedule, 'Roster');
-        XLSX.utils.book_append_sheet(wb, wsStarters, 'Starters');
+        const scheduleHeaders = ['Starter', 'Staff ID', 'Date', 'Start Time', 'End Time', 'Outlet', 'Step', 'Shift Code'];
+        const scheduleRows = allRows.map(r => ({
+            'Starter': r.Starter,
+            'Staff ID': r.StaffID || '',
+            'Date': toDMY(parseYMD(r.Date)),
+            'Start Time': r.Start,
+            'End Time': r.End,
+            'Outlet': r.Outlet,
+            'Step': r.Step,
+            'Shift Code': r.Shift
+        }));
+        const wsSchedule = XLSX.utils.json_to_sheet(scheduleRows, { header: scheduleHeaders });
 
-        const usedSheetNames = new Set(['Roster', 'Starters']);
+        const starterHeaders = ['Name', 'Staff ID', 'Start Date'];
+        const starterRows = starters.map(s => ({
+            'Name': s.Name,
+            'Staff ID': s.StaffID || '',
+            'Start Date': s.StartDate ? toDMY(parseYMD(s.StartDate)) : ''
+        }));
+        const wsStarters = XLSX.utils.json_to_sheet(starterRows, { header: starterHeaders });
+
+        const wb = XLSX.utils.book_new();
+        const formattingQueue = [];
+
+        const rosterSheetName = 'Roster';
+        XLSX.utils.book_append_sheet(wb, wsSchedule, rosterSheetName);
+        formattingQueue.push({
+            sheetName: rosterSheetName,
+            type: 'table',
+            options: {
+                columnWidths: [28, 16, 16, 12, 12, 24, 12, 28],
+                headerRowIndex: 0,
+                dataStartRow: 1
+            }
+        });
+
+        const startersSheetName = 'Starters';
+        XLSX.utils.book_append_sheet(wb, wsStarters, startersSheetName);
+        formattingQueue.push({
+            sheetName: startersSheetName,
+            type: 'table',
+            options: {
+                columnWidths: [28, 16, 16],
+                headerRowIndex: 0,
+                dataStartRow: 1
+            }
+        });
+
+        const usedSheetNames = new Set([rosterSheetName, startersSheetName]);
         const overviewRows = [];
         starters.forEach((starter, index) => {
-            const { sheetRows, overviewRows: rows } = buildStaticChecklistSheet(staticTemplate, starter, index);
+            const {
+                sheetRows,
+                overviewRows: rows,
+                metaStartRow,
+                metaEndRow,
+                headerRowIndex,
+                dataStartRow,
+                columnCount,
+                columnWidths
+            } = buildStaticChecklistSheet(staticTemplate, starter, index);
             if (sheetRows.length > 0) {
                 const wsChecklist = XLSX.utils.aoa_to_sheet(sheetRows);
                 const sheetName = buildChecklistSheetName(starter, index, usedSheetNames);
                 XLSX.utils.book_append_sheet(wb, wsChecklist, sheetName);
+                formattingQueue.push({
+                    sheetName,
+                    type: 'checklist',
+                    options: {
+                        columnCount,
+                        columnWidths,
+                        titleRowIndex: 0,
+                        metaStartRow,
+                        metaEndRow,
+                        headerRowIndex,
+                        dataStartRow
+                    }
+                });
             }
             if (rows && rows.length) overviewRows.push(...rows);
         });
 
         if (overviewRows.length) {
-            const wsOverview = XLSX.utils.json_to_sheet(overviewRows);
+            const overviewHeaders = ['Starter', 'Staff ID', 'Start Date', 'Category', 'Subcategory', 'Item', 'Details'];
+            const overviewData = overviewRows.map(row => ({
+                'Starter': row.Starter,
+                'Staff ID': row.StaffID,
+                'Start Date': row.StartDate,
+                'Category': row.Category,
+                'Subcategory': row.Subcategory,
+                'Item': row.Item,
+                'Details': row.Details
+            }));
+            const wsOverview = XLSX.utils.json_to_sheet(overviewData, { header: overviewHeaders });
             const overviewName = makeUniqueSheetName('Competency Overview', usedSheetNames);
             XLSX.utils.book_append_sheet(wb, wsOverview, overviewName);
+            formattingQueue.push({
+                sheetName: overviewName,
+                type: 'table',
+                options: {
+                    columnWidths: [26, 16, 16, 26, 22, 40, 36],
+                    headerRowIndex: 0,
+                    dataStartRow: 1
+                }
+            });
+        }
+
+        for (const cfg of formattingQueue) {
+            const ws = wb.Sheets[cfg.sheetName];
+            if (!ws) continue;
+            if (cfg.type === 'table') {
+                styleTabularWorksheet(ws, cfg.options);
+            } else if (cfg.type === 'checklist') {
+                styleChecklistWorksheet(ws, cfg.options);
+            }
         }
 
         XLSX.writeFile(wb, 'roster_and_starters.xlsx');
