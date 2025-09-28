@@ -290,12 +290,15 @@ window.onload = () => {
     const DEFAULT_COMPETENCY_BUNDLE_LABEL = '(5) PGR Competency Checklist';
     const LEGACY_COMPETENCY_TEMPLATE_URL = 'data/competency-template.json';
     const LEGACY_COMPETENCY_DATASET_URL = 'data/competency-dataset.json';
+    const STATIC_PGR_CHECKLIST_URL = 'pgr_competency_checklist.json';
 
     let competencyTemplate = null;
     let competencyDataset = null;
     let competencySource = { template: '', dataset: '' };
     let checklistMap = new Map();
     let selectedChecklistKey = '';
+    let staticPgrChecklist = null;
+    let staticPgrChecklistPromise = null;
 
     function getRandomAvatar() { return AVATARS[Math.floor(Math.random() * AVATARS.length)]; }
     function getAvatarMarkup(avatar) { return avatar ? `<span class="starter-avatar" title="${AVATAR_TOOLTIP}">${avatar}</span>` : ''; }
@@ -410,9 +413,236 @@ window.onload = () => {
         return rows;
     }
 
+    function humanizeKey(key) {
+        if (!key) return '';
+        return key
+            .split('_')
+            .filter(Boolean)
+            .map(part => {
+                if (part.length <= 3 && part === part.toUpperCase()) return part;
+                return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+            })
+            .join(' ');
+    }
+
+    function normalizePgrChecklist(raw) {
+        if (!raw || typeof raw !== 'object') throw new Error('Checklist file was empty or invalid.');
+        const root = raw.PGR_Competency_Checklist;
+        if (!root || typeof root !== 'object') throw new Error('Checklist file missing "PGR_Competency_Checklist" root.');
+
+        const meta = root.Meta && typeof root.Meta === 'object' ? { ...root.Meta } : {};
+        const startShiftMeta = {};
+        const sections = [];
+
+        const pushArraySection = (category, subcategory, arr) => {
+            if (!Array.isArray(arr) || !arr.length) return;
+            sections.push({
+                category,
+                subcategory: subcategory || '',
+                items: arr.map(item => ({ label: (item == null ? '' : String(item)).trim(), detail: '' }))
+            });
+        };
+
+        const startingShift = root.Starting_Shift;
+        if (startingShift && typeof startingShift === 'object') {
+            for (const [key, value] of Object.entries(startingShift)) {
+                if (Array.isArray(value)) {
+                    pushArraySection('Starting Shift', humanizeKey(key), value);
+                } else {
+                    startShiftMeta[humanizeKey(key)] = value == null ? '' : String(value);
+                }
+            }
+        }
+
+        const importantLocations = root.Important_Locations;
+        if (importantLocations && typeof importantLocations === 'object') {
+            const items = Object.entries(importantLocations).map(([key, value]) => ({
+                label: humanizeKey(key),
+                detail: value == null ? '' : String(value)
+            }));
+            if (items.length) {
+                sections.push({ category: 'Important Locations', subcategory: '', items });
+            }
+        }
+
+        pushArraySection('Bepoz Cash Handling', '', root.Bepoz_Cash_Handling);
+
+        const bars = root.Bars;
+        if (bars && typeof bars === 'object') {
+            for (const [key, value] of Object.entries(bars)) {
+                pushArraySection('Bars', humanizeKey(key), value);
+            }
+        }
+
+        pushArraySection('Bar Knowledge', '', root.Bar_Knowledge);
+        pushArraySection('Food Offerings', '', root.Food_Offerings);
+        pushArraySection('Floor', '', root.Floor);
+        pushArraySection('BOH Cleaning Duties', '', root.BOH_Cleaning_Duties);
+
+        return { meta, startShiftMeta, sections };
+    }
+
+    async function ensureStaticPgrChecklist() {
+        if (staticPgrChecklist) return staticPgrChecklist;
+        if (!staticPgrChecklistPromise) {
+            staticPgrChecklistPromise = fetchJson(STATIC_PGR_CHECKLIST_URL)
+                .then(normalizePgrChecklist)
+                .then(parsed => {
+                    staticPgrChecklist = parsed;
+                    return parsed;
+                })
+                .catch(error => {
+                    staticPgrChecklistPromise = null;
+                    throw error;
+                });
+        }
+        return staticPgrChecklistPromise;
+    }
+
+    const CATEGORY_COLOR_MAP = {
+        'Starting Shift': { fill: { fgColor: { rgb: 'C6EFCE' }, patternType: 'solid' } },
+        'Important Locations': { fill: { fgColor: { rgb: '9C2F3B' }, patternType: 'solid' }, font: { color: { rgb: 'FFFFFF' } } },
+        'Bepoz Cash Handling': { fill: { fgColor: { rgb: '2F5597' }, patternType: 'solid' }, font: { color: { rgb: 'FFFFFF' } } },
+        Bars: { fill: { fgColor: { rgb: 'FFD966' }, patternType: 'solid' } },
+        'Bar Knowledge': { fill: { fgColor: { rgb: '000000' }, patternType: 'solid' }, font: { color: { rgb: 'FFFFFF' } } },
+        'Food Offerings': { fill: { fgColor: { rgb: 'F4B183' }, patternType: 'solid' } },
+        Floor: { fill: { fgColor: { rgb: '4DB6AC' }, patternType: 'solid' } },
+        'BOH Cleaning Duties': { fill: { fgColor: { rgb: 'B7B7B7' }, patternType: 'solid' } }
+    };
+
+    const OUTLET_CATEGORY_RULES = new Map([
+        ['sov south floor', ['Starting Shift', 'Important Locations', 'Bepoz Cash Handling', 'Floor']],
+        ['oasis bar', ['BOH Cleaning Duties']],
+        ['oasis food', ['Food Offerings']],
+        ['sov dining', ['Food Offerings']],
+        ['sov south bar', ['Bars', 'Bar Knowledge']],
+        ['sov north floor', ['Bars', 'Bar Knowledge']]
+    ]);
+
+    function deriveRequiredCategories(outlets = []) {
+        const categories = new Set();
+        for (const outlet of outlets) {
+            if (!outlet) continue;
+            const mapped = OUTLET_CATEGORY_RULES.get(String(outlet).trim().toLowerCase());
+            if (!mapped) continue;
+            for (const category of mapped) categories.add(category);
+        }
+        return categories;
+    }
+
+    function categoryCell(category) {
+        if (!category) return '';
+        const style = CATEGORY_COLOR_MAP[category];
+        if (!style) return category;
+        return { v: category, s: JSON.parse(JSON.stringify(style)) };
+    }
+
+    function buildStaticChecklistSheet(template, starter, index = 0, options = {}) {
+        if (!template || !starter) return { sheetRows: [], overviewRows: [] };
+        const requiredCategoriesCandidate = options && options.requiredCategories;
+        const requiredCategories = requiredCategoriesCandidate && typeof requiredCategoriesCandidate.has === 'function'
+            ? requiredCategoriesCandidate
+            : new Set();
+        const displayName = (starter.Name && starter.Name.trim()) || `Starter ${index + 1}`;
+        const isoStart = starter.StartDate || '';
+        const startDate = isoStart ? toDMY(parseYMD(isoStart)) : '';
+        const generatedOn = toDMY(new Date());
+
+        const metaRows = [
+            ['Team Member', displayName],
+            ['Staff ID', starter.StaffID || ''],
+            ['Start Date', startDate],
+            ['Checklist Generated On', generatedOn]
+        ];
+
+        const templateMeta = template.meta || {};
+        const checklistName = templateMeta.Name || displayName;
+        const checklistDate = templateMeta.Date || startDate || generatedOn;
+        if (templateMeta.Author) metaRows.push(['Template Author', templateMeta.Author]);
+        if (templateMeta.Created) metaRows.push(['Template Created', templateMeta.Created]);
+        if (checklistName) metaRows.push(['Checklist Name', checklistName]);
+        if (checklistDate) metaRows.push(['Checklist Date', checklistDate]);
+        const startShiftMeta = template.startShiftMeta || {};
+        for (const [label, value] of Object.entries(startShiftMeta)) {
+            metaRows.push([`Starting Shift ${label}`, value || '']);
+        }
+
+        const sheetRows = [['PGR Competency Checklist']];
+        sheetRows.push([]);
+        for (const row of metaRows) sheetRows.push(row);
+        sheetRows.push([]);
+
+        const header = ['Category', 'Subcategory', 'Item', 'Details', 'Status', 'Completed On', 'Notes', 'Evidence'];
+        sheetRows.push(header);
+
+        const overviewRows = [];
+        for (const section of template.sections || []) {
+            const sectionName = section.category || '';
+            const subsection = section.subcategory || '';
+            for (const item of section.items || []) {
+                const label = item.label || '';
+                const detail = item.detail || '';
+                const isRequired = requiredCategories.has(sectionName);
+                sheetRows.push([
+                    categoryCell(sectionName),
+                    subsection,
+                    label,
+                    detail,
+                    isRequired ? 'Required' : '',
+                    '',
+                    '',
+                    ''
+                ]);
+                overviewRows.push({
+                    Starter: displayName,
+                    StaffID: starter.StaffID || '',
+                    StartDate: startDate,
+                    Category: sectionName,
+                    Subcategory: subsection,
+                    Item: label,
+                    Details: detail,
+                    Required: isRequired ? 'Yes' : 'No'
+                });
+            }
+        }
+
+        return { sheetRows, overviewRows };
+    }
+
+    function sanitizeSheetName(name) {
+        const invalid = /[\[\]\*\/\\\?:]/g;
+        let sanitized = (name || '').replace(invalid, ' ').replace(/\s+/g, ' ').trim();
+        if (!sanitized) sanitized = 'Sheet';
+        if (sanitized.length > 31) sanitized = sanitized.slice(0, 31);
+        return sanitized;
+    }
+
+    function makeUniqueSheetName(base, usedNames) {
+        const sanitizedBase = sanitizeSheetName(base);
+        let candidate = sanitizedBase;
+        let counter = 1;
+        while (usedNames.has(candidate)) {
+            counter += 1;
+            const suffix = ` ${counter}`;
+            const trimmed = sanitizedBase.slice(0, Math.max(0, 31 - suffix.length));
+            candidate = sanitizeSheetName(`${trimmed}${suffix}`);
+        }
+        usedNames.add(candidate);
+        return candidate;
+    }
+
+    function buildChecklistSheetName(starter, index, usedNames) {
+        const baseSegment = (starter?.Name && starter.Name.trim()) || `Starter ${index + 1}`;
+        const base = `Checklist ${baseSegment}`;
+        return makeUniqueSheetName(base, usedNames);
+    }
+
     competencyTools.mapTemplateToStarter = mapTemplateToStarter;
     competencyTools.flattenChecklist = flattenChecklist;
     competencyTools.flattenChecklistCollection = flattenChecklistCollection;
+    competencyTools.normalizePgrChecklist = normalizePgrChecklist;
+    competencyTools.buildStaticChecklistSheet = buildStaticChecklistSheet;
+    competencyTools.deriveRequiredCategories = deriveRequiredCategories;
     window.__competencyTools = competencyTools;
 
     function describeTemplate(template) {
@@ -1036,7 +1266,46 @@ window.onload = () => {
     byId('buildAll').onclick = buildAll;
     byId('clearRosterBtn').onclick = clearRoster;
     byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
-    byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
+    byId('exportAllXls').onclick = async () => {
+        if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; }
+        let staticTemplate;
+        try {
+            staticTemplate = await ensureStaticPgrChecklist();
+        } catch (error) {
+            console.error('Failed to load PGR competency checklist:', error);
+            showModal('Export Error', 'Unable to load the competency checklist data. Please refresh and try again.');
+            return;
+        }
+        const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift })));
+        const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, wsSchedule, 'Roster');
+        XLSX.utils.book_append_sheet(wb, wsStarters, 'Starters');
+
+        const usedSheetNames = new Set(['Roster', 'Starters']);
+        const overviewRows = [];
+        starters.forEach((starter, index) => {
+            const starterOutlets = allRows
+                .filter(row => row.Starter === starter.Name)
+                .map(row => row.Outlet);
+            const requiredCategories = deriveRequiredCategories(starterOutlets);
+            const { sheetRows, overviewRows: rows } = buildStaticChecklistSheet(staticTemplate, starter, index, { requiredCategories });
+            if (sheetRows.length > 0) {
+                const wsChecklist = XLSX.utils.aoa_to_sheet(sheetRows);
+                const sheetName = buildChecklistSheetName(starter, index, usedSheetNames);
+                XLSX.utils.book_append_sheet(wb, wsChecklist, sheetName);
+            }
+            if (rows && rows.length) overviewRows.push(...rows);
+        });
+
+        if (overviewRows.length) {
+            const wsOverview = XLSX.utils.json_to_sheet(overviewRows);
+            const overviewName = makeUniqueSheetName('Competency Overview', usedSheetNames);
+            XLSX.utils.book_append_sheet(wb, wsOverview, overviewName);
+        }
+
+        XLSX.writeFile(wb, 'roster_and_starters.xlsx');
+    };
 
     // --- INITIAL SETUP ---
     updateChecklistSummaries();
