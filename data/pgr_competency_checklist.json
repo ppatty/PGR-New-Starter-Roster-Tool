@@ -1,0 +1,158 @@
+{
+  "bundle": "pgr_competency_checklist",
+  "template": {
+    "title": "PGR Private Gaming Rooms Competency Checklist",
+    "version": "2025.2",
+    "statusOptions": ["Not Started", "In Progress", "Complete", "Signed Off"],
+    "defaultStatus": "Not Started",
+    "metadataFields": [
+      {"key": "name", "label": "Team Member"},
+      {"key": "staffId", "label": "Staff ID"},
+      {"key": "role", "label": "Role"},
+      {"key": "department", "label": "Department"},
+      {"key": "mentor", "label": "Assigned Mentor"},
+      {"key": "startDateDisplay", "label": "Start Date"}
+    ],
+    "sections": [
+      {
+        "title": "Orientation & Foundations",
+        "description": "Baseline onboarding milestones for {{name}}.",
+        "items": [
+          {
+            "id": "welcome-day",
+            "label": "Attend Welcome Day",
+            "description": "Confirm attendance on {{startDateDisplay}} or next available session.",
+            "defaultStatus": "In Progress"
+          },
+          {
+            "id": "onboarding-pack",
+            "label": "Complete onboarding documentation",
+            "description": "All onboarding paperwork submitted before first rostered shift.",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "mentor-intro",
+            "label": "Meet assigned mentor {{mentor}}",
+            "description": "Schedule introductory session with mentor during Week 1.",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Venue Familiarisation",
+        "description": "Hands-on exposure across PGR venues.",
+        "items": [
+          {
+            "id": "oasis-floor",
+            "label": "Shadow Oasis host team",
+            "description": "Observe live service alongside {{mentor}}.",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "sovereign-floor",
+            "label": "Complete Sovereign Room immersion",
+            "description": "Full run-through of Sovereign guest journey.",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "bar-competency",
+            "label": "Demonstrate beverage service standards",
+            "description": "Execute Sovereign cocktail and beverage standards.",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Compliance & Host Excellence",
+        "description": "Critical compliance checkpoints for all Private Gaming talent.",
+        "items": [
+          {
+            "id": "aml-training",
+            "label": "Finish AML/CTF training in LMS",
+            "description": "Upload certificate to SuccessFactors upon completion.",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "host-standards",
+            "label": "Sign off on PGR host service standards",
+            "description": "Review service bible with {{mentor}} and Duty Manager.",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "handover-check",
+            "label": "Complete three supervised handovers",
+            "description": "Duty Manager to sign once confident in handover process.",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      }
+    ]
+  },
+  "dataset": {
+    "templateVersion": "2025.2",
+    "updated": "2025-02-18",
+    "defaults": {
+      "role": "Private Gaming Host",
+      "department": "Private Gaming Rooms",
+      "mentor": "TBC",
+      "context": {
+        "brand": "PGR",
+        "handbookLink": "https://intranet.pgr.training/handbook"
+      },
+      "statusOptions": ["Not Started", "In Progress", "Complete", "Signed Off"],
+      "defaultStatus": "Not Started"
+    },
+    "people": [
+      {
+        "name": "Dakota Parata",
+        "staffId": "123456",
+        "role": "Private Gaming Host",
+        "mentor": "Jordan Rivers",
+        "notes": "Shadow Jordan for first Sovereign shift.",
+        "context": {
+          "orientationRoom": "Sovereign"
+        },
+        "competencies": {
+          "welcome-day": {"status": "Complete", "completedOn": "2025-02-03"},
+          "onboarding-pack": {"status": "Complete", "completedOn": "2025-01-28"},
+          "mentor-intro": {"status": "Signed Off", "completedOn": "2025-02-07"},
+          "oasis-floor": {"status": "In Progress"},
+          "aml-training": {"status": "In Progress", "notes": "Assessment booked 21 Feb"}
+        }
+      },
+      {
+        "name": "Imogen Tao",
+        "staffId": "654321",
+        "role": "Sovereign Host",
+        "mentor": "Chantelle Hart",
+        "competencies": {
+          "welcome-day": {"status": "Complete", "completedOn": "2025-01-22"},
+          "mentor-intro": {"status": "Complete", "completedOn": "2025-01-25"},
+          "oasis-floor": {"status": "Complete", "completedOn": "2025-02-04"},
+          "sovereign-floor": {"status": "In Progress"},
+          "aml-training": {"status": "In Progress", "notes": "Awaiting LMS confirmation"},
+          "handover-check": {"status": "Not Started"}
+        }
+      },
+      {
+        "name": "Micah Latu",
+        "staffId": "882210",
+        "role": "Private Gaming Concierge",
+        "mentor": "Sasha Bloom",
+        "notes": "Prior experience at Treasury Brisbane.",
+        "context": {
+          "orientationRoom": "Oasis"
+        },
+        "competencies": {
+          "welcome-day": {"status": "Complete", "completedOn": "2025-01-08"},
+          "onboarding-pack": {"status": "Complete", "completedOn": "2025-01-05"},
+          "mentor-intro": {"status": "Complete", "completedOn": "2025-01-09"},
+          "sovereign-floor": {"status": "Complete", "completedOn": "2025-01-30"},
+          "bar-competency": {"status": "In Progress"},
+          "aml-training": {"status": "Complete", "completedOn": "2025-01-18"},
+          "host-standards": {"status": "In Progress"}
+        }
+      }
+    ]
+  }
+}
