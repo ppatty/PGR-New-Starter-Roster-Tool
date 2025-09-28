@@ -97,6 +97,30 @@
     .btn.ghost { background-color: transparent; border-color: transparent; color: var(--text-secondary); }
     .btn.ghost:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
     .table-wrapper { overflow: auto; border: 1px solid var(--border-primary); border-radius: var(--radius-lg); }
+    .checklist-manager { display: flex; flex-direction: column; gap: 1rem; }
+    details.checklist-panel { border: 1px solid var(--border-primary); border-radius: var(--radius-lg); background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%); box-shadow: var(--shadow-sm); transition: border-color 0.2s ease; }
+    details.checklist-panel[open] { border-color: var(--brand-primary); box-shadow: var(--shadow-md); }
+    details.checklist-panel summary { list-style: none; display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; color: var(--text-primary); }
+    details.checklist-panel summary::-webkit-details-marker { display: none; }
+    .checklist-panel-meta { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted); }
+    .checklist-progress { padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-secondary); background-color: rgba(212, 175, 55, 0.1); color: var(--brand-secondary); font-weight: 600; }
+    .checklist-panel-body { padding: 0 1.25rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+    .checklist-section { border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 1rem; background: var(--bg-tertiary); display: flex; flex-direction: column; gap: 0.75rem; }
+    .checklist-section h4 { margin: 0; font-size: 0.95rem; color: var(--text-primary); }
+    .checklist-section p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+    .checklist-item { border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 0.75rem; background: var(--surface-alt); display: flex; flex-direction: column; gap: 0.75rem; }
+    .checklist-item-main { display: flex; align-items: flex-start; gap: 0.75rem; }
+    .checklist-item-main input[type="checkbox"] { margin-top: 0.2rem; }
+    .checklist-item-title { font-weight: 600; color: var(--text-primary); }
+    .checklist-item-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .checklist-status-chip { margin-left: auto; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
+    .checklist-status-chip.is-complete { border-color: var(--ok-primary); background-color: rgba(34, 197, 94, 0.1); color: var(--ok-primary); }
+    .checklist-item-controls { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    .checklist-item-controls label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.35rem; }
+    .checklist-item-controls select,
+    .checklist-item-controls input,
+    .checklist-item-controls textarea { width: 100%; font-size: 0.8rem; }
+    .checklist-item-controls textarea { min-height: 80px; resize: vertical; grid-column: 1 / -1; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
     th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-primary); white-space: nowrap; }
     thead th { position: sticky; top: 0; background-color: var(--bg-tertiary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); z-index: 2; }
@@ -229,8 +253,17 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="progress-h">
+      <div class="hd"><h2 id="progress-h">Step 4: Review &amp; Tick Off Competencies</h2><span class="sub">Open each starter to tick off competency requirements as they are completed</span></div>
+      <div class="bd">
+        <div id="checklistManager" class="checklist-manager" aria-live="polite">
+          Load a competency template and add team members to start tracking progress.
+        </div>
+      </div>
+    </section>
+
     <section class="card" aria-labelledby="mandatory-h">
-      <div class="hd"><h2 id="mandatory-h">Step 4: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
+      <div class="hd"><h2 id="mandatory-h">Step 5: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
       <div class="bd">
         <div class="grid g2">
           <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
@@ -240,7 +273,7 @@
     </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Step 5: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="hd"><h2 id="schedule-h">Step 6: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
@@ -295,6 +328,7 @@ window.onload = () => {
     let competencyDataset = null;
     let competencySource = { template: '', dataset: '' };
     let checklistMap = new Map();
+    let checklistOverrides = new Map();
     let selectedChecklistKey = '';
 
     function getRandomAvatar() { return AVATARS[Math.floor(Math.random() * AVATARS.length)]; }
@@ -325,6 +359,83 @@ window.onload = () => {
             const value = context[key.trim()];
             return value == null ? '' : String(value);
         });
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+    }
+
+    function isItemComplete(item) {
+        const status = (item?.status || '').toLowerCase();
+        return ['signed off', 'complete', 'completed', 'done', 'yes'].includes(status);
+    }
+
+    function pickCompletedStatus(options = []) {
+        const normalized = options.map(opt => opt.toLowerCase());
+        const signedOffIndex = normalized.indexOf('signed off');
+        if (signedOffIndex > -1) return options[signedOffIndex];
+        const completeIndex = normalized.indexOf('complete');
+        if (completeIndex > -1) return options[completeIndex];
+        const completedIndex = normalized.indexOf('completed');
+        if (completedIndex > -1) return options[completedIndex];
+        return options[options.length - 1] || 'Complete';
+    }
+
+    function pickNotStartedStatus(options = []) {
+        const normalized = options.map(opt => opt.toLowerCase());
+        const notStartedIndex = normalized.indexOf('not started');
+        if (notStartedIndex > -1) return options[notStartedIndex];
+        const defaultIndex = normalized.indexOf('in progress') > -1 ? normalized.indexOf('in progress') : 0;
+        return options[defaultIndex] || 'Not Started';
+    }
+
+    function findChecklistItem(checklist, itemId) {
+        if (!checklist) return null;
+        for (const section of checklist.sections || []) {
+            const item = (section.items || []).find(i => i.id === itemId);
+            if (item) return item;
+        }
+        return null;
+    }
+
+    function computeChecklistProgress(checklist) {
+        let total = 0;
+        let completed = 0;
+        for (const section of checklist?.sections || []) {
+            for (const item of section.items || []) {
+                total += 1;
+                if (isItemComplete(item)) completed += 1;
+            }
+        }
+        return { completed, total };
+    }
+
+    function persistChecklistItemState(starterKey, item) {
+        if (!starterKey || !item?.id) return;
+        const existing = checklistOverrides.get(starterKey) || { items: {} };
+        existing.items = existing.items || {};
+        existing.items[item.id] = {
+            status: item.status || '',
+            completedOn: item.completedOn || '',
+            notes: item.notes || '',
+            evidence: item.evidence || ''
+        };
+        checklistOverrides.set(starterKey, existing);
+    }
+
+    function applyChecklistOverrides(starterKey, checklist) {
+        const overrides = checklistOverrides.get(starterKey);
+        if (!overrides?.items) return;
+        for (const section of checklist.sections || []) {
+            for (const item of section.items || []) {
+                const patch = overrides.items[item.id];
+                if (!patch) continue;
+                if (patch.status !== undefined) item.status = patch.status;
+                if (patch.completedOn !== undefined) item.completedOn = patch.completedOn;
+                if (patch.notes !== undefined) item.notes = patch.notes;
+                if (patch.evidence !== undefined) item.evidence = patch.evidence;
+            }
+        }
     }
 
     function mapTemplateToStarter(template, starter, datasetEntry = {}, defaults = {}) {
@@ -413,6 +524,10 @@ window.onload = () => {
     competencyTools.mapTemplateToStarter = mapTemplateToStarter;
     competencyTools.flattenChecklist = flattenChecklist;
     competencyTools.flattenChecklistCollection = flattenChecklistCollection;
+    competencyTools.isItemComplete = isItemComplete;
+    competencyTools.pickCompletedStatus = pickCompletedStatus;
+    competencyTools.pickNotStartedStatus = pickNotStartedStatus;
+    competencyTools.computeChecklistProgress = computeChecklistProgress;
     window.__competencyTools = competencyTools;
 
     function describeTemplate(template) {
@@ -487,11 +602,184 @@ window.onload = () => {
         preview.innerHTML = buildChecklistHtml(checklist, { compact: true });
     }
 
+    function renderChecklistManager() {
+        const container = byId('checklistManager');
+        if (!container) return;
+        if (!competencyTemplate) {
+            container.innerHTML = 'Load a competency template and add team members to start tracking progress.';
+            return;
+        }
+        if (!starters.length) {
+            container.innerHTML = 'Add team members in Step 1 to generate checklists that can be ticked off.';
+            return;
+        }
+        if (!checklistMap.size) {
+            container.innerHTML = 'Checklists will appear here once the template has been applied.';
+            return;
+        }
+
+        const fragments = [];
+        for (const starter of starters) {
+            const key = getStarterKey(starter);
+            const checklist = checklistMap.get(key);
+            if (!checklist) continue;
+            const { completed, total } = computeChecklistProgress(checklist);
+            const progressText = total ? `${completed}/${total} signed off` : 'No checklist items configured';
+            const sectionsHtml = (checklist.sections || []).map(section => {
+                const itemsHtml = (section.items || []).map(item => {
+                    const checked = isItemComplete(item);
+                    const options = item.statusOptions || competencyTemplate.statusOptions || [];
+                    const statusOptionsHtml = options.map(opt => `<option value="${escapeHtml(opt)}"${opt === item.status ? ' selected' : ''}>${escapeHtml(opt)}</option>`).join('');
+                    const notesValue = item.notes || '';
+                    return `
+                        <div class="checklist-item" data-starter-key="${escapeHtml(key)}" data-item-id="${escapeHtml(item.id || '')}">
+                            <div class="checklist-item-main">
+                                <input type="checkbox" class="checklist-status-toggle" ${checked ? 'checked' : ''} aria-label="Toggle ${escapeHtml(item.label || 'competency item')} for ${escapeHtml(checklist.name)}">
+                                <div>
+                                    <div class="checklist-item-title">${escapeHtml(item.label || '')}</div>
+                                    ${item.description ? `<div class="checklist-item-desc">${escapeHtml(item.description)}</div>` : ''}
+                                </div>
+                                <span class="checklist-status-chip ${checked ? 'is-complete' : ''}">${escapeHtml(item.status || '') || '—'}</span>
+                            </div>
+                            <div class="checklist-item-controls">
+                                <label>Status<select class="checklist-status-select">${statusOptionsHtml}</select></label>
+                                <label>Completed On<input type="date" class="checklist-completed-on" value="${escapeHtml(item.completedOn || '')}"></label>
+                                <label>Notes<textarea class="checklist-notes" placeholder="Add notes or evidence...">${escapeHtml(notesValue)}</textarea></label>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                return `
+                    <div class="checklist-section">
+                        <h4>${escapeHtml(section.title || 'Competency Area')}</h4>
+                        ${section.description ? `<p>${escapeHtml(section.description)}</p>` : ''}
+                        ${itemsHtml || '<p style="margin:0; font-size:0.8rem; color:var(--text-muted);">No items configured.</p>'}
+                    </div>
+                `;
+            }).join('');
+
+            fragments.push(`
+                <details class="checklist-panel" data-starter-key="${escapeHtml(key)}" ${selectedChecklistKey === key ? 'open' : ''}>
+                    <summary>
+                        <span>${escapeHtml(checklist.name || starter.Name)}</span>
+                        <div class="checklist-panel-meta">
+                            <span>${escapeHtml(checklist.staffId || starter.StaffID || 'No ID')}</span>
+                            <span class="checklist-progress" data-progress-for="${escapeHtml(key)}">${escapeHtml(progressText)}</span>
+                        </div>
+                    </summary>
+                    <div class="checklist-panel-body">
+                        ${sectionsHtml || '<p style="margin:0; color:var(--text-muted);">No sections available in this template.</p>'}
+                    </div>
+                </details>
+            `);
+        }
+
+        container.innerHTML = fragments.join('');
+    }
+
+    function updateChecklistItemDom(wrapper, item) {
+        if (!wrapper || !item) return;
+        const checkbox = wrapper.querySelector('.checklist-status-toggle');
+        if (checkbox) checkbox.checked = isItemComplete(item);
+        const select = wrapper.querySelector('.checklist-status-select');
+        if (select && select.value !== item.status) select.value = item.status || '';
+        const chip = wrapper.querySelector('.checklist-status-chip');
+        if (chip) {
+            chip.textContent = item.status || '—';
+            chip.classList.toggle('is-complete', isItemComplete(item));
+        }
+        const completedOn = wrapper.querySelector('.checklist-completed-on');
+        if (completedOn && completedOn.value !== (item.completedOn || '')) completedOn.value = item.completedOn || '';
+        const notes = wrapper.querySelector('.checklist-notes');
+        if (notes && notes.value !== (item.notes || '')) notes.value = item.notes || '';
+    }
+
+    function updateChecklistProgressDisplay(panel, checklist) {
+        if (!panel || !checklist) return;
+        const progressEl = panel.querySelector('.checklist-progress');
+        if (!progressEl) return;
+        const { completed, total } = computeChecklistProgress(checklist);
+        progressEl.textContent = total ? `${completed}/${total} signed off` : 'No checklist items configured';
+    }
+
+    function getChecklistContextFromElement(element) {
+        const itemElement = element.closest('.checklist-item');
+        if (!itemElement) return null;
+        const starterKey = itemElement.dataset.starterKey;
+        const itemId = itemElement.dataset.itemId;
+        if (!starterKey || !itemId) return null;
+        const checklist = checklistMap.get(starterKey);
+        if (!checklist) return null;
+        const item = findChecklistItem(checklist, itemId);
+        if (!item) return null;
+        const panel = itemElement.closest('.checklist-panel');
+        return { starterKey, itemId, checklist, item, itemElement, panel };
+    }
+
+    function syncPreviewSelectionFor(key) {
+        if (!key) return;
+        selectedChecklistKey = key;
+        const select = byId('checklistPreviewSelect');
+        if (select && select.value !== key && checklistMap.has(key)) select.value = key;
+    }
+
+    function handleChecklistManagerChange(event) {
+        const target = event.target;
+        if (!target || !(target.classList?.contains('checklist-status-toggle') || target.classList?.contains('checklist-status-select') || target.classList?.contains('checklist-completed-on'))) {
+            return;
+        }
+        const context = getChecklistContextFromElement(target);
+        if (!context) return;
+        const { starterKey, checklist, item, itemElement, panel } = context;
+        if (target.classList.contains('checklist-status-toggle')) {
+            const options = item.statusOptions || competencyTemplate?.statusOptions || [];
+            if (target.checked) {
+                item.status = pickCompletedStatus(options);
+                if (!item.completedOn) item.completedOn = toYMD(new Date());
+            } else {
+                item.status = pickNotStartedStatus(options);
+                item.completedOn = '';
+            }
+            persistChecklistItemState(starterKey, item);
+            updateChecklistItemDom(itemElement, item);
+        } else if (target.classList.contains('checklist-status-select')) {
+            item.status = target.value;
+            if (isItemComplete(item) && !item.completedOn) item.completedOn = toYMD(new Date());
+            persistChecklistItemState(starterKey, item);
+            updateChecklistItemDom(itemElement, item);
+        } else if (target.classList.contains('checklist-completed-on')) {
+            item.completedOn = target.value || '';
+            persistChecklistItemState(starterKey, item);
+        }
+        updateChecklistProgressDisplay(panel, checklist);
+        syncPreviewSelectionFor(starterKey);
+        if (selectedChecklistKey === starterKey) {
+            renderChecklistPreview(checklist);
+        }
+    }
+
+    function handleChecklistManagerInput(event) {
+        const target = event.target;
+        if (!target || !target.classList?.contains('checklist-notes')) return;
+        const context = getChecklistContextFromElement(target);
+        if (!context) return;
+        const { starterKey, checklist, item, itemElement, panel } = context;
+        item.notes = target.value;
+        persistChecklistItemState(starterKey, item);
+        updateChecklistItemDom(itemElement, item);
+        updateChecklistProgressDisplay(panel, checklist);
+        syncPreviewSelectionFor(starterKey);
+        if (selectedChecklistKey === starterKey) {
+            renderChecklistPreview(checklist);
+        }
+    }
+
     function syncChecklists() {
         checklistMap = new Map();
         if (!competencyTemplate) {
             updateChecklistSelect();
             renderChecklistPreview(null);
+            renderChecklistManager();
             return;
         }
         const defaults = competencyDataset?.defaults || {};
@@ -499,6 +787,7 @@ window.onload = () => {
             const entry = findDatasetEntry(starter) || {};
             const key = getStarterKey(starter);
             const checklist = mapTemplateToStarter(competencyTemplate, starter, entry, defaults);
+            applyChecklistOverrides(key, checklist);
             checklistMap.set(key, checklist);
         }
         updateChecklistSelect();
@@ -507,9 +796,18 @@ window.onload = () => {
             const firstKey = getStarterKey(starters[0]);
             if (checklistMap.has(firstKey)) selectedChecklistKey = firstKey;
         }
+        const activeKeys = new Set(checklistMap.keys());
+        if (checklistOverrides.size) {
+            const nextOverrides = new Map();
+            for (const [key, value] of checklistOverrides.entries()) {
+                if (activeKeys.has(key)) nextOverrides.set(key, value);
+            }
+            checklistOverrides = nextOverrides;
+        }
         const select = byId('checklistPreviewSelect');
         if (select) select.value = selectedChecklistKey || '';
         renderChecklistPreview(selectedChecklistKey ? checklistMap.get(selectedChecklistKey) : null);
+        renderChecklistManager();
     }
 
     function exportAllChecklistsCsv() {
@@ -600,13 +898,17 @@ window.onload = () => {
     }
 
     function setCompetencyTemplate(template, sourceLabel = '') {
+        const changed = competencyTemplate !== template;
         competencyTemplate = template;
+        if (changed) checklistOverrides = new Map();
         competencySource.template = sourceLabel;
         updateChecklistSummaries();
     }
 
     function setCompetencyDataset(dataset, sourceLabel = '') {
+        const changed = competencyDataset !== dataset;
         competencyDataset = dataset;
+        if (changed) checklistOverrides = new Map();
         competencySource.dataset = sourceLabel;
         updateChecklistSummaries();
     }
@@ -1023,6 +1325,11 @@ window.onload = () => {
     byId('importTemplateInput').onchange = handleTemplateImport;
     byId('importDatasetInput').onchange = handleDatasetImport;
     byId('checklistPreviewSelect').addEventListener('change', handleChecklistSelectionChange);
+    const checklistManagerEl = byId('checklistManager');
+    if (checklistManagerEl) {
+        checklistManagerEl.addEventListener('change', handleChecklistManagerChange);
+        checklistManagerEl.addEventListener('input', handleChecklistManagerInput);
+    }
     byId('exportChecklistCsv').onclick = exportAllChecklistsCsv;
     byId('exportChecklistXls').onclick = exportAllChecklistsXls;
     byId('exportSelectedChecklistCsv').onclick = exportSelectedChecklistCsv;

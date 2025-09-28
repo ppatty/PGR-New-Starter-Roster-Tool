@@ -58,6 +58,8 @@ test('competency template maps to starters and exports rows', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const blockMatch = html.match(/const competencyTools = {};[\s\S]*?window.__competencyTools = competencyTools;/);
   assert.ok(blockMatch, 'competency helper block not found');
+  assert.ok(/id="checklistManager"/.test(html), 'checklist manager container missing');
+  assert.ok(/Step 4: Review &amp; Tick Off Competencies/.test(html), 'interactive competency step missing');
 
   const sandbox = { window: {}, console };
   vm.createContext(sandbox);
@@ -71,6 +73,10 @@ test('competency template maps to starters and exports rows', () => {
   assert.ok(tools, 'competency tools were not exposed');
   assert.strictEqual(typeof tools.mapTemplateToStarter, 'function');
   assert.strictEqual(typeof tools.flattenChecklistCollection, 'function');
+  assert.strictEqual(typeof tools.isItemComplete, 'function', 'isItemComplete helper missing');
+  assert.strictEqual(typeof tools.pickCompletedStatus, 'function', 'pickCompletedStatus helper missing');
+  assert.strictEqual(typeof tools.pickNotStartedStatus, 'function', 'pickNotStartedStatus helper missing');
+  assert.strictEqual(typeof tools.computeChecklistProgress, 'function', 'computeChecklistProgress helper missing');
 
   const starters = [
     { Name: 'Dakota Parata', StaffID: '123456', StartDate: '2025-02-03' },
@@ -107,4 +113,11 @@ test('competency template maps to starters and exports rows', () => {
   const dakotaRow = rows.find(row => row.Name === 'Dakota Parata' && row.Item.includes('Attend Welcome Day'));
   assert.ok(dakotaRow, 'expected Dakota row missing');
   assert.strictEqual(dakotaRow.Status, 'Complete');
+
+  const progress = tools.computeChecklistProgress(dakotaChecklist);
+  assert.ok(progress.total > 0, 'progress total should be positive');
+  assert.ok(progress.completed > 0, 'progress completed should reflect completed competencies');
+  assert.ok(tools.isItemComplete({ status: 'Signed Off' }), 'Signed Off should be treated as complete');
+  assert.strictEqual(tools.pickCompletedStatus(['Not Started', 'Complete', 'Signed Off']), 'Signed Off');
+  assert.strictEqual(tools.pickNotStartedStatus(['In Progress', 'Not Started']), 'Not Started');
 });

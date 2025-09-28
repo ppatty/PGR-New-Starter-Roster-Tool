@@ -21,12 +21,12 @@ Flexible Workflow: Clear the generated roster with a single click to start over 
 
 Export Options: Export the final roster to both .csv and .xlsx formats for easy sharing and printing.
 
-Competency Checklists: Load a competency template and dataset to automatically generate individualized onboarding checklists for each starter, with CSV/XLSX exports and a printable view.
+Competency Checklists: Load a competency template and dataset to automatically generate individualized onboarding checklists for each starter, tick items off in-app, and export the latest progress (CSV/XLSX/print).
 
 Configurable Session Days: Choose which weekdays host Welcome Day and PGR Onboarding.
 
 How to Use
-  The application is designed around a simple, four-step workflow:
+  The application is designed around a guided, six-step workflow:
 
 Step 1: Add New Team Members
 
@@ -52,11 +52,17 @@ Use the "Use Default Template" button or import your own template/dataset JSON f
 
 Select a team member from the preview list to review their personalized competency checklist. Export all checklists (CSV/XLSX), download an individual checklist, or open a printable view that can be saved as PDF.
 
-Step 4: Select Session Days
+Step 4: Review & Tick Off Competencies
+
+Scroll through each starter’s checklist, tick items off as they are completed, capture completion dates, and jot down notes or evidence.
+
+Status updates automatically feed into the preview pane and exports so supervisors can keep progress current.
+
+Step 5: Select Session Days
 
 Use the dropdowns to choose which days Welcome Day and PGR Onboarding occur.
 
-Step 5: Build & Export
+Step 6: Build & Export
 
 Click the "Build Roster" button. The application will instantly generate the full schedule in the table at the bottom.
 
