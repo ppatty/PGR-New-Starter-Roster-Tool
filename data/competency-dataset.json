@@ -1,0 +1,59 @@
+{
+  "templateVersion": "2025.1",
+  "updated": "2025-01-15",
+  "defaults": {
+    "role": "Private Gaming Host",
+    "department": "Private Gaming Rooms",
+    "mentor": "TBC",
+    "context": {
+      "brand": "PGR"
+    },
+    "statusOptions": ["Not Started", "In Progress", "Complete"],
+    "defaultStatus": "Not Started"
+  },
+  "people": [
+    {
+      "name": "Dakota Parata",
+      "staffId": "123456",
+      "role": "Private Gaming Host",
+      "mentor": "Jordan Rivers",
+      "notes": "Shadow Jordan for first Sovereign shift.",
+      "competencies": {
+        "welcome-day": {"status": "Complete", "completedOn": "2025-02-03"},
+        "onboarding-pack": {"status": "Complete", "completedOn": "2025-01-28"},
+        "mentor-intro": {"status": "In Progress"},
+        "oasis-floor": {"status": "In Progress"},
+        "aml-training": {"status": "Not Started"}
+      }
+    },
+    {
+      "name": "Imogen Tao",
+      "staffId": "654321",
+      "role": "Sovereign Host",
+      "mentor": "Chantelle Hart",
+      "competencies": {
+        "welcome-day": {"status": "Complete", "completedOn": "2025-01-22"},
+        "mentor-intro": {"status": "Complete", "completedOn": "2025-01-25"},
+        "oasis-floor": {"status": "Complete", "completedOn": "2025-02-04"},
+        "sovereign-floor": {"status": "In Progress"},
+        "aml-training": {"status": "In Progress", "notes": "Awaiting LMS confirmation"}
+      }
+    },
+    {
+      "name": "Micah Latu",
+      "staffId": "882210",
+      "role": "Private Gaming Concierge",
+      "mentor": "Sasha Bloom",
+      "notes": "Prior experience at Treasury Brisbane.",
+      "competencies": {
+        "welcome-day": {"status": "Complete", "completedOn": "2025-01-08"},
+        "onboarding-pack": {"status": "Complete", "completedOn": "2025-01-05"},
+        "mentor-intro": {"status": "Complete", "completedOn": "2025-01-09"},
+        "sovereign-floor": {"status": "Complete", "completedOn": "2025-01-30"},
+        "bar-competency": {"status": "In Progress"},
+        "aml-training": {"status": "Complete", "completedOn": "2025-01-18"},
+        "host-standards": {"status": "In Progress"}
+      }
+    }
+  ]
+}

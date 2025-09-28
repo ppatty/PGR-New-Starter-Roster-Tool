@@ -199,8 +199,38 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="competency-h">
+      <div class="hd"><h2 id="competency-h">Step 3: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <button id="loadDefaultCompetencies" class="btn" type="button">Use Default Template</button>
+          <button id="importTemplateBtn" class="btn" type="button">Import Template JSON</button>
+          <button id="importDatasetBtn" class="btn" type="button">Import Dataset JSON</button>
+          <input type="file" id="importTemplateInput" accept=".json" class="visually-hidden" />
+          <input type="file" id="importDatasetInput" accept=".json" class="visually-hidden" />
+        </div>
+        <div class="mt-4">
+          <div id="templateSummary" style="font-size:0.85rem; color:var(--text-secondary);">No competency template loaded.</div>
+          <div id="datasetSummary" style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.5rem;">No competency dataset loaded.</div>
+        </div>
+        <div class="mt-4">
+          <label for="checklistPreviewSelect">Preview Checklist For</label>
+          <select id="checklistPreviewSelect"><option value="">Select a team member...</option></select>
+        </div>
+        <div id="checklistPreview" class="mt-4" style="border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:1rem; background:var(--bg-tertiary); max-height:260px; overflow:auto; color:var(--text-secondary);">
+          Load a template and dataset to preview individualized checklists.
+        </div>
+        <div class="grid g2 mt-4">
+          <button id="exportChecklistCsv" class="btn" type="button">Export All Checklists (CSV)</button>
+          <button id="exportChecklistXls" class="btn" type="button">Export All Checklists (Excel)</button>
+          <button id="exportSelectedChecklistCsv" class="btn" type="button">Download Selected Checklist (CSV)</button>
+          <button id="printChecklistBtn" class="btn" type="button">Print Checklist</button>
+        </div>
+      </div>
+    </section>
+
     <section class="card" aria-labelledby="mandatory-h">
-      <div class="hd"><h2 id="mandatory-h">Step 3: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
+      <div class="hd"><h2 id="mandatory-h">Step 4: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
       <div class="bd">
         <div class="grid g2">
           <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
@@ -210,7 +240,7 @@
     </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Step 4: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="hd"><h2 id="schedule-h">Step 5: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
@@ -256,9 +286,411 @@ window.onload = () => {
     };
     const AVATARS = ['🦊', '🐼', '🦉', '🦁', '🐙', '🐳', '🦄', '🐲', '🌟', '🚀', '🎲', '🎯'];
     const AVATAR_TOOLTIP = 'This avatar is just for fun and has no effect on scheduling.';
+    const DEFAULT_COMPETENCY_BUNDLE_URL = 'data/(5)%20PGR%20Competancy%20Checklist.txt';
+    const DEFAULT_COMPETENCY_BUNDLE_LABEL = '(5) PGR Competancy Checklist';
+    const LEGACY_COMPETENCY_TEMPLATE_URL = 'data/competency-template.json';
+    const LEGACY_COMPETENCY_DATASET_URL = 'data/competency-dataset.json';
+
+    let competencyTemplate = null;
+    let competencyDataset = null;
+    let competencySource = { template: '', dataset: '' };
+    let checklistMap = new Map();
+    let selectedChecklistKey = '';
 
     function getRandomAvatar() { return AVATARS[Math.floor(Math.random() * AVATARS.length)]; }
     function getAvatarMarkup(avatar) { return avatar ? `<span class="starter-avatar" title="${AVATAR_TOOLTIP}">${avatar}</span>` : ''; }
+
+    // --- COMPETENCY CHECKLIST HELPERS ---
+    const competencyTools = {};
+
+    function getStarterKey(starter) {
+        if (!starter) return '';
+        const id = (starter.StaffID || '').trim();
+        return id ? `id:${id.toLowerCase()}` : `name:${starter.Name.toLowerCase()}`;
+    }
+
+    function findDatasetEntry(starter) {
+        if (!competencyDataset?.people) return null;
+        const staffId = (starter.StaffID || '').trim().toLowerCase();
+        if (staffId) {
+            const byId = competencyDataset.people.find(p => (p.staffId || '').trim().toLowerCase() === staffId);
+            if (byId) return byId;
+        }
+        return competencyDataset.people.find(p => (p.name || '').trim().toLowerCase() === starter.Name.trim().toLowerCase()) || null;
+    }
+
+    function applyPlaceholders(text, context) {
+        if (!text) return '';
+        return text.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, key) => {
+            const value = context[key.trim()];
+            return value == null ? '' : String(value);
+        });
+    }
+
+    function mapTemplateToStarter(template, starter, datasetEntry = {}, defaults = {}) {
+        if (!template || !starter) return null;
+        const isoStart = starter.StartDate || '';
+        const startDateObj = isoStart ? parseYMD(isoStart) : null;
+        const context = {
+            name: starter.Name,
+            staffId: starter.StaffID || '',
+            startDate: isoStart,
+            startDateDisplay: startDateObj ? toDMY(startDateObj) : '',
+            role: datasetEntry.role || defaults.role || '',
+            mentor: datasetEntry.mentor || defaults.mentor || '',
+            department: datasetEntry.department || defaults.department || '',
+            ...datasetEntry.context,
+            ...defaults.context
+        };
+        const metadata = (template.metadataFields || []).map(field => ({
+            key: field.key,
+            label: field.label,
+            value: datasetEntry[field.key] ?? defaults[field.key] ?? context[field.key] ?? ''
+        }));
+        const statusOptions = template.statusOptions || defaults.statusOptions || ['Not Started', 'In Progress', 'Complete'];
+        const defaultStatus = template.defaultStatus || defaults.defaultStatus || statusOptions[0];
+        const sections = (template.sections || []).map(section => {
+            const items = (section.items || []).map(item => {
+                const entry = datasetEntry?.competencies?.[item.id] || {};
+                const itemStatus = entry.status || item.defaultStatus || defaultStatus;
+                return {
+                    id: item.id,
+                    label: applyPlaceholders(item.label, context),
+                    description: applyPlaceholders(item.description || '', context),
+                    status: itemStatus,
+                    statusOptions: item.statusOptions || statusOptions,
+                    completedOn: entry.completedOn || item.completedOn || '',
+                    notes: entry.notes || datasetEntry.notes || '',
+                    evidence: entry.evidence || ''
+                };
+            });
+            return {
+                title: applyPlaceholders(section.title || '', context),
+                description: applyPlaceholders(section.description || '', context),
+                items
+            };
+        });
+        return {
+            title: template.title || 'Competency Checklist',
+            version: template.version || '1.0',
+            generatedOn: new Date().toISOString(),
+            name: starter.Name,
+            staffId: starter.StaffID || '',
+            startDate: isoStart,
+            metadata,
+            sections
+        };
+    }
+
+    function flattenChecklist(checklist) {
+        if (!checklist) return [];
+        const rows = [];
+        for (const section of checklist.sections || []) {
+            for (const item of section.items || []) {
+                rows.push({
+                    Name: checklist.name,
+                    StaffID: checklist.staffId || '',
+                    Section: section.title || '',
+                    Item: item.label || '',
+                    Status: item.status || '',
+                    CompletedOn: item.completedOn || '',
+                    Notes: item.notes || '',
+                    Evidence: item.evidence || ''
+                });
+            }
+        }
+        return rows;
+    }
+
+    function flattenChecklistCollection(checklists) {
+        const rows = [];
+        for (const cl of checklists.values()) {
+            rows.push(...flattenChecklist(cl));
+        }
+        return rows;
+    }
+
+    competencyTools.mapTemplateToStarter = mapTemplateToStarter;
+    competencyTools.flattenChecklist = flattenChecklist;
+    competencyTools.flattenChecklistCollection = flattenChecklistCollection;
+    window.__competencyTools = competencyTools;
+
+    function describeTemplate(template) {
+        if (!template) return 'No competency template loaded.';
+        const sectionCount = (template.sections || []).length;
+        return `${template.title || 'Template'} (v${template.version || '1.0'}) • ${sectionCount} section${sectionCount === 1 ? '' : 's'}`;
+    }
+
+    function describeDataset(dataset) {
+        if (!dataset) return 'No competency dataset loaded.';
+        const personCount = (dataset.people || []).length;
+        const version = dataset.templateVersion ? `v${dataset.templateVersion}` : 'unversioned';
+        return `Dataset ${version} • ${personCount} record${personCount === 1 ? '' : 's'}`;
+    }
+
+    function csvEscape(value) {
+        if (value == null) return '';
+        const str = String(value).replace(/"/g, '""');
+        return /[",\n]/.test(str) ? `"${str}"` : str;
+    }
+
+    function buildChecklistHtml(checklist, { compact = false } = {}) {
+        if (!checklist) return '<p>No checklist available.</p>';
+        const metaHtml = (checklist.metadata || []).map(m => `<div style="margin-bottom:0.25rem;"><strong>${m.label}:</strong> ${m.value || '—'}</div>`).join('');
+        const sectionHtml = (checklist.sections || []).map(section => {
+            const items = (section.items || []).map(item => {
+                return `<li style="margin-bottom:0.35rem;"><div><strong>${item.label}</strong> <span style="color:var(--brand-secondary, #D4AF37);">${item.status || '—'}</span></div>${item.description ? `<div style="font-size:0.75rem; color:var(--text-muted, #737373);">${item.description}</div>` : ''}${item.completedOn ? `<div style="font-size:0.75rem; color:var(--text-muted, #737373);">Completed: ${item.completedOn}</div>` : ''}${item.notes ? `<div style="font-size:0.75rem; color:var(--text-muted, #737373);">Notes: ${item.notes}</div>` : ''}</li>`;
+            }).join('');
+            return `<section style="margin-top:1rem;"><h4 style="margin:0 0 0.5rem; font-size:${compact ? '0.85rem' : '1rem'}; color:var(--text-primary, #f5f5f5);">${section.title}</h4>${section.description ? `<p style="margin:0 0 0.5rem; font-size:0.8rem; color:var(--text-secondary, #a3a3a3);">${section.description}</p>` : ''}<ul style="padding-left:1rem; margin:0; list-style:disc;">${items || '<li>No items configured.</li>'}</ul></section>`;
+        }).join('');
+        return `<article style="background:var(--surface, #1f1f1f); border:1px solid var(--border-primary, #404040); border-radius:var(--radius-md, 12px); padding:${compact ? '0.75rem' : '1rem'}; margin-bottom:1rem;"><header style="margin-bottom:0.75rem;"><h3 style="margin:0; color:var(--brand-secondary, #D4AF37); font-size:${compact ? '1rem' : '1.15rem'};">${checklist.name}</h3><div style="font-size:0.8rem; color:var(--text-muted, #737373);">Staff ID: ${checklist.staffId || 'N/A'} • Start: ${checklist.startDate ? toDMY(parseYMD(checklist.startDate)) : 'TBC'} • Template v${checklist.version}</div></header><div style="font-size:0.8rem; color:var(--text-secondary, #a3a3a3);">${metaHtml || '<em>No additional metadata</em>'}</div>${sectionHtml}</article>`;
+    }
+
+    function updateChecklistSummaries() {
+        const templateSummary = byId('templateSummary');
+        const datasetSummary = byId('datasetSummary');
+        if (templateSummary) templateSummary.textContent = competencyTemplate ? `${describeTemplate(competencyTemplate)}${competencySource.template ? ` • ${competencySource.template}` : ''}` : 'No competency template loaded.';
+        if (datasetSummary) datasetSummary.textContent = competencyDataset ? `${describeDataset(competencyDataset)}${competencySource.dataset ? ` • ${competencySource.dataset}` : ''}` : 'No competency dataset loaded.';
+    }
+
+    function updateChecklistSelect() {
+        const select = byId('checklistPreviewSelect');
+        if (!select) return;
+        const previousValue = selectedChecklistKey;
+        select.innerHTML = '<option value="">Select a team member...</option>';
+        for (const starter of starters) {
+            const key = getStarterKey(starter);
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = starter.StaffID ? `${starter.Name} • ${starter.StaffID}` : starter.Name;
+            if (!checklistMap.has(key)) option.disabled = !competencyTemplate;
+            select.appendChild(option);
+        }
+        if (previousValue && checklistMap.has(previousValue)) {
+            select.value = previousValue;
+        } else {
+            select.value = '';
+        }
+    }
+
+    function renderChecklistPreview(checklist) {
+        const preview = byId('checklistPreview');
+        if (!preview) return;
+        if (!competencyTemplate) {
+            preview.innerHTML = 'Load a template and dataset to preview individualized checklists.';
+            return;
+        }
+        if (!checklist) {
+            preview.innerHTML = starters.length ? 'Select a team member to preview their checklist.' : 'Add team members to generate personalized checklists.';
+            return;
+        }
+        preview.innerHTML = buildChecklistHtml(checklist, { compact: true });
+    }
+
+    function syncChecklists() {
+        checklistMap = new Map();
+        if (!competencyTemplate) {
+            updateChecklistSelect();
+            renderChecklistPreview(null);
+            return;
+        }
+        const defaults = competencyDataset?.defaults || {};
+        for (const starter of starters) {
+            const entry = findDatasetEntry(starter) || {};
+            const key = getStarterKey(starter);
+            const checklist = mapTemplateToStarter(competencyTemplate, starter, entry, defaults);
+            checklistMap.set(key, checklist);
+        }
+        updateChecklistSelect();
+        if (selectedChecklistKey && !checklistMap.has(selectedChecklistKey)) selectedChecklistKey = '';
+        if (!selectedChecklistKey && starters.length) {
+            const firstKey = getStarterKey(starters[0]);
+            if (checklistMap.has(firstKey)) selectedChecklistKey = firstKey;
+        }
+        const select = byId('checklistPreviewSelect');
+        if (select) select.value = selectedChecklistKey || '';
+        renderChecklistPreview(selectedChecklistKey ? checklistMap.get(selectedChecklistKey) : null);
+    }
+
+    function exportAllChecklistsCsv() {
+        if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
+        const rows = flattenChecklistCollection(checklistMap);
+        if (!rows.length) { showModal('Export Error', 'No checklist rows available to export.'); return; }
+        const header = ['Name', 'StaffID', 'Section', 'Item', 'Status', 'CompletedOn', 'Notes', 'Evidence'];
+        const csv = [header.join(',')].concat(rows.map(row => header.map(col => csvEscape(row[col])).join(','))).join('\n');
+        download('competency-checklists.csv', csv);
+    }
+
+    function exportSelectedChecklistCsv() {
+        if (!selectedChecklistKey || !checklistMap.has(selectedChecklistKey)) {
+            showModal('Export Error', 'Select a team member to export their checklist.');
+            return;
+        }
+        const checklist = checklistMap.get(selectedChecklistKey);
+        const rows = flattenChecklist(checklist);
+        if (!rows.length) { showModal('Export Error', 'The selected checklist has no items to export.'); return; }
+        const header = ['Name', 'StaffID', 'Section', 'Item', 'Status', 'CompletedOn', 'Notes', 'Evidence'];
+        const csv = [header.join(',')].concat(rows.map(row => header.map(col => csvEscape(row[col])).join(','))).join('\n');
+        download(`${checklist.name.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}_competency.csv`, csv);
+    }
+
+    function exportAllChecklistsXls() {
+        if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
+        const wb = XLSX.utils.book_new();
+        const allRows = flattenChecklistCollection(checklistMap);
+        if (allRows.length) {
+            const wsAll = XLSX.utils.json_to_sheet(allRows);
+            XLSX.utils.book_append_sheet(wb, wsAll, 'All Checklists');
+        }
+        for (const checklist of checklistMap.values()) {
+            const rows = flattenChecklist(checklist);
+            const metaRows = [['Team Member', checklist.name], ['Staff ID', checklist.staffId || ''], ['Template Version', checklist.version], ['Generated On', checklist.generatedOn]];
+            for (const meta of checklist.metadata || []) {
+                metaRows.push([meta.label, meta.value || '']);
+            }
+            metaRows.push([]);
+            metaRows.push(['Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence']);
+            for (const row of rows) {
+                metaRows.push([row.Section, row.Item, row.Status, row.CompletedOn, row.Notes, row.Evidence]);
+            }
+            const ws = XLSX.utils.aoa_to_sheet(metaRows);
+            let sheetName = checklist.name || 'Checklist';
+            if (sheetName.length > 28) sheetName = sheetName.slice(0, 28);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        }
+        XLSX.writeFile(wb, 'competency-checklists.xlsx');
+    }
+
+    function printChecklists() {
+        if (!checklistMap.size) { showModal('Print Error', 'Load a template and add starters before printing.'); return; }
+        const targets = selectedChecklistKey && checklistMap.has(selectedChecklistKey) ? [checklistMap.get(selectedChecklistKey)] : Array.from(checklistMap.values());
+        const html = `<!doctype html><html><head><meta charset="utf-8"><title>Competency Checklists</title><style>body{font-family:${getComputedStyle(document.body).fontFamily};background:#fff;color:#111;padding:32px;}h1{margin-top:0;}article{page-break-inside:avoid;box-shadow:none;border:1px solid #ccc;padding:16px;margin-bottom:24px;border-radius:8px;}section{margin-top:16px;}ul{padding-left:18px;}li{margin-bottom:8px;font-size:14px;}header{margin-bottom:12px;}@media print{body{padding:0;}article{border:none;}}</style></head><body><h1>Competency Checklists</h1>${targets.map(cl => buildChecklistHtml(cl, { compact: false })).join('<hr>')}</body></html>`;
+        const win = window.open('', '_blank');
+        if (!win) { showModal('Print Error', 'Pop-up blocked. Please enable pop-ups to print.'); return; }
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        win.print();
+    }
+
+    async function fetchText(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
+        return res.text();
+    }
+
+    async function fetchJson(url) {
+        const text = await fetchText(url);
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            throw new Error(`Failed to parse JSON from ${url}: ${error.message || error}`);
+        }
+    }
+
+    async function fetchCompetencyBundle(url) {
+        const bundle = await fetchJson(url);
+        if (!bundle || typeof bundle !== 'object') {
+            throw new Error('Bundle response was empty');
+        }
+        if (!bundle.template || !bundle.dataset) {
+            throw new Error('Bundle missing template or dataset fields');
+        }
+        return bundle;
+    }
+
+    function setCompetencyTemplate(template, sourceLabel = '') {
+        competencyTemplate = template;
+        competencySource.template = sourceLabel;
+        updateChecklistSummaries();
+    }
+
+    function setCompetencyDataset(dataset, sourceLabel = '') {
+        competencyDataset = dataset;
+        competencySource.dataset = sourceLabel;
+        updateChecklistSummaries();
+    }
+
+    async function loadDefaultCompetencies() {
+        let bundleError = null;
+        try {
+            const bundle = await fetchCompetencyBundle(DEFAULT_COMPETENCY_BUNDLE_URL);
+            const dataset = bundle.dataset;
+            const bundleLabel = bundle.bundle || DEFAULT_COMPETENCY_BUNDLE_LABEL;
+            setCompetencyTemplate(bundle.template, `Default bundle (${bundleLabel})`);
+            const datasetLabel = dataset.templateVersion
+                ? `${bundleLabel} (v${dataset.templateVersion})`
+                : bundleLabel;
+            setCompetencyDataset(dataset, datasetLabel);
+            syncChecklists();
+            return;
+        } catch (error) {
+            bundleError = error;
+            console.warn('Default competency bundle failed, attempting legacy assets:', error);
+        }
+
+        try {
+            const [template, dataset] = await Promise.all([
+                fetchJson(LEGACY_COMPETENCY_TEMPLATE_URL),
+                fetchJson(LEGACY_COMPETENCY_DATASET_URL)
+            ]);
+            setCompetencyTemplate(template, 'Legacy default bundle');
+            setCompetencyDataset(dataset, dataset.templateVersion ? `Legacy bundle (${dataset.templateVersion})` : 'Legacy bundle');
+            syncChecklists();
+        } catch (error) {
+            console.error('Default competency load failed:', error);
+            const reason = bundleError ? `Bundle: ${bundleError.message || bundleError}.` : '';
+            showModal('Load Error', `Unable to load the default competency assets.${reason ? ` ${reason}` : ''} Please try importing them manually.`);
+        }
+    }
+
+    function readJsonFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    resolve(JSON.parse(reader.result));
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = () => reject(reader.error || new Error('Unable to read file.'));
+            reader.readAsText(file);
+        });
+    }
+
+    async function handleTemplateImport(event) {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+        try {
+            const template = await readJsonFile(file);
+            setCompetencyTemplate(template, `Imported (${file.name})`);
+            syncChecklists();
+        } catch (error) {
+            console.error('Template import failed:', error);
+            showModal('Template Error', 'The selected template file is not valid JSON.');
+        }
+    }
+
+    async function handleDatasetImport(event) {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+        try {
+            const dataset = await readJsonFile(file);
+            setCompetencyDataset(dataset, `Imported (${file.name})`);
+            syncChecklists();
+        } catch (error) {
+            console.error('Dataset import failed:', error);
+            showModal('Dataset Error', 'The selected dataset file is not valid JSON.');
+        }
+    }
+
+    function handleChecklistSelectionChange(event) {
+        selectedChecklistKey = event.target.value || '';
+        renderChecklistPreview(selectedChecklistKey ? checklistMap.get(selectedChecklistKey) : null);
+    }
 
     // --- HELPER FUNCTIONS ---
     const byId = id => document.getElementById(id);
@@ -400,7 +832,11 @@ window.onload = () => {
     // --- STARTER MANAGEMENT ---
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
-        if (starters.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`; return; }
+        if (starters.length === 0) {
+            tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
+            syncChecklists();
+            return;
+        }
         tb.innerHTML = starters.map((s, i) => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
@@ -414,6 +850,7 @@ window.onload = () => {
             renderCalendar();
             openCalendarModal();
         });
+        syncChecklists();
     }
     function openStartDatePicker(e) {
         if (e) { e.preventDefault(); }
@@ -580,6 +1017,16 @@ window.onload = () => {
     byId('importStartersBtn').onclick = () => byId('importStarters').click();
     byId('importStarters').onchange = importStarters;
     byId('exportStartersBtn').onclick = exportStarters;
+    byId('loadDefaultCompetencies').onclick = loadDefaultCompetencies;
+    byId('importTemplateBtn').onclick = () => byId('importTemplateInput').click();
+    byId('importDatasetBtn').onclick = () => byId('importDatasetInput').click();
+    byId('importTemplateInput').onchange = handleTemplateImport;
+    byId('importDatasetInput').onchange = handleDatasetImport;
+    byId('checklistPreviewSelect').addEventListener('change', handleChecklistSelectionChange);
+    byId('exportChecklistCsv').onclick = exportAllChecklistsCsv;
+    byId('exportChecklistXls').onclick = exportAllChecklistsXls;
+    byId('exportSelectedChecklistCsv').onclick = exportSelectedChecklistCsv;
+    byId('printChecklistBtn').onclick = printChecklists;
     byId('shuffleBlocks').onclick = () => {
         shuffle = !shuffle;
         const btn = byId('shuffleBlocks');
@@ -592,6 +1039,8 @@ window.onload = () => {
     byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
 
     // --- INITIAL SETUP ---
+    updateChecklistSummaries();
+    loadDefaultCompetencies();
     renderStarters();
     renderSched([]);
 };
