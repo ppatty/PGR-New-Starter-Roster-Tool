@@ -1097,9 +1097,11 @@ window.onload = () => {
             }
         }
         const baseCounts = getBlocks().reduce((m, b) => (m[b.outlet] = b.count, m), {});
+        const conflicts = { scheduleConflicts: 0, outletConflicts: 0, dateConflicts: 0, fallbackUsed: 0, safetyTriggered: false };
         let progress = true, safety = 0; const everyone = Object.values(groups).flat();
         while (progress && safety < 5000) {
             progress = false; safety++;
+            if (safety > 4000) conflicts.safetyTriggered = true;
             for (const s of everyone) {
                 if (getPlaced(s.Name) >= MIN_SHIFTS) { s.__state = null; continue; }
                 if (!s.__state) continue;
@@ -1110,11 +1112,18 @@ window.onload = () => {
                     if (!candidates.length) { s.__state = null; continue; }
                     if (shuffle) candidates = shuffled(candidates);
                     const allowedToday = candidates.filter(o => !used.has(curKey + "|" + o) && isOutletAllowedOnDate(o, cur));
+                    if (allowedToday.length === 0) conflicts.outletConflicts++;
                     outlet = allowedToday[0] || (shuffle ? shuffled(candidates)[0] : candidates[0]);
                     st.currentOutlet = outlet;
                     st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
-                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
+                const initialDate = cur;
+                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
+                    cur = addWorkDay(cur); 
+                    curKey = toYMD(cur); 
+                    if (++safety > 5000) break; 
+                }
+                if (cur > initialDate) conflicts.dateConflicts++;
                 const t = pickTime(outlet, allRows.length);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(curKey + "|" + outlet);
@@ -1126,18 +1135,38 @@ window.onload = () => {
             let last = allRows.filter(r => r.Starter === s.Name).map(r => r.Date).sort().pop();
             let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(s.NormStart);
             let rot = 0, guard = 0; const PREF = ["SOV South Floor", "SOV South Bar", "Oasis Food", "Oasis Bar", "SOV North Floor", "SOV Dining"];
+            let fallbackNeeded = false;
             while (placed < MIN_SHIFTS && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
-                if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { cur = addWorkDay(cur); continue; }
+                if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { 
+                    cur = addWorkDay(cur); 
+                    fallbackNeeded = true;
+                    continue; 
+                }
                 const t = pickTime(outlet, rot++);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(key + "|" + outlet); placed++; cur = addWorkDay(cur);
             }
+            if (fallbackNeeded) conflicts.fallbackUsed++;
         }
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
-        byId('conflicts').textContent = `Built ${allRows.length} shifts for ${starters.length} starter(s)`;
+        
+        // Generate meaningful conflict status message
+        const totalConflicts = conflicts.outletConflicts + conflicts.dateConflicts + conflicts.fallbackUsed;
+        let statusMessage = `Built ${allRows.length} shifts for ${starters.length} starter(s)`;
+        
+        if (totalConflicts > 0) {
+            const conflictParts = [];
+            if (conflicts.outletConflicts > 0) conflictParts.push(`${conflicts.outletConflicts} outlet conflicts`);
+            if (conflicts.dateConflicts > 0) conflictParts.push(`${conflicts.dateConflicts} scheduling conflicts`);
+            if (conflicts.fallbackUsed > 0) conflictParts.push(`${conflicts.fallbackUsed} fallback shifts`);
+            if (conflicts.safetyTriggered) conflictParts.push('complex scheduling');
+            statusMessage += ` • Resolved: ${conflictParts.join(', ')}`;
+        }
+        
+        byId('conflicts').textContent = statusMessage;
         renderSched(allRows);
     }
     async function clearRoster() {
