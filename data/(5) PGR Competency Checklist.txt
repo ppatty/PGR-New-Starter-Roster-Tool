@@ -1,5 +1,5 @@
 {
-  "bundle": "(5) PGR Competancy Checklist",
+  "bundle": "(5) PGR Competency Checklist",
   "template": {
     "title": "PGR Private Gaming Rooms Competency Checklist",
     "version": "2025.1",

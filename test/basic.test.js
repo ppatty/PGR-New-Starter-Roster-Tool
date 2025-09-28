@@ -50,7 +50,7 @@ test('pickTime enforces 20:00 limit and provides safe fallbacks', () => {
 });
 
 test('competency template maps to starters and exports rows', () => {
-  const bundle = JSON.parse(fs.readFileSync('data/(5) PGR Competancy Checklist.txt', 'utf8'));
+  const bundle = JSON.parse(fs.readFileSync('data/(5) PGR Competency Checklist.txt', 'utf8'));
   assert.ok(bundle.template, 'bundle template missing');
   assert.ok(bundle.dataset, 'bundle dataset missing');
   const template = bundle.template;
