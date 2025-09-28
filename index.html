@@ -50,6 +50,7 @@
       --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
       --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
     }
+
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--text-primary); background: var(--bg-gradient); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -119,6 +120,10 @@
     .calendar-day:not(.empty) { cursor: pointer; transition: background-color 0.2s; }
     .calendar-day:not(.empty):hover { background-color: var(--bg-tertiary); }
     .calendar-day.blackout { background-color: var(--brand-primary); color: var(--text-primary); font-weight: 600; }
+    .calendar-day.selected { outline: 2px solid var(--brand-secondary); outline-offset: 2px; font-weight: 600; color: var(--brand-secondary); }
+    .calendar-helper { margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .date-input { cursor: pointer; }
+    .date-input::placeholder { color: var(--text-muted); }
     @media (max-width: 1024px) { .app { grid-template-columns: 1fr; } .side { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border-primary); } .toolbar { margin: -2rem -2rem 0; } }
     @media (max-width: 768px) { .main { padding: 1.5rem; } .toolbar { margin: -1.5rem -1.5rem 0; } .g2, .g3, .g4 { grid-template-columns: 1fr; } .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; } }
   </style>
@@ -158,7 +163,7 @@
         <div class="grid g3">
           <div><label for="stName">Full Name</label><input id="stName" placeholder="Dakota Parata"></div>
           <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
-          <div><label for="stDate">First Day of Work</label><input id="stDate" type="date"></div>
+          <div><label for="stDate">First Day of Work</label><input id="stDate" class="date-input" type="text" placeholder="Select a date" readonly aria-haspopup="dialog" aria-expanded="false"></div>
         </div>
         <div class="grid g4 mt-4">
           <button id="addStarter" class="btn primary" type="button">Add Person</button>
@@ -220,7 +225,7 @@
 
 <!-- Modals -->
 <div id="modal" class="modal-overlay"><div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title"><h3 id="modal-title"></h3><p id="modal-text"></p><div class="modal-actions"><button id="modal-cancel" class="btn">Cancel</button><button id="modal-confirm" class="btn primary">Confirm</button></div></div></div>
-<div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost">&gt;</button></div><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary">Done</button></div></div></div>
+<div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost" type="button">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost" type="button">&gt;</button></div><p id="calendar-helper" class="calendar-helper"></p><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary" type="button">Done</button></div></div></div>
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </body>
@@ -233,6 +238,7 @@ window.onload = () => {
     let shuffle = false;
     let modalResolve;
     let activeStarterIndex = -1;
+    let calendarContext = null;
     let currentCalendarDate = new Date();
 
     const MIN_SHIFTS = 15;
@@ -260,6 +266,17 @@ window.onload = () => {
     const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     const toDMY = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
     const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+    const stDateInput = byId('stDate');
+    function setStartDateISO(iso) {
+        if (iso) {
+            stDateInput.dataset.iso = iso;
+            stDateInput.value = toDMY(parseYMD(iso));
+        } else {
+            stDateInput.dataset.iso = '';
+            stDateInput.value = '';
+        }
+    }
+    function getStartDateISO() { return stDateInput.dataset.iso || ''; }
     const isMon = d => d.getDay() === 1;
     const isSun = d => d.getDay() === 0;
     const nextWorking = d => { let x = new Date(d); while (isSun(x) || isMon(x)) x.setDate(x.getDate() + 1); return x; };
@@ -315,9 +332,24 @@ window.onload = () => {
 
     // --- CALENDAR FUNCTIONS ---
     function renderCalendar() {
+        if (!calendarContext) return;
         const calendarTitle = byId('calendar-title');
         const calendarDays = byId('calendar-days');
         const weekdaysContainer = byId('calendar-weekdays');
+        const helper = byId('calendar-helper');
+        const { mode } = calendarContext;
+        let starter = null;
+        if (mode === 'blackout') {
+            starter = starters[activeStarterIndex];
+            if (!starter) return;
+            helper.textContent = `Toggle blackout days for ${starter.Name}.`;
+        } else if (mode === 'startDate') {
+            helper.textContent = 'Choose the starter\'s first day of work.';
+        } else {
+            helper.textContent = '';
+            return;
+        }
+
         const year = currentCalendarDate.getFullYear();
         const month = currentCalendarDate.getMonth();
         calendarTitle.textContent = `${currentCalendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
@@ -325,23 +357,44 @@ window.onload = () => {
         weekdaysContainer.innerHTML = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
         const firstDayOfMonth = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const starter = starters[activeStarterIndex];
-        if (!starter) return;
         for (let i = 0; i < firstDayOfMonth; i++) { calendarDays.innerHTML += `<div class="calendar-day empty"></div>`; }
+        const selectedIso = mode === 'blackout' ? starter.StartDate : getStartDateISO();
         for (let i = 1; i <= daysInMonth; i++) {
             const dayEl = document.createElement('div');
             dayEl.className = 'calendar-day';
             dayEl.textContent = i;
             const dateStr = toYMD(new Date(year, month, i));
-            if (starter.blackoutDates.includes(dateStr)) { dayEl.classList.add('blackout'); }
+            if (mode === 'blackout' && starter.blackoutDates.includes(dateStr)) { dayEl.classList.add('blackout'); }
+            if (selectedIso && selectedIso === dateStr) { dayEl.classList.add('selected'); }
             dayEl.onclick = () => {
-                const index = starter.blackoutDates.indexOf(dateStr);
-                if (index > -1) { starter.blackoutDates.splice(index, 1); } else { starter.blackoutDates.push(dateStr); }
-                renderStarters();
-                dayEl.classList.toggle('blackout');
+                if (mode === 'blackout') {
+                    const index = starter.blackoutDates.indexOf(dateStr);
+                    if (index > -1) {
+                        starter.blackoutDates.splice(index, 1);
+                        dayEl.classList.remove('blackout');
+                    } else {
+                        starter.blackoutDates.push(dateStr);
+                        dayEl.classList.add('blackout');
+                    }
+                    renderStarters();
+                } else {
+                    setStartDateISO(dateStr);
+                    closeCalendarModal();
+                    stDateInput.focus();
+                }
             };
             calendarDays.appendChild(dayEl);
         }
+    }
+
+    function closeCalendarModal() {
+        byId('calendar-modal').classList.remove('visible');
+        if (calendarContext?.mode === 'startDate') stDateInput.setAttribute('aria-expanded', 'false');
+        calendarContext = null;
+    }
+    function openCalendarModal() {
+        byId('calendar-modal').classList.add('visible');
+        if (calendarContext?.mode === 'startDate') stDateInput.setAttribute('aria-expanded', 'true');
     }
 
     // --- STARTER MANAGEMENT ---
@@ -354,14 +407,28 @@ window.onload = () => {
             return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); renderStarters(); } });
-        tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => { activeStarterIndex = +b.dataset.i; currentCalendarDate = parseYMD(starters[activeStarterIndex].StartDate); renderCalendar(); byId('calendar-modal').classList.add('visible'); });
+        tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
+            activeStarterIndex = +b.dataset.i;
+            calendarContext = { mode: 'blackout' };
+            currentCalendarDate = parseYMD(starters[activeStarterIndex].StartDate);
+            renderCalendar();
+            openCalendarModal();
+        });
+    }
+    function openStartDatePicker(e) {
+        if (e) { e.preventDefault(); }
+        calendarContext = { mode: 'startDate' };
+        const currentIso = getStartDateISO();
+        currentCalendarDate = currentIso ? parseYMD(currentIso) : new Date();
+        renderCalendar();
+        openCalendarModal();
     }
     function addStarter() {
-        const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = byId('stDate').value;
+        const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = getStartDateISO();
         if (!Name || !StartDate) { showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
         starters.push({ Name, StaffID, StartDate, blackoutDates: [], Avatar: getRandomAvatar() });
         renderStarters();
-        byId('stName').value = ''; byId('stId').value = ''; byId('stDate').value = '';
+        byId('stName').value = ''; byId('stId').value = ''; setStartDateISO('');
     }
     async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; renderStarters(); } }
     function importStarters(e) {
@@ -503,8 +570,11 @@ window.onload = () => {
     byId('modal').onclick = (e) => { if (e.target === byId('modal')) { byId('modal').classList.remove('visible'); if (modalResolve) modalResolve(false); } };
     byId('prev-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
     byId('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
-    byId('calendar-close').onclick = () => byId('calendar-modal').classList.remove('visible');
-    byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) byId('calendar-modal').classList.remove('visible'); };
+    byId('calendar-close').onclick = closeCalendarModal;
+    byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) closeCalendarModal(); };
+    setStartDateISO(getStartDateISO());
+    stDateInput.addEventListener('click', openStartDatePicker);
+    stDateInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openStartDatePicker(e); });
     byId('addStarter').onclick = addStarter;
     byId('clearStarters').onclick = clearStarters;
     byId('importStartersBtn').onclick = () => byId('importStarters').click();
