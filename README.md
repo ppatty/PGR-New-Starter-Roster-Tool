@@ -69,7 +69,7 @@ Competency Data Bundles
 
 The repository ships with a default competency bundle stored in `data/`:
 
-* `(5) PGR Competancy Checklist.txt` – the primary default bundle combining the template and starter dataset as JSON.
+* `(5) PGR Competency Checklist.txt` – the primary default bundle combining the template and starter dataset as JSON.
 * `data/competency-template.json` – legacy standalone template retained for backward compatibility.
 * `data/competency-dataset.json` – legacy standalone dataset retained for backward compatibility.
 
