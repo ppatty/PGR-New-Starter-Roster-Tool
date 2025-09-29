@@ -66,6 +66,40 @@
     .nav-group h2 { font-family: var(--font-serif); font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
     .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .chip { display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; border-radius: var(--radius-md); background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+    .competency-insights { border: 1px solid var(--border-primary); border-radius: var(--radius-lg); background: linear-gradient(180deg, rgba(30,30,30,0.9) 0%, rgba(18,18,18,0.9) 100%); padding: 1.25rem; display: grid; gap: 1.25rem; }
+    .competency-insights.is-empty { align-items: center; justify-items: center; color: var(--text-muted); font-size: 0.9rem; min-height: 140px; text-align: center; }
+    .insights-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+    .insights-header h3 { margin: 0; font-family: var(--font-serif); font-size: 1.1rem; color: var(--brand-secondary); }
+    .insights-header p { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-secondary); max-width: 520px; }
+    .insights-header .insights-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; border-radius: 999px; background: rgba(217, 163, 58, 0.1); color: var(--brand-secondary); font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(212, 175, 55, 0.3); }
+    .insights-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+    .insight-kpi { background: linear-gradient(180deg, rgba(50,50,50,0.3) 0%, rgba(24,24,24,0.6) 100%); border: 1px solid rgba(82, 82, 82, 0.6); border-radius: var(--radius-md); padding: 1rem; display: grid; gap: 0.35rem; }
+    .insight-kpi span { display: block; }
+    .insight-kpi .label { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .insight-kpi .value { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
+    .insight-kpi .sub { font-size: 0.75rem; color: var(--text-secondary); }
+    .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .insight-panel { border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 1rem; background: rgba(24, 24, 24, 0.85); display: grid; gap: 0.75rem; }
+    .insight-panel h4 { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+    .insight-panel .insight-meta { font-size: 0.75rem; color: var(--text-muted); }
+    .insight-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+    .insight-list li { display: grid; grid-template-columns: auto 1fr; gap: 0.75rem; align-items: flex-start; font-size: 0.8rem; color: var(--text-secondary); }
+    .insight-rank { width: 28px; height: 28px; border-radius: 999px; background: var(--bg-tertiary); border: 1px solid var(--border-secondary); display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); }
+    .insight-person strong { color: var(--text-primary); font-size: 0.85rem; display: block; }
+    .insight-person span { color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 0.2rem; }
+    .insight-chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .insight-chip.complete { background: rgba(34, 197, 94, 0.15); color: var(--ok-primary); border: 1px solid rgba(34, 197, 94, 0.3); }
+    .insight-chip.progress { background: rgba(245, 158, 11, 0.15); color: var(--warn-primary); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .insight-chip.idle { background: rgba(148, 163, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.3); }
+    .insight-chip.blocked { background: rgba(185, 43, 39, 0.2); color: var(--brand-primary); border: 1px solid rgba(185, 43, 39, 0.4); }
+    .insight-empty { font-size: 0.78rem; color: var(--text-muted); }
+    .insight-focus { display: grid; gap: 0.4rem; font-size: 0.78rem; color: var(--text-secondary); }
+    .insight-focus-item { border-left: 3px solid rgba(185, 43, 39, 0.35); padding-left: 0.75rem; }
+    .insight-focus-item strong { color: var(--text-primary); }
+    .insight-focus-item .insight-meta { margin-top: 0.25rem; }
+    .insight-wins { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; font-size: 0.78rem; color: var(--text-secondary); }
+    .insight-wins li strong { color: var(--text-primary); }
+    .insight-wins time { color: var(--text-muted); font-size: 0.72rem; display: block; }
     .starter-cell { display: inline-flex; align-items: center; gap: 0.5rem; }
     .starter-avatar { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 1.2rem; }
     .group-row-header { display: flex; align-items: center; gap: 0.75rem; }
@@ -219,6 +253,9 @@
         </div>
         <div id="checklistPreview" class="mt-4" style="border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:1rem; background:var(--bg-tertiary); max-height:260px; overflow:auto; color:var(--text-secondary);">
           Load a template and dataset to preview individualized checklists.
+        </div>
+        <div id="competencyInsights" class="mt-4 competency-insights is-empty">
+          <div>Load a template, dataset, and team members to unlock live competency insights.</div>
         </div>
         <div class="grid g2 mt-4">
           <button id="exportChecklistCsv" class="btn" type="button">Export All Checklists (CSV)</button>
@@ -413,6 +450,309 @@ window.onload = () => {
         return rows;
     }
 
+    const STATUS_SEVERITY = {
+        blocked: 3,
+        notStarted: 2,
+        inProgress: 1,
+        other: 0
+    };
+
+    function categorizeStatus(status) {
+        const text = (status || '').toString().trim().toLowerCase();
+        if (!text) return 'notStarted';
+        if (/complete|competent|signed off|sign-off|pass|passed|ready/i.test(text)) return 'complete';
+        if (/block|issue|concern|fail|hold|pause|defer|no pass|not yet competent/i.test(text)) return 'blocked';
+        if (/not[-\s]?started|pending|todo|tbc|assign|await|scheduled/i.test(text)) return 'notStarted';
+        if (/progress|ongoing|partial|training|learning|started|review/i.test(text)) return 'inProgress';
+        return 'other';
+    }
+
+    function parseFlexibleDate(value) {
+        if (!value) return null;
+        if (value instanceof Date) {
+            return Number.isFinite(value.getTime()) ? value : null;
+        }
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+            const date = new Date(excelEpoch.getTime() + value * 86400000);
+            return Number.isFinite(date.getTime()) ? date : null;
+        }
+        const text = String(value).trim();
+        if (!text) return null;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+            return parseYMD(text);
+        }
+        if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(text)) {
+            const parts = text.split('/').map(Number);
+            const year = parts[2] < 100 ? 2000 + parts[2] : parts[2];
+            const date = new Date(year, parts[1] - 1, parts[0]);
+            return Number.isFinite(date.getTime()) ? date : null;
+        }
+        const parsed = new Date(text);
+        return Number.isFinite(parsed.getTime()) ? parsed : null;
+    }
+
+    function generateCompetencyAnalytics(map) {
+        const analytics = {
+            totalPeople: 0,
+            totalItems: 0,
+            totalSections: 0,
+            statusCounts: { complete: 0, inProgress: 0, notStarted: 0, blocked: 0, other: 0 },
+            people: [],
+            sections: [],
+            focusItems: [],
+            recentCompletions: [],
+            completionsLast7Days: 0,
+            completionsLast14Days: 0,
+            latestCompletionDate: null,
+            overallCompletionRate: 0,
+            hasPeople: false,
+            hasItems: false
+        };
+        if (!map || !map.size) return analytics;
+
+        const sectionTotals = new Map();
+        const people = [];
+        const completions = [];
+        const outstanding = [];
+        const uniqueSections = new Set();
+
+        for (const checklist of map.values()) {
+            if (!checklist) continue;
+            const person = {
+                name: checklist.name || 'Team Member',
+                staffId: checklist.staffId || '',
+                total: 0,
+                completed: 0,
+                inProgress: 0,
+                notStarted: 0,
+                blocked: 0,
+                other: 0,
+                outstanding: 0,
+                completionRate: 0,
+                focus: null
+            };
+            let topOutstanding = null;
+
+            for (const section of checklist.sections || []) {
+                const sectionName = section.title || 'General';
+                uniqueSections.add(sectionName);
+                let sectionStats = sectionTotals.get(sectionName);
+                if (!sectionStats) {
+                    sectionStats = { section: sectionName, total: 0, completed: 0, outstanding: 0 };
+                    sectionTotals.set(sectionName, sectionStats);
+                }
+
+                for (const item of section.items || []) {
+                    person.total += 1;
+                    analytics.totalItems += 1;
+                    sectionStats.total += 1;
+                    const category = categorizeStatus(item.status);
+
+                    switch (category) {
+                        case 'complete': {
+                            person.completed += 1;
+                            analytics.statusCounts.complete += 1;
+                            sectionStats.completed += 1;
+                            const completedOn = parseFlexibleDate(item.completedOn);
+                            if (completedOn) {
+                                completions.push({
+                                    person: checklist.name || 'Team Member',
+                                    staffId: checklist.staffId || '',
+                                    section: sectionName,
+                                    item: item.label || '',
+                                    status: item.status || 'Complete',
+                                    date: completedOn
+                                });
+                            }
+                            break;
+                        }
+                        case 'inProgress': {
+                            person.inProgress += 1;
+                            analytics.statusCounts.inProgress += 1;
+                            person.outstanding += 1;
+                            sectionStats.outstanding += 1;
+                            break;
+                        }
+                        case 'blocked': {
+                            person.blocked += 1;
+                            analytics.statusCounts.blocked += 1;
+                            person.outstanding += 1;
+                            sectionStats.outstanding += 1;
+                            break;
+                        }
+                        case 'notStarted': {
+                            person.notStarted += 1;
+                            analytics.statusCounts.notStarted += 1;
+                            person.outstanding += 1;
+                            sectionStats.outstanding += 1;
+                            break;
+                        }
+                        default: {
+                            person.other += 1;
+                            analytics.statusCounts.other += 1;
+                            person.outstanding += 1;
+                            sectionStats.outstanding += 1;
+                        }
+                    }
+
+                    if (category !== 'complete') {
+                        const severity = STATUS_SEVERITY[category] ?? STATUS_SEVERITY.other;
+                        const focusCandidate = {
+                            person: checklist.name || 'Team Member',
+                            staffId: checklist.staffId || '',
+                            section: sectionName,
+                            item: item.label || '',
+                            status: item.status || 'Pending',
+                            category,
+                            severity
+                        };
+                        outstanding.push(focusCandidate);
+                        if (!topOutstanding || severity > topOutstanding.severity) {
+                            topOutstanding = focusCandidate;
+                        }
+                    }
+                }
+            }
+
+            person.completionRate = person.total ? person.completed / person.total : 0;
+            if (topOutstanding) person.focus = topOutstanding;
+            people.push(person);
+        }
+
+        analytics.totalPeople = map.size;
+        analytics.totalSections = uniqueSections.size;
+        analytics.people = people.sort((a, b) => {
+            if (b.completionRate !== a.completionRate) return b.completionRate - a.completionRate;
+            return a.name.localeCompare(b.name);
+        });
+        analytics.sections = Array.from(sectionTotals.values()).map(section => ({
+            ...section,
+            completionRate: section.total ? section.completed / section.total : 0
+        })).sort((a, b) => {
+            if (b.outstanding !== a.outstanding) return b.outstanding - a.outstanding;
+            return a.section.localeCompare(b.section);
+        });
+        analytics.focusItems = outstanding.sort((a, b) => {
+            if (b.severity !== a.severity) return b.severity - a.severity;
+            if (a.person !== b.person) return a.person.localeCompare(b.person);
+            if (a.section !== b.section) return a.section.localeCompare(b.section);
+            return a.item.localeCompare(b.item);
+        });
+
+        completions.sort((a, b) => b.date - a.date);
+        analytics.recentCompletions = completions;
+        const now = new Date();
+        const dayMs = 24 * 60 * 60 * 1000;
+        analytics.completionsLast7Days = completions.filter(c => (now - c.date) <= 7 * dayMs).length;
+        analytics.completionsLast14Days = completions.filter(c => (now - c.date) <= 14 * dayMs).length;
+        analytics.latestCompletionDate = completions.length ? completions[0].date : null;
+
+        analytics.hasPeople = analytics.totalPeople > 0;
+        analytics.hasItems = analytics.totalItems > 0;
+        analytics.overallCompletionRate = analytics.hasItems ? (analytics.statusCounts.complete / analytics.totalItems) : 0;
+
+        return analytics;
+    }
+
+    function buildCompetencyDashboardSheet(analytics) {
+        const rows = [];
+        const percent = (value) => Number.isFinite(value) ? `${Math.round(value * 100)}%` : '0%';
+        const latestCompletion = analytics.latestCompletionDate ? toDMY(analytics.latestCompletionDate) : '—';
+
+        rows.push(['Competency Health Dashboard']);
+        rows.push([]);
+
+        const metricsHeaderRow = rows.length;
+        rows.push(['Metric', 'Value']);
+        const metricsStartRow = rows.length;
+        const metricRows = [
+            ['Total Team Members', analytics.totalPeople],
+            ['Total Checklist Items', analytics.totalItems],
+            ['Completed Items', analytics.statusCounts.complete || 0],
+            ['In Progress Items', analytics.statusCounts.inProgress || 0],
+            ['Not Started Items', analytics.statusCounts.notStarted || 0],
+            ['Blocked Items', analytics.statusCounts.blocked || 0],
+            ['Overall Completion', percent(analytics.overallCompletionRate)],
+            ['Completions (Last 14 Days)', analytics.completionsLast14Days || 0],
+            ['Latest Completion', latestCompletion]
+        ];
+        metricRows.forEach(row => rows.push(row));
+        const metricsEndRow = rows.length - 1;
+        rows.push([]);
+
+        const teamHeaderRow = rows.length;
+        rows.push(['Team Member', 'Staff ID', 'Completed', 'In Progress', 'Not Started', 'Blocked', 'Outstanding', 'Completion %']);
+        const teamDataStartRow = rows.length;
+        if (analytics.people.length) {
+            analytics.people.forEach(person => {
+                rows.push([
+                    person.name,
+                    person.staffId,
+                    person.completed || 0,
+                    person.inProgress || 0,
+                    person.notStarted || 0,
+                    person.blocked || 0,
+                    person.outstanding || 0,
+                    percent(person.completionRate)
+                ]);
+            });
+        } else {
+            rows.push(['No team members available yet', '', '—', '—', '—', '—', '—', '—']);
+        }
+        const teamDataEndRow = rows.length - 1;
+        rows.push([]);
+
+        const sectionsHeaderRow = rows.length;
+        rows.push(['Section', 'Completed', 'Outstanding', 'Completion %']);
+        const sectionsDataStartRow = rows.length;
+        if (analytics.sections.length) {
+            analytics.sections.forEach(section => {
+                rows.push([
+                    section.section,
+                    section.completed || 0,
+                    section.outstanding || 0,
+                    percent(section.completionRate)
+                ]);
+            });
+        } else {
+            rows.push(['No sections to display yet', '—', '—', '—']);
+        }
+        const sectionsDataEndRow = rows.length - 1;
+        rows.push([]);
+
+        const winsHeaderRow = rows.length;
+        rows.push(['Date', 'Team Member', 'Section', 'Item']);
+        const winsDataStartRow = rows.length;
+        const recentWins = analytics.recentCompletions.slice(0, 20);
+        if (recentWins.length) {
+            recentWins.forEach(win => {
+                rows.push([
+                    toDMY(win.date),
+                    win.person,
+                    win.section,
+                    win.item
+                ]);
+            });
+        } else {
+            rows.push(['No completions recorded yet', '', '', '']);
+        }
+        const winsDataEndRow = rows.length - 1;
+
+        return {
+            rows,
+            titleRows: [0],
+            columnWidths: [28, 18, 14, 14, 14, 14, 14, 20],
+            tables: [
+                { mode: 'metrics', headerRowIndex: metricsHeaderRow, dataStartRow: metricsStartRow, dataEndRow: metricsEndRow, columnCount: 2, columnStart: 0 },
+                { headerRowIndex: teamHeaderRow, dataStartRow: teamDataStartRow, dataEndRow: teamDataEndRow, columnCount: 8, columnStart: 0, highlightColumnIndex: 6 },
+                { headerRowIndex: sectionsHeaderRow, dataStartRow: sectionsDataStartRow, dataEndRow: sectionsDataEndRow, columnCount: 4, columnStart: 0, highlightColumnIndex: 2 },
+                { headerRowIndex: winsHeaderRow, dataStartRow: winsDataStartRow, dataEndRow: winsDataEndRow, columnCount: 4, columnStart: 0 }
+            ],
+            freeze: { ySplit: teamDataStartRow }
+        };
+    }
+
     function humanizeKey(key) {
         if (!key) return '';
         return key
@@ -500,7 +840,18 @@ window.onload = () => {
     }
 
     function buildStaticChecklistSheet(template, starter, index = 0) {
-        if (!template || !starter) return { sheetRows: [], overviewRows: [] };
+        if (!template || !starter) {
+            return {
+                sheetRows: [],
+                overviewRows: [],
+                metaStartRow: 0,
+                metaEndRow: 0,
+                headerRowIndex: 0,
+                dataStartRow: 0,
+                columnCount: 0,
+                columnWidths: []
+            };
+        }
         const displayName = (starter.Name && starter.Name.trim()) || `Starter ${index + 1}`;
         const isoStart = starter.StartDate || '';
         const startDate = isoStart ? toDMY(parseYMD(isoStart)) : '';
@@ -527,12 +878,16 @@ window.onload = () => {
 
         const sheetRows = [['PGR Competency Checklist']];
         sheetRows.push([]);
+        const metaStartRow = sheetRows.length;
         for (const row of metaRows) sheetRows.push(row);
+        const metaEndRow = sheetRows.length - 1;
         sheetRows.push([]);
 
         const header = ['Category', 'Subcategory', 'Item', 'Details', 'Status', 'Completed On', 'Notes', 'Evidence'];
+        const headerRowIndex = sheetRows.length;
         sheetRows.push(header);
 
+        const dataStartRow = sheetRows.length;
         const overviewRows = [];
         for (const section of template.sections || []) {
             const sectionName = section.category || '';
@@ -553,7 +908,17 @@ window.onload = () => {
             }
         }
 
-        return { sheetRows, overviewRows };
+        return {
+            sheetRows,
+            overviewRows,
+            metaStartRow,
+            metaEndRow,
+            headerRowIndex,
+            dataStartRow,
+            columnCount: header.length,
+            columnWidths: [22, 24, 38, 38, 16, 18, 28, 26],
+            categoryColumnIndex: 0
+        };
     }
 
     function sanitizeSheetName(name) {
@@ -587,6 +952,9 @@ window.onload = () => {
     competencyTools.mapTemplateToStarter = mapTemplateToStarter;
     competencyTools.flattenChecklist = flattenChecklist;
     competencyTools.flattenChecklistCollection = flattenChecklistCollection;
+    competencyTools.generateAnalytics = generateCompetencyAnalytics;
+    competencyTools.categorizeStatus = categorizeStatus;
+    competencyTools.parseFlexibleDate = parseFlexibleDate;
     competencyTools.normalizePgrChecklist = normalizePgrChecklist;
     competencyTools.buildStaticChecklistSheet = buildStaticChecklistSheet;
     window.__competencyTools = competencyTools;
@@ -663,11 +1031,156 @@ window.onload = () => {
         preview.innerHTML = buildChecklistHtml(checklist, { compact: true });
     }
 
+    function renderCompetencyInsights(analytics) {
+        const container = byId('competencyInsights');
+        if (!container) return;
+        if (!analytics || !analytics.hasPeople) {
+            container.classList.add('is-empty');
+            container.innerHTML = 'Load a template, dataset, and team members to unlock live competency insights.';
+            return;
+        }
+        if (!analytics.hasItems) {
+            container.classList.add('is-empty');
+            container.innerHTML = 'Your template has no competency items yet. Add sections to see live analytics.';
+            return;
+        }
+
+        const fmtNumber = (value) => Number(value || 0).toLocaleString();
+        const fmtPercent = (value) => Number.isFinite(value) ? `${Math.round(value * 100)}%` : '0%';
+        const completionPercent = fmtPercent(analytics.overallCompletionRate);
+        const totalComplete = fmtNumber(analytics.statusCounts.complete || 0);
+        const totalItems = fmtNumber(analytics.totalItems || 0);
+        const totalInProgress = fmtNumber(analytics.statusCounts.inProgress || 0);
+        const totalNotStarted = Number(analytics.statusCounts.notStarted || 0);
+        const totalBlocked = Number(analytics.statusCounts.blocked || 0);
+        const totalOther = Number(analytics.statusCounts.other || 0);
+        const outstandingTotal = fmtNumber(totalNotStarted + totalBlocked + totalOther);
+        const notStartedText = fmtNumber(totalNotStarted);
+        const blockedText = fmtNumber(totalBlocked);
+        const recentWins14 = fmtNumber(analytics.completionsLast14Days || 0);
+        const latestCompletion = analytics.latestCompletionDate ? toDMY(analytics.latestCompletionDate) : '—';
+
+        const topPerformers = analytics.people.filter(p => p.total > 0).slice(0, 3);
+        const needsSupport = analytics.people
+            .filter(p => p.outstanding > 0)
+            .sort((a, b) => (b.outstanding - a.outstanding) || (b.completionRate - a.completionRate) || a.name.localeCompare(b.name))
+            .slice(0, 3);
+        const sectionFocus = analytics.sections.slice(0, 3);
+        const focusItems = analytics.focusItems.slice(0, 4);
+        const dayWindowMs = 30 * 24 * 60 * 60 * 1000;
+        const recentWindow = analytics.recentCompletions.filter(win => (Date.now() - win.date) <= dayWindowMs);
+        const recentWins = (recentWindow.length ? recentWindow : analytics.recentCompletions).slice(0, 5);
+
+        const renderPerson = (person, index, showOutstanding = false) => {
+            const completion = fmtPercent(person.completionRate);
+            const outstanding = fmtNumber(person.outstanding || 0);
+            const completed = fmtNumber(person.completed || 0);
+            const total = fmtNumber(person.total || 0);
+            const focus = person.focus;
+            return `<li><span class="insight-rank">${index + 1}</span><div class="insight-person"><strong>${person.name}</strong><span>${completion} complete • ${completed}/${total} signed off${showOutstanding ? ` • ${outstanding} outstanding` : ''}</span>${focus ? `<div class="insight-meta">Next focus: ${focus.section} — ${focus.item}</div>` : ''}</div></li>`;
+        };
+
+        const renderFocusChip = (category) => {
+            switch (category) {
+                case 'blocked': return 'insight-chip blocked';
+                case 'inProgress': return 'insight-chip progress';
+                case 'notStarted': return 'insight-chip idle';
+                case 'complete': return 'insight-chip complete';
+                default: return 'insight-chip progress';
+            }
+        };
+
+        const performersHtml = topPerformers.length
+            ? `<ul class="insight-list">${topPerformers.map((p, i) => renderPerson(p, i)).join('')}</ul>`
+            : '<p class="insight-empty">Complete some items to celebrate progress.</p>';
+
+        const supportHtml = needsSupport.length
+            ? `<ul class="insight-list">${needsSupport.map((p, i) => renderPerson(p, i, true)).join('')}</ul>`
+            : '<p class="insight-empty">No outstanding training items right now. Nice!</p>';
+
+        const focusHtml = sectionFocus.length
+            ? `<ul class="insight-list">${sectionFocus.map(section => {
+                const completion = fmtPercent(section.completionRate);
+                const outstanding = fmtNumber(section.outstanding || 0);
+                const total = fmtNumber(section.total || 0);
+                const chipVariant = section.outstanding ? 'progress' : 'complete';
+                return `<li><span class="insight-rank">•</span><div class="insight-person"><strong>${section.section}</strong><span>${completion} complete • ${outstanding} outstanding / ${total} total</span><span class="insight-chip ${chipVariant}">${completion}</span></div></li>`;
+            }).join('')}</ul>`
+            : '<p class="insight-empty">All sections are fully signed off.</p>';
+
+        const focusItemsHtml = focusItems.length
+            ? `<div class="insight-focus">${focusItems.map(item => {
+                const chipClass = renderFocusChip(item.category);
+                return `<div class="insight-focus-item"><strong>${item.section}</strong><div>${item.item}</div><div class="insight-meta">${item.person}${item.status ? ` • <span class="${chipClass}">${item.status}</span>` : ''}</div></div>`;
+            }).join('')}</div>`
+            : '<p class="insight-empty">No outstanding training actions detected.</p>';
+
+        const winsHtml = recentWins.length
+            ? `<ul class="insight-wins">${recentWins.map(win => `<li><strong>${win.person}</strong><div>${win.item}${win.section ? ` • ${win.section}` : ''}</div><time>${toDMY(win.date)}</time></li>`).join('')}</ul>`
+            : '<p class="insight-empty">Recent completions will appear here automatically.</p>';
+
+        container.classList.remove('is-empty');
+        container.innerHTML = `
+            <div class="insights-header">
+                <div>
+                    <h3>Competency Pulse</h3>
+                    <p>A live snapshot of training progress across every personalized checklist.</p>
+                </div>
+                <div class="insights-badge" aria-hidden="true">${fmtNumber(analytics.totalPeople)} team member${analytics.totalPeople === 1 ? '' : 's'}</div>
+            </div>
+            <div class="insights-kpis">
+                <div class="insight-kpi">
+                    <span class="label">Overall Completion</span>
+                    <span class="value">${completionPercent}</span>
+                    <span class="sub">${totalComplete} of ${totalItems} checklist items signed off</span>
+                </div>
+                <div class="insight-kpi">
+                    <span class="label">Active In Progress</span>
+                    <span class="value">${totalInProgress}</span>
+                    <span class="sub">Coaching moments across ${fmtNumber(analytics.totalPeople)} team member${analytics.totalPeople === 1 ? '' : 's'}</span>
+                </div>
+                <div class="insight-kpi">
+                    <span class="label">Outstanding Items</span>
+                    <span class="value">${outstandingTotal}</span>
+                    <span class="sub">${notStartedText} not started • ${blockedText} blockers</span>
+                </div>
+                <div class="insight-kpi">
+                    <span class="label">Recent Wins</span>
+                    <span class="value">${recentWins14}</span>
+                    <span class="sub">Completed in the last 14 days • Latest ${latestCompletion}</span>
+                </div>
+            </div>
+            <div class="insights-grid">
+                <section class="insight-panel">
+                    <h4>Top Performers</h4>
+                    ${performersHtml}
+                </section>
+                <section class="insight-panel">
+                    <h4>Needs Support</h4>
+                    ${supportHtml}
+                </section>
+                <section class="insight-panel">
+                    <h4>Section Focus</h4>
+                    ${focusHtml}
+                </section>
+                <section class="insight-panel">
+                    <h4>Priority Actions</h4>
+                    ${focusItemsHtml}
+                </section>
+                <section class="insight-panel">
+                    <h4>Recent Wins</h4>
+                    ${winsHtml}
+                </section>
+            </div>
+        `;
+    }
+
     function syncChecklists() {
         checklistMap = new Map();
         if (!competencyTemplate) {
             updateChecklistSelect();
             renderChecklistPreview(null);
+            renderCompetencyInsights(null);
             return;
         }
         const defaults = competencyDataset?.defaults || {};
@@ -686,6 +1199,7 @@ window.onload = () => {
         const select = byId('checklistPreviewSelect');
         if (select) select.value = selectedChecklistKey || '';
         renderChecklistPreview(selectedChecklistKey ? checklistMap.get(selectedChecklistKey) : null);
+        renderCompetencyInsights(generateCompetencyAnalytics(checklistMap));
     }
 
     function exportAllChecklistsCsv() {
@@ -710,6 +1224,354 @@ window.onload = () => {
         download(`${checklist.name.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}_competency.csv`, csv);
     }
 
+    const EXCEL_THEME = {
+        primary: 'FFB92B27',
+        secondary: 'FFD4AF37',
+        headerFont: 'FFFFFFFF',
+        titleFont: 'FFFFFFFF',
+        textDark: 'FF1F2933',
+        zebraLight: 'FFFFF8F3',
+        zebraDark: 'FFFFFFFF',
+        metaValueFill: 'FFFFFBF7',
+        border: 'FFE5E7EB',
+        alertFill: 'FF7F1D1D',
+        alertFont: 'FFFFFFFF',
+        alertBorder: 'FF5B1010',
+        successFill: 'FF14532D',
+        successFont: 'FFE7F6EF',
+        successBorder: 'FF0B3B1E'
+    };
+
+    const COMPETENCY_CATEGORY_COLOURS = (() => {
+        const entries = [
+            ['Starting Shift', { fill: 'FF166534', font: 'FFFFFFFF' }],
+            ['Important Locations', { fill: 'FFB91C1C', font: 'FFFFFFFF' }],
+            ['Bepoz Cash Handling', { fill: 'FF1D4ED8', font: 'FFFFFFFF' }],
+            ['BPOS Cash Handling', { fill: 'FF1D4ED8', font: 'FFFFFFFF' }],
+            ['Bars', { fill: 'FF111827', font: 'FFFFFFFF' }],
+            ['Bar Knowledge', { fill: 'FF4B5563', font: 'FFFFFFFF' }],
+            ['Food Offerings', { fill: 'FFFACC15', font: 'FF1F2933' }],
+            ['Floor', { fill: 'FFD1D5DB', font: 'FF111827' }],
+            ['BOH Cleaning Duties', { fill: 'FF6B7280', font: 'FFFFFFFF' }],
+            ['Baker Bus Cleaning Duties', { fill: 'FF6B7280', font: 'FFFFFFFF' }]
+        ];
+        const map = new Map();
+        for (const [name, config] of entries) {
+            map.set(name.toLowerCase(), config);
+        }
+        return map;
+    })();
+
+    function normalizeCategoryKey(name) {
+        return (name || '').toString().trim().toLowerCase();
+    }
+
+    function getCategoryColourConfig(name, overrides) {
+        if (!name) return null;
+        const key = normalizeCategoryKey(name);
+        if (overrides) {
+            if (overrides instanceof Map && overrides.has(key)) return overrides.get(key);
+            if (typeof overrides === 'object' && key in overrides) return overrides[key];
+        }
+        return COMPETENCY_CATEGORY_COLOURS.get(key) || null;
+    }
+
+    function getCellText(ws, row, col) {
+        const cell = ws[XLSX.utils.encode_cell({ r: row, c: col })];
+        if (!cell) return '';
+        const value = cell.w != null ? cell.w : cell.v;
+        return value == null ? '' : String(value).trim();
+    }
+
+    function buildBorder(color = EXCEL_THEME.border) {
+        return {
+            top: { style: 'thin', color: { rgb: color } },
+            right: { style: 'thin', color: { rgb: color } },
+            bottom: { style: 'thin', color: { rgb: color } },
+            left: { style: 'thin', color: { rgb: color } }
+        };
+    }
+
+    function setCellStyle(ws, row, col, styleFactory, blankValue = '') {
+        const address = XLSX.utils.encode_cell({ r: row, c: col });
+        let cell = ws[address];
+        if (!cell) {
+            cell = { t: 's', v: blankValue };
+            ws[address] = cell;
+        }
+        const style = typeof styleFactory === 'function' ? styleFactory() : styleFactory;
+        cell.s = style;
+    }
+
+    function createTitleStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 16, bold: true, color: { rgb: EXCEL_THEME.titleFont } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.primary } }
+        };
+    }
+
+    function createHeaderStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 11, bold: true, color: { rgb: EXCEL_THEME.headerFont } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.primary } },
+            border: buildBorder()
+        };
+    }
+
+    function createMetaLabelStyle() {
+        return {
+            font: { name: 'Segoe UI', sz: 10, bold: true, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { horizontal: 'left', vertical: 'center' },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.secondary } },
+            border: buildBorder()
+        };
+    }
+
+    function createMetaValueStyle() {
+        return {
+            font: { name: 'Segoe UI', sz: 10, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.metaValueFill } },
+            border: buildBorder()
+        };
+    }
+
+    function createDataStyle(isAlternate) {
+        return {
+            font: { name: 'Segoe UI', sz: 10, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: isAlternate ? EXCEL_THEME.zebraLight : EXCEL_THEME.zebraDark } },
+            border: buildBorder()
+        };
+    }
+
+    function createCategoryStyle(categoryConfig) {
+        if (!categoryConfig) return createDataStyle(false);
+        const fill = categoryConfig.fill || EXCEL_THEME.zebraDark;
+        const fontColour = categoryConfig.font || EXCEL_THEME.headerFont;
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 10, color: { rgb: fontColour } },
+            alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: fill } },
+            border: buildBorder()
+        };
+    }
+
+    function createAlertStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 10, color: { rgb: EXCEL_THEME.alertFont } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.alertFill } },
+            border: buildBorder(EXCEL_THEME.alertBorder)
+        };
+    }
+
+    function createSuccessStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 10, color: { rgb: EXCEL_THEME.successFont } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.successFill } },
+            border: buildBorder(EXCEL_THEME.successBorder)
+        };
+    }
+
+    function ensureColumnWidths(columnCount, columnWidths = []) {
+        const widths = [];
+        for (let i = 0; i < columnCount; i++) {
+            widths.push({ wch: columnWidths[i] ?? 20 });
+        }
+        return widths;
+    }
+
+    function styleDashboardWorksheet(ws, {
+        columnWidths = [],
+        titleRows = [],
+        tables = []
+    } = {}) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const totalColumns = range.e.c - range.s.c + 1;
+        ws['!cols'] = ensureColumnWidths(totalColumns, columnWidths);
+        ws['!rows'] = ws['!rows'] || [];
+
+        for (const rowIndex of titleRows || []) {
+            if (typeof rowIndex !== 'number') continue;
+            if (rowIndex < range.s.r || rowIndex > range.e.r) continue;
+            setCellStyle(ws, rowIndex, 0, createTitleStyle);
+            ws['!rows'][rowIndex] = { hpt: 28 };
+        }
+
+        for (const table of tables || []) {
+            if (!table || typeof table.headerRowIndex !== 'number') continue;
+            const {
+                mode = 'table',
+                headerRowIndex,
+                dataStartRow,
+                dataEndRow,
+                columnCount = totalColumns,
+                columnStart = 0,
+                categoryColumnIndex = null,
+                categoryColours = COMPETENCY_CATEGORY_COLOURS,
+                highlightColumnIndex = null
+            } = table;
+
+            if (headerRowIndex < range.s.r || headerRowIndex > range.e.r) continue;
+            const tableColumns = Math.max(0, Math.min(columnCount, totalColumns - columnStart));
+            for (let c = 0; c < tableColumns; c++) {
+                setCellStyle(ws, headerRowIndex, columnStart + c, createHeaderStyle);
+            }
+            ws['!rows'][headerRowIndex] = { hpt: 22 };
+
+            if (mode === 'metrics') {
+                if (typeof dataStartRow === 'number' && typeof dataEndRow === 'number' && dataStartRow <= dataEndRow) {
+                    for (let r = dataStartRow; r <= dataEndRow; r++) {
+                        setCellStyle(ws, r, columnStart, createMetaLabelStyle);
+                        setCellStyle(ws, r, columnStart + 1, createMetaValueStyle);
+                    }
+                }
+                continue;
+            }
+
+            if (typeof dataStartRow !== 'number') continue;
+            const lastRow = typeof dataEndRow === 'number' ? Math.min(dataEndRow, range.e.r) : range.e.r;
+            if (dataStartRow > lastRow) continue;
+
+            for (let r = dataStartRow; r <= lastRow; r++) {
+                const isAlternate = (r - dataStartRow) % 2 === 0;
+                const categoryConfig =
+                    typeof categoryColumnIndex === 'number'
+                        ? getCategoryColourConfig(getCellText(ws, r, columnStart + categoryColumnIndex), categoryColours)
+                        : null;
+                for (let c = 0; c < tableColumns; c++) {
+                    const columnIndex = columnStart + c;
+                    if (categoryConfig && c === categoryColumnIndex) {
+                        setCellStyle(ws, r, columnIndex, () => createCategoryStyle(categoryConfig));
+                    } else if (highlightColumnIndex != null && c === highlightColumnIndex) {
+                        const raw = getCellText(ws, r, columnIndex);
+                        const numericText = raw.replace(/[^0-9.-]/g, '');
+                        if (numericText.trim() !== '') {
+                            const numeric = Number(numericText);
+                            if (Number.isFinite(numeric)) {
+                                if (numeric <= 0) {
+                                    setCellStyle(ws, r, columnIndex, createSuccessStyle);
+                                } else {
+                                    setCellStyle(ws, r, columnIndex, createAlertStyle);
+                                }
+                                continue;
+                            }
+                        }
+                        setCellStyle(ws, r, columnIndex, () => createDataStyle(isAlternate));
+                    } else {
+                        setCellStyle(ws, r, columnIndex, () => createDataStyle(isAlternate));
+                    }
+                }
+            }
+        }
+    }
+
+    function styleChecklistWorksheet(ws, {
+        columnCount,
+        columnWidths = [],
+        titleRowIndex = 0,
+        headerRowIndex,
+        metaStartRow,
+        metaEndRow,
+        dataStartRow,
+        categoryColumnIndex = null,
+        categoryColours = COMPETENCY_CATEGORY_COLOURS
+    } = {}) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const colCount = columnCount || (range.e.c - range.s.c + 1);
+        ws['!cols'] = ensureColumnWidths(colCount, columnWidths);
+
+        if (typeof titleRowIndex === 'number') {
+            ws['!merges'] = ws['!merges'] || [];
+            ws['!merges'].push({ s: { r: titleRowIndex, c: 0 }, e: { r: titleRowIndex, c: colCount - 1 } });
+            setCellStyle(ws, titleRowIndex, 0, createTitleStyle);
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][titleRowIndex] = { hpt: 28 };
+        }
+
+        if (typeof metaStartRow === 'number' && typeof metaEndRow === 'number' && metaEndRow >= metaStartRow) {
+            for (let r = metaStartRow; r <= metaEndRow; r++) {
+                setCellStyle(ws, r, 0, createMetaLabelStyle);
+                setCellStyle(ws, r, 1, createMetaValueStyle);
+            }
+        }
+
+        if (typeof headerRowIndex === 'number') {
+            for (let c = 0; c < colCount; c++) {
+                setCellStyle(ws, headerRowIndex, c, createHeaderStyle);
+            }
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][headerRowIndex] = { hpt: 22 };
+        }
+
+        if (typeof dataStartRow === 'number') {
+            const lastRow = range.e.r;
+            if (dataStartRow <= lastRow) {
+                for (let r = dataStartRow; r <= lastRow; r++) {
+                    const isAlternate = (r - dataStartRow) % 2 === 0;
+                    const categoryConfig =
+                        typeof categoryColumnIndex === 'number'
+                            ? getCategoryColourConfig(getCellText(ws, r, categoryColumnIndex), categoryColours)
+                            : null;
+                    for (let c = 0; c < colCount; c++) {
+                        if (categoryConfig && c === categoryColumnIndex) {
+                            setCellStyle(ws, r, c, () => createCategoryStyle(categoryConfig));
+                        } else {
+                            setCellStyle(ws, r, c, () => createDataStyle(isAlternate));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function styleTabularWorksheet(ws, {
+        columnWidths = [],
+        headerRowIndex = 0,
+        dataStartRow = headerRowIndex + 1,
+        categoryColumnIndex = null,
+        categoryColours = COMPETENCY_CATEGORY_COLOURS
+    } = {}) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const columnCount = range.e.c - range.s.c + 1;
+        ws['!cols'] = ensureColumnWidths(columnCount, columnWidths);
+
+        if (typeof headerRowIndex === 'number') {
+            for (let c = 0; c < columnCount; c++) {
+                setCellStyle(ws, headerRowIndex, c, createHeaderStyle);
+            }
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][headerRowIndex] = { hpt: 22 };
+        }
+
+        if (typeof dataStartRow === 'number') {
+            const lastRow = range.e.r;
+            if (dataStartRow <= lastRow) {
+                for (let r = dataStartRow; r <= lastRow; r++) {
+                    const isAlternate = (r - dataStartRow) % 2 === 0;
+                    const categoryConfig =
+                        typeof categoryColumnIndex === 'number'
+                            ? getCategoryColourConfig(getCellText(ws, r, categoryColumnIndex), categoryColours)
+                            : null;
+                    for (let c = 0; c < columnCount; c++) {
+                        if (categoryConfig && c === categoryColumnIndex) {
+                            setCellStyle(ws, r, c, () => createCategoryStyle(categoryConfig));
+                        } else {
+                            setCellStyle(ws, r, c, () => createDataStyle(isAlternate));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     function exportAllChecklistsXls() {
         if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
         if (typeof XLSX === 'undefined') {
@@ -717,27 +1579,112 @@ window.onload = () => {
             return;
         }
         const wb = XLSX.utils.book_new();
+        const formattingQueue = [];
+        const analytics = generateCompetencyAnalytics(checklistMap);
+
         const allRows = flattenChecklistCollection(checklistMap);
         if (allRows.length) {
-            const wsAll = XLSX.utils.json_to_sheet(allRows);
-            XLSX.utils.book_append_sheet(wb, wsAll, 'All Checklists');
+            const formattedAllRows = allRows.map(row => ({
+                'Name': row.Name,
+                'Staff ID': row.StaffID || '',
+                'Section': row.Section,
+                'Item': row.Item,
+                'Status': row.Status,
+                'Completed On': row.CompletedOn,
+                'Notes': row.Notes,
+                'Evidence': row.Evidence
+            }));
+            const allHeaders = ['Name', 'Staff ID', 'Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence'];
+            const wsAll = XLSX.utils.json_to_sheet(formattedAllRows, { header: allHeaders });
+            const sheetName = 'All Checklists';
+            XLSX.utils.book_append_sheet(wb, wsAll, sheetName);
+            formattingQueue.push({
+                sheetName,
+                type: 'table',
+                options: {
+                    columnWidths: [26, 18, 26, 44, 16, 20, 36, 28],
+                    headerRowIndex: 0,
+                    dataStartRow: 1
+                }
+            });
         }
+
+        if (analytics.hasPeople) {
+            const dashboard = buildCompetencyDashboardSheet(analytics);
+            const dashboardSheetName = 'Competency Dashboard';
+            const wsDashboard = XLSX.utils.aoa_to_sheet(dashboard.rows);
+            if (dashboard.freeze) wsDashboard['!freeze'] = dashboard.freeze;
+            XLSX.utils.book_append_sheet(wb, wsDashboard, dashboardSheetName);
+            formattingQueue.push({
+                sheetName: dashboardSheetName,
+                type: 'dashboard',
+                options: {
+                    columnWidths: dashboard.columnWidths,
+                    titleRows: dashboard.titleRows,
+                    tables: dashboard.tables
+                }
+            });
+        }
+
         for (const checklist of checklistMap.values()) {
             const rows = flattenChecklist(checklist);
-            const metaRows = [['Team Member', checklist.name], ['Staff ID', checklist.staffId || ''], ['Template Version', checklist.version], ['Generated On', checklist.generatedOn]];
+            const generated = checklist.generatedOn ? new Date(checklist.generatedOn) : null;
+            const formattedGenerated = generated && Number.isFinite(generated.getTime()) ? toDMY(generated) : (checklist.generatedOn || '');
+            const baseMetaRows = [
+                ['Team Member', checklist.name],
+                ['Staff ID', checklist.staffId || ''],
+                ['Start Date', checklist.startDate ? toDMY(parseYMD(checklist.startDate)) : ''],
+                ['Template Version', checklist.version || ''],
+                ['Checklist Generated On', formattedGenerated]
+            ];
             for (const meta of checklist.metadata || []) {
-                metaRows.push([meta.label, meta.value || '']);
+                baseMetaRows.push([meta.label, meta.value || '']);
             }
-            metaRows.push([]);
-            metaRows.push(['Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence']);
+
+            const matrix = [['PGR Competency Checklist'], []];
+            const metaStartRow = matrix.length;
+            for (const row of baseMetaRows) matrix.push(row);
+            const metaEndRow = matrix.length - 1;
+            matrix.push([]);
+            const headerRowIndex = matrix.length;
+            const headerRow = ['Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence'];
+            matrix.push(headerRow);
+            const dataStartRow = matrix.length;
             for (const row of rows) {
-                metaRows.push([row.Section, row.Item, row.Status, row.CompletedOn, row.Notes, row.Evidence]);
+                matrix.push([row.Section, row.Item, row.Status, row.CompletedOn, row.Notes, row.Evidence]);
             }
-            const ws = XLSX.utils.aoa_to_sheet(metaRows);
+
+            const ws = XLSX.utils.aoa_to_sheet(matrix);
             let sheetName = checklist.name || 'Checklist';
             if (sheetName.length > 28) sheetName = sheetName.slice(0, 28);
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            formattingQueue.push({
+                sheetName,
+                type: 'checklist',
+                options: {
+                    columnCount: headerRow.length,
+                    columnWidths: [26, 42, 18, 20, 34, 28],
+                    titleRowIndex: 0,
+                    metaStartRow,
+                    metaEndRow,
+                    headerRowIndex,
+                    dataStartRow
+                }
+            });
         }
+
+        for (const cfg of formattingQueue) {
+            const ws = wb.Sheets[cfg.sheetName];
+            if (!ws) continue;
+            if (cfg.type === 'table') {
+                styleTabularWorksheet(ws, cfg.options);
+            } else if (cfg.type === 'checklist') {
+                styleChecklistWorksheet(ws, cfg.options);
+            } else if (cfg.type === 'dashboard') {
+                styleDashboardWorksheet(ws, cfg.options);
+            }
+        }
+
         XLSX.writeFile(wb, 'competency-checklists.xlsx');
     }
 
@@ -1259,28 +2206,124 @@ window.onload = () => {
             showModal('Export Error', 'Unable to load the competency checklist data. Please refresh and try again.');
             return;
         }
-        const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift })));
-        const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wsSchedule, 'Roster');
-        XLSX.utils.book_append_sheet(wb, wsStarters, 'Starters');
+        const scheduleHeaders = ['Starter', 'Staff ID', 'Date', 'Start Time', 'End Time', 'Outlet', 'Step', 'Shift Code'];
+        const scheduleRows = allRows.map(r => ({
+            'Starter': r.Starter,
+            'Staff ID': r.StaffID || '',
+            'Date': toDMY(parseYMD(r.Date)),
+            'Start Time': r.Start,
+            'End Time': r.End,
+            'Outlet': r.Outlet,
+            'Step': r.Step,
+            'Shift Code': r.Shift
+        }));
+        const wsSchedule = XLSX.utils.json_to_sheet(scheduleRows, { header: scheduleHeaders });
 
-        const usedSheetNames = new Set(['Roster', 'Starters']);
+        const starterHeaders = ['Name', 'Staff ID', 'Start Date'];
+        const starterRows = starters.map(s => ({
+            'Name': s.Name,
+            'Staff ID': s.StaffID || '',
+            'Start Date': s.StartDate ? toDMY(parseYMD(s.StartDate)) : ''
+        }));
+        const wsStarters = XLSX.utils.json_to_sheet(starterRows, { header: starterHeaders });
+
+        const wb = XLSX.utils.book_new();
+        const formattingQueue = [];
+
+        const rosterSheetName = 'Roster';
+        XLSX.utils.book_append_sheet(wb, wsSchedule, rosterSheetName);
+        formattingQueue.push({
+            sheetName: rosterSheetName,
+            type: 'table',
+            options: {
+                columnWidths: [28, 16, 16, 12, 12, 24, 12, 28],
+                headerRowIndex: 0,
+                dataStartRow: 1
+            }
+        });
+
+        const startersSheetName = 'Starters';
+        XLSX.utils.book_append_sheet(wb, wsStarters, startersSheetName);
+        formattingQueue.push({
+            sheetName: startersSheetName,
+            type: 'table',
+            options: {
+                columnWidths: [28, 16, 16],
+                headerRowIndex: 0,
+                dataStartRow: 1
+            }
+        });
+
+        const usedSheetNames = new Set([rosterSheetName, startersSheetName]);
         const overviewRows = [];
         starters.forEach((starter, index) => {
-            const { sheetRows, overviewRows: rows } = buildStaticChecklistSheet(staticTemplate, starter, index);
+            const {
+                sheetRows,
+                overviewRows: rows,
+                metaStartRow,
+                metaEndRow,
+                headerRowIndex,
+                dataStartRow,
+                columnCount,
+                columnWidths,
+                categoryColumnIndex
+            } = buildStaticChecklistSheet(staticTemplate, starter, index);
             if (sheetRows.length > 0) {
                 const wsChecklist = XLSX.utils.aoa_to_sheet(sheetRows);
                 const sheetName = buildChecklistSheetName(starter, index, usedSheetNames);
                 XLSX.utils.book_append_sheet(wb, wsChecklist, sheetName);
+                formattingQueue.push({
+                    sheetName,
+                    type: 'checklist',
+                    options: {
+                        columnCount,
+                        columnWidths,
+                        titleRowIndex: 0,
+                        metaStartRow,
+                        metaEndRow,
+                        headerRowIndex,
+                        dataStartRow,
+                        categoryColumnIndex
+                    }
+                });
             }
             if (rows && rows.length) overviewRows.push(...rows);
         });
 
         if (overviewRows.length) {
-            const wsOverview = XLSX.utils.json_to_sheet(overviewRows);
+            const overviewHeaders = ['Starter', 'Staff ID', 'Start Date', 'Category', 'Subcategory', 'Item', 'Details'];
+            const overviewData = overviewRows.map(row => ({
+                'Starter': row.Starter,
+                'Staff ID': row.StaffID,
+                'Start Date': row.StartDate,
+                'Category': row.Category,
+                'Subcategory': row.Subcategory,
+                'Item': row.Item,
+                'Details': row.Details
+            }));
+            const wsOverview = XLSX.utils.json_to_sheet(overviewData, { header: overviewHeaders });
             const overviewName = makeUniqueSheetName('Competency Overview', usedSheetNames);
             XLSX.utils.book_append_sheet(wb, wsOverview, overviewName);
+            formattingQueue.push({
+                sheetName: overviewName,
+                type: 'table',
+                options: {
+                    columnWidths: [26, 16, 16, 26, 22, 40, 36],
+                    headerRowIndex: 0,
+                    dataStartRow: 1,
+                    categoryColumnIndex: 3
+                }
+            });
+        }
+
+        for (const cfg of formattingQueue) {
+            const ws = wb.Sheets[cfg.sheetName];
+            if (!ws) continue;
+            if (cfg.type === 'table') {
+                styleTabularWorksheet(ws, cfg.options);
+            } else if (cfg.type === 'checklist') {
+                styleChecklistWorksheet(ws, cfg.options);
+            }
         }
 
         XLSX.writeFile(wb, 'roster_and_starters.xlsx');
