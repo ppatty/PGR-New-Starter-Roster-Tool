@@ -21,7 +21,9 @@ Flexible Workflow: Clear the generated roster with a single click to start over 
 
 Export Options: Export the final roster to both .csv and .xlsx formats for easy sharing and printing.
 
-  Configurable Session Days: Choose which weekdays host Welcome Day and PGR Onboarding.
+Competency Checklists: Load a competency template and dataset to automatically generate individualized onboarding checklists for each starter, with CSV/XLSX exports and a printable view.
+
+Configurable Session Days: Choose which weekdays host Welcome Day and PGR Onboarding.
 
 How to Use
   The application is designed around a simple, four-step workflow:
@@ -44,17 +46,44 @@ In this section, enter the number of shifts you want each new team member to com
 
 (Optional) Toggle the "Shuffle" button to ON if you want the order of the training blocks to be randomized for each person.
 
-Step 3: Select Session Days
+Step 3: Configure Competency Checklists
+
+Use the "Use Default Template" button or import your own template/dataset JSON files.
+
+Select a team member from the preview list to review their personalized competency checklist. Export all checklists (CSV/XLSX), download an individual checklist, or open a printable view that can be saved as PDF.
+
+Step 4: Select Session Days
 
 Use the dropdowns to choose which days Welcome Day and PGR Onboarding occur.
 
-Step 4: Build & Export
+Step 5: Build & Export
 
 Click the "Build Roster" button. The application will instantly generate the full schedule in the table at the bottom.
 
 Review the roster. If you made a mistake, you can click "Clear Roster" to start again.
 
 Once you are happy with the schedule, use the "Export CSV" or "Export Excel" buttons to save the file.
+
+Competency Data Bundles
+----------------------
+
+The repository ships with a default competency bundle stored in `data/`:
+
+* `pgr_competency_checklist_bundle.json` – auto-generated from the official PDF checklist and used as the default template/dataset bundle.
+* `(5) PGR Competency Checklist.txt` – legacy bundle retained for historical reference.
+* `data/competency-template.json` – legacy standalone template retained for backward compatibility.
+* `data/competency-dataset.json` – legacy standalone dataset retained for backward compatibility.
+
+If the PDF is updated, regenerate the bundle by running:
+
+```
+python scripts/convert_pdf_to_competency_bundle.py
+```
+
+The script parses `(5) PGR Competancy Checklist.pdf` and writes the refreshed JSON bundle to `data/pgr_competency_checklist_bundle.json`.
+It requires the `pypdf` package (`pip install pypdf`).
+
+Supervisors can import updated JSON files at runtime using the controls in **Step 3**. The importer expects valid JSON that follows the same structure as the bundled files. Each starter is matched by `staffId`, falling back to name matching when an ID is not supplied.
 
 Deployment & Installation
 This application is a self-contained web app and requires no complex setup.

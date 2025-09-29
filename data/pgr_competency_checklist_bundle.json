@@ -1,0 +1,571 @@
+{
+  "bundle": "PGR Competency Checklist (PDF)",
+  "source": "(5) PGR Competancy Checklist.pdf",
+  "generated": true,
+  "template": {
+    "title": "PGR Competency Checklist",
+    "version": "2024.11",
+    "statusOptions": [
+      "Not Started",
+      "In Progress",
+      "Complete"
+    ],
+    "defaultStatus": "Not Started",
+    "metadataFields": [
+      {
+        "key": "name",
+        "label": "Team Member"
+      },
+      {
+        "key": "staffId",
+        "label": "Staff ID"
+      },
+      {
+        "key": "role",
+        "label": "Role"
+      },
+      {
+        "key": "mentor",
+        "label": "Assigned Mentor"
+      },
+      {
+        "key": "startDateDisplay",
+        "label": "Start Date"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Starting Shift",
+        "description": "",
+        "items": [
+          {
+            "id": "ensure-grooming-is-up-to-standard-name-badge-id-card",
+            "label": "Ensure grooming is up to standard (name badge, ID card)",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "all-necessary-tools-on-pens-notepads-etc",
+            "label": "All necessary tools on (pens, notepads, etc)",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "swipe-on-at-the-correct-swiping-station",
+            "label": "Swipe on at the correct swiping station",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "directions-how-to-get-between-all-pgr-spaces",
+            "label": "Directions how to get between all PGR spaces",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Important Locations",
+        "description": "",
+        "items": [
+          {
+            "id": "supervisor-office",
+            "label": "Supervisor Office",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "closest-staff-toilets",
+            "label": "Closest staff toilets",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "stock-storage-areas",
+            "label": "Stock storage areas",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "bin-areas",
+            "label": "Bin Areas",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "chemical-storage",
+            "label": "Chemical storage",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "first-aid-room-and-process",
+            "label": "First Aid Room - and process",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "security-office",
+            "label": "Security Office",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Bepoz & Cash Handling",
+        "description": "",
+        "items": [
+          {
+            "id": "offline-cc-gaming-charge",
+            "label": "Offline CC / Gaming charge",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "individual-transactions",
+            "label": "Individual Transactions",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "voucher-redeeming",
+            "label": "Voucher Redeeming",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "payments-credit-cards-eftpos-room-charge-redeem-points",
+            "label": "Payments - Credit cards/EFTPOS/room charge/redeem points",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "managers-cards",
+            "label": "Managers Cards",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "cancel-orders",
+            "label": "Cancel orders",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "guest-account-searching",
+            "label": "Guest Account Searching",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "rsa-buttons",
+            "label": "RSA Buttons",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "tables",
+            "label": "Tables",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Bars",
+        "description": "",
+        "items": [
+          {
+            "id": "familiarise-the-location-of-the-following-in-all-bars",
+            "label": "Familiarise the location of the following in all bars:",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "duress-button",
+            "label": "Duress button",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "telephone",
+            "label": "Telephone",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "white-boards",
+            "label": "White Boards",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "bar-layout",
+            "label": "Bar layout",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "fridge-layout",
+            "label": "Fridge layout",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "cocktail-section-layout",
+            "label": "Cocktail section layout",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "ice-machine",
+            "label": "Ice machine",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "backup-stock-dry-stores",
+            "label": "Backup stock (dry stores)",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "backup-stock-cool-room",
+            "label": "Backup stock (cool room)",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "backup-glassware",
+            "label": "Backup glassware",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "backup-fruit",
+            "label": "Backup fruit",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "backup-stationaries",
+            "label": "Backup stationaries",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "cleaning-equipment",
+            "label": "Cleaning Equipment",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Bar Knowledge",
+        "description": "",
+        "items": [
+          {
+            "id": "no-docket-no-drink",
+            "label": "No Docket No Drink",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "full-beverage-menu",
+            "label": "Full Beverage Menu",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "diamond-inclusions-and-restrictions",
+            "label": "Diamond Inclusions and Restrictions",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "drink-pickup-area-processes",
+            "label": "Drink pickup area processes",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "fruit-and-juice-rotation",
+            "label": "Fruit and Juice Rotation",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "cocktail-bible",
+            "label": "Cocktail Bible",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Food Offerings",
+        "description": "",
+        "items": [
+          {
+            "id": "ordering-items-from-snack-menu",
+            "label": "Ordering items from snack menu",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "know-difference-between-snack-menu-and-voucher-menu",
+            "label": "Know difference between Snack menu and voucher menu",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "be-aware-of-additional-items-vips-can-order",
+            "label": "Be aware of additional items VIPs can order",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "know-moderations-and-dietary-changes-that-can-be-made-to-the-menus",
+            "label": "Know moderations and dietary changes that can be made to the menus",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "cutlery-pouches-and-what-meal-they-go-with-check-cutlery-levels-and-cleanliness",
+            "label": "Cutlery pouches and what meal they go with Check cutlery levels and cleanliness",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "how-to-food-run",
+            "label": "How to food run",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "how-to-communicate-with-the-chefs",
+            "label": "How to communicate with the chefs",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "how-to-read-the-pass",
+            "label": "How to read the pass",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "items-to-be-charged-through-bepoz",
+            "label": "Items to be charged through bepoz",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "Floor",
+        "description": "",
+        "items": [
+          {
+            "id": "staff-area-for-phones-personal-belongings-lockers",
+            "label": "Staff area for phones, personal belongings lockers",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "setting-up-service-tray",
+            "label": "Setting up service tray",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "checking-section-on-whiteboard",
+            "label": "Checking section on whiteboard",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "difference-between-north-and-south",
+            "label": "Difference between North and South",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "complimentary-offerings",
+            "label": "Complimentary offerings",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "restricted-offerings",
+            "label": "Restricted Offerings",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "authorisation-for-premium-products",
+            "label": "Authorisation for premium products",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "getting-guest-name-and-card-number",
+            "label": "Getting guest name and card number",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "taking-orders-from-guests",
+            "label": "Taking orders from guests",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "entering-orders-into-bepoz",
+            "label": "Entering orders into bepoz",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "when-to-take-and-deliver-orders-to-table-games",
+            "label": "When to take and deliver orders to table games",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "when-to-clear-table-games",
+            "label": "When to clear table games",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "clearing-your-section",
+            "label": "Clearing your section",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "taking-dishes-empties-boh",
+            "label": "Taking dishes/empties BOH",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "sorting-glassware-dishes-into-separate-racks",
+            "label": "Sorting glassware/dishes into separate racks",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "placing-trays-through-dishwasher",
+            "label": "Placing trays through dishwasher",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "hot-cold-towels-for-guests",
+            "label": "Hot/Cold towels for guests",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "collecting-drinks-from-bar",
+            "label": "Collecting drinks from bar",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "delivering-beverages",
+            "label": "Delivering beverages",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "watching-out-for-intox-guests-rsa",
+            "label": "Watching out for intox guests - RSA",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "replenishing-self-service-area",
+            "label": "Replenishing self service area",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "clearing-glassware-cabinets",
+            "label": "Clearing glassware cabinets",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "calling-supervisor-for-any-issues",
+            "label": "Calling Supervisor for any issues",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "clearing-lounges-and-wiping-tables",
+            "label": "Clearing lounges and wiping tables",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "waters-on-tables",
+            "label": "Waters on tables",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "maintaining-cleanliness-of-the",
+            "label": "Maintaining cleanliness of the",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "guest-bathrooms",
+            "label": "Guest bathrooms",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "advising-where-the-cage-to-change-money-is-for-guests",
+            "label": "Advising where the cage to change money is for guests",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "break-system-for-staff",
+            "label": "Break system for staff",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "tip-system-and-collecting-tips",
+            "label": "Tip System and Collecting tips",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "breaking-down-your-service-tray",
+            "label": "Breaking down your service tray",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "call-supervisor-at-end-of-shift",
+            "label": "Call supervisor at end of shift",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      },
+      {
+        "title": "BOH Cleaning & Duties",
+        "description": "",
+        "items": [
+          {
+            "id": "morning-duties-process",
+            "label": "Morning Duties Process",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "fruit-collection",
+            "label": "Fruit Collection",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "linen-delivery-and-collection",
+            "label": "Linen Delivery and Collection",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "difference-between-cleaning-cloths-napkins-etc",
+            "label": "Difference between cleaning cloths, napkins etc",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "milk-crates-are-returned-to-loading-dock",
+            "label": "Milk crates are returned to Loading Dock",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "foh-and-boh-walls-must-be-kept-cleaned",
+            "label": "FOH and BOH walls must be kept cleaned",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "boh-bench-areas-cleaned-before-they-finish",
+            "label": "BOH bench areas cleaned before they finish",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "cool-room-is-well-maintained-cleaned-and-organised",
+            "label": "Cool room is well maintained cleaned and organised",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "hard-clean-espresso-machine",
+            "label": "Hard Clean Espresso Machine",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "hard-clean-boh",
+            "label": "Hard Clean BOH",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "hard-clean-self-serve-coffee-machine",
+            "label": "Hard Clean Self-serve coffee machine",
+            "defaultStatus": "Not Started"
+          },
+          {
+            "id": "bottle-crusher-ice-maker-wiped-down-and-cleaned",
+            "label": "Bottle crusher & ice maker wiped down and cleaned",
+            "defaultStatus": "Not Started"
+          }
+        ]
+      }
+    ]
+  },
+  "dataset": {
+    "templateVersion": "2024.11",
+    "updated": "2024-11-09",
+    "defaults": {
+      "role": "Private Gaming Host",
+      "department": "Private Gaming Rooms",
+      "mentor": "TBC",
+      "context": {
+        "brand": "PGR"
+      },
+      "statusOptions": [
+        "Not Started",
+        "In Progress",
+        "Complete"
+      ],
+      "defaultStatus": "Not Started"
+    },
+    "people": []
+  }
+}

@@ -199,8 +199,38 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="competency-h">
+      <div class="hd"><h2 id="competency-h">Step 3: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
+      <div class="bd">
+        <div class="grid g3">
+          <button id="loadDefaultCompetencies" class="btn" type="button">Use Default Template</button>
+          <button id="importTemplateBtn" class="btn" type="button">Import Template JSON</button>
+          <button id="importDatasetBtn" class="btn" type="button">Import Dataset JSON</button>
+          <input type="file" id="importTemplateInput" accept=".json" class="visually-hidden" />
+          <input type="file" id="importDatasetInput" accept=".json" class="visually-hidden" />
+        </div>
+        <div class="mt-4">
+          <div id="templateSummary" style="font-size:0.85rem; color:var(--text-secondary);">No competency template loaded.</div>
+          <div id="datasetSummary" style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.5rem;">No competency dataset loaded.</div>
+        </div>
+        <div class="mt-4">
+          <label for="checklistPreviewSelect">Preview Checklist For</label>
+          <select id="checklistPreviewSelect"><option value="">Select a team member...</option></select>
+        </div>
+        <div id="checklistPreview" class="mt-4" style="border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:1rem; background:var(--bg-tertiary); max-height:260px; overflow:auto; color:var(--text-secondary);">
+          Load a template and dataset to preview individualized checklists.
+        </div>
+        <div class="grid g2 mt-4">
+          <button id="exportChecklistCsv" class="btn" type="button">Export All Checklists (CSV)</button>
+          <button id="exportChecklistXls" class="btn" type="button">Export All Checklists (Excel)</button>
+          <button id="exportSelectedChecklistCsv" class="btn" type="button">Download Selected Checklist (CSV)</button>
+          <button id="printChecklistBtn" class="btn" type="button">Print Checklist</button>
+        </div>
+      </div>
+    </section>
+
     <section class="card" aria-labelledby="mandatory-h">
-      <div class="hd"><h2 id="mandatory-h">Step 3: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
+      <div class="hd"><h2 id="mandatory-h">Step 4: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
       <div class="bd">
         <div class="grid g2">
           <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
@@ -210,7 +240,7 @@
     </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Step 4: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="hd"><h2 id="schedule-h">Step 5: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
@@ -256,9 +286,845 @@ window.onload = () => {
     };
     const AVATARS = ['🦊', '🐼', '🦉', '🦁', '🐙', '🐳', '🦄', '🐲', '🌟', '🚀', '🎲', '🎯'];
     const AVATAR_TOOLTIP = 'This avatar is just for fun and has no effect on scheduling.';
+    const DEFAULT_COMPETENCY_BUNDLE_URL = 'data/pgr_competency_checklist_bundle.json';
+    const DEFAULT_COMPETENCY_BUNDLE_LABEL = 'PGR Competency Checklist (PDF)';
+    const LEGACY_COMPETENCY_TEMPLATE_URL = 'data/competency-template.json';
+    const LEGACY_COMPETENCY_DATASET_URL = 'data/competency-dataset.json';
+    const STATIC_PGR_CHECKLIST_URL = 'pgr_competency_checklist.json';
+
+    let competencyTemplate = null;
+    let competencyDataset = null;
+    let competencySource = { template: '', dataset: '' };
+    let checklistMap = new Map();
+    let selectedChecklistKey = '';
+    let staticPgrChecklist = null;
+    let staticPgrChecklistPromise = null;
 
     function getRandomAvatar() { return AVATARS[Math.floor(Math.random() * AVATARS.length)]; }
     function getAvatarMarkup(avatar) { return avatar ? `<span class="starter-avatar" title="${AVATAR_TOOLTIP}">${avatar}</span>` : ''; }
+
+    // --- COMPETENCY CHECKLIST HELPERS ---
+    const competencyTools = {};
+
+    function getStarterKey(starter) {
+        if (!starter) return '';
+        const id = (starter.StaffID || '').trim();
+        return id ? `id:${id.toLowerCase()}` : `name:${starter.Name.toLowerCase()}`;
+    }
+
+    function findDatasetEntry(starter) {
+        if (!competencyDataset?.people) return null;
+        const staffId = (starter.StaffID || '').trim().toLowerCase();
+        if (staffId) {
+            const byId = competencyDataset.people.find(p => (p.staffId || '').trim().toLowerCase() === staffId);
+            if (byId) return byId;
+        }
+        return competencyDataset.people.find(p => (p.name || '').trim().toLowerCase() === starter.Name.trim().toLowerCase()) || null;
+    }
+
+    function applyPlaceholders(text, context) {
+        if (!text) return '';
+        return text.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, key) => {
+            const value = context[key.trim()];
+            return value == null ? '' : String(value);
+        });
+    }
+
+    function mapTemplateToStarter(template, starter, datasetEntry = {}, defaults = {}) {
+        if (!template || !starter) return null;
+        const isoStart = starter.StartDate || '';
+        const startDateObj = isoStart ? parseYMD(isoStart) : null;
+        const context = {
+            name: starter.Name,
+            staffId: starter.StaffID || '',
+            startDate: isoStart,
+            startDateDisplay: startDateObj ? toDMY(startDateObj) : '',
+            role: datasetEntry.role || defaults.role || '',
+            mentor: datasetEntry.mentor || defaults.mentor || '',
+            department: datasetEntry.department || defaults.department || '',
+            ...datasetEntry.context,
+            ...defaults.context
+        };
+        const metadata = (template.metadataFields || []).map(field => ({
+            key: field.key,
+            label: field.label,
+            value: datasetEntry[field.key] ?? defaults[field.key] ?? context[field.key] ?? ''
+        }));
+        const statusOptions = template.statusOptions || defaults.statusOptions || ['Not Started', 'In Progress', 'Complete'];
+        const defaultStatus = template.defaultStatus || defaults.defaultStatus || statusOptions[0];
+        const sections = (template.sections || []).map(section => {
+            const items = (section.items || []).map(item => {
+                const entry = datasetEntry?.competencies?.[item.id] || {};
+                const itemStatus = entry.status || item.defaultStatus || defaultStatus;
+                return {
+                    id: item.id,
+                    label: applyPlaceholders(item.label, context),
+                    description: applyPlaceholders(item.description || '', context),
+                    status: itemStatus,
+                    statusOptions: item.statusOptions || statusOptions,
+                    completedOn: entry.completedOn || item.completedOn || '',
+                    notes: entry.notes || datasetEntry.notes || '',
+                    evidence: entry.evidence || ''
+                };
+            });
+            return {
+                title: applyPlaceholders(section.title || '', context),
+                description: applyPlaceholders(section.description || '', context),
+                items
+            };
+        });
+        return {
+            title: template.title || 'Competency Checklist',
+            version: template.version || '1.0',
+            generatedOn: new Date().toISOString(),
+            name: starter.Name,
+            staffId: starter.StaffID || '',
+            startDate: isoStart,
+            metadata,
+            sections
+        };
+    }
+
+    function flattenChecklist(checklist) {
+        if (!checklist) return [];
+        const rows = [];
+        for (const section of checklist.sections || []) {
+            for (const item of section.items || []) {
+                rows.push({
+                    Name: checklist.name,
+                    StaffID: checklist.staffId || '',
+                    Section: section.title || '',
+                    Item: item.label || '',
+                    Status: item.status || '',
+                    CompletedOn: item.completedOn || '',
+                    Notes: item.notes || '',
+                    Evidence: item.evidence || ''
+                });
+            }
+        }
+        return rows;
+    }
+
+    function flattenChecklistCollection(checklists) {
+        const rows = [];
+        for (const cl of checklists.values()) {
+            rows.push(...flattenChecklist(cl));
+        }
+        return rows;
+    }
+
+    function humanizeKey(key) {
+        if (!key) return '';
+        return key
+            .split('_')
+            .filter(Boolean)
+            .map(part => {
+                if (part.length <= 3 && part === part.toUpperCase()) return part;
+                return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+            })
+            .join(' ');
+    }
+
+    function normalizePgrChecklist(raw) {
+        if (!raw || typeof raw !== 'object') throw new Error('Checklist file was empty or invalid.');
+        const root = raw.PGR_Competency_Checklist;
+        if (!root || typeof root !== 'object') throw new Error('Checklist file missing "PGR_Competency_Checklist" root.');
+
+        const meta = root.Meta && typeof root.Meta === 'object' ? { ...root.Meta } : {};
+        const startShiftMeta = {};
+        const sections = [];
+
+        const pushArraySection = (category, subcategory, arr) => {
+            if (!Array.isArray(arr) || !arr.length) return;
+            sections.push({
+                category,
+                subcategory: subcategory || '',
+                items: arr.map(item => ({ label: (item == null ? '' : String(item)).trim(), detail: '' }))
+            });
+        };
+
+        const startingShift = root.Starting_Shift;
+        if (startingShift && typeof startingShift === 'object') {
+            for (const [key, value] of Object.entries(startingShift)) {
+                if (Array.isArray(value)) {
+                    pushArraySection('Starting Shift', humanizeKey(key), value);
+                } else {
+                    startShiftMeta[humanizeKey(key)] = value == null ? '' : String(value);
+                }
+            }
+        }
+
+        const importantLocations = root.Important_Locations;
+        if (importantLocations && typeof importantLocations === 'object') {
+            const items = Object.entries(importantLocations).map(([key, value]) => ({
+                label: humanizeKey(key),
+                detail: value == null ? '' : String(value)
+            }));
+            if (items.length) {
+                sections.push({ category: 'Important Locations', subcategory: '', items });
+            }
+        }
+
+        pushArraySection('Bepoz Cash Handling', '', root.Bepoz_Cash_Handling);
+
+        const bars = root.Bars;
+        if (bars && typeof bars === 'object') {
+            for (const [key, value] of Object.entries(bars)) {
+                pushArraySection('Bars', humanizeKey(key), value);
+            }
+        }
+
+        pushArraySection('Bar Knowledge', '', root.Bar_Knowledge);
+        pushArraySection('Food Offerings', '', root.Food_Offerings);
+        pushArraySection('Floor', '', root.Floor);
+        pushArraySection('BOH Cleaning Duties', '', root.BOH_Cleaning_Duties);
+
+        return { meta, startShiftMeta, sections };
+    }
+
+    async function ensureStaticPgrChecklist() {
+        if (staticPgrChecklist) return staticPgrChecklist;
+        if (!staticPgrChecklistPromise) {
+            staticPgrChecklistPromise = fetchJson(STATIC_PGR_CHECKLIST_URL)
+                .then(normalizePgrChecklist)
+                .then(parsed => {
+                    staticPgrChecklist = parsed;
+                    return parsed;
+                })
+                .catch(error => {
+                    staticPgrChecklistPromise = null;
+                    throw error;
+                });
+        }
+        return staticPgrChecklistPromise;
+    }
+
+    function buildStaticChecklistSheet(template, starter, index = 0) {
+        if (!template || !starter) {
+            return {
+                sheetRows: [],
+                overviewRows: [],
+                metaStartRow: 0,
+                metaEndRow: 0,
+                headerRowIndex: 0,
+                dataStartRow: 0,
+                columnCount: 0,
+                columnWidths: []
+            };
+        }
+        const displayName = (starter.Name && starter.Name.trim()) || `Starter ${index + 1}`;
+        const isoStart = starter.StartDate || '';
+        const startDate = isoStart ? toDMY(parseYMD(isoStart)) : '';
+        const generatedOn = toDMY(new Date());
+
+        const metaRows = [
+            ['Team Member', displayName],
+            ['Staff ID', starter.StaffID || ''],
+            ['Start Date', startDate],
+            ['Checklist Generated On', generatedOn]
+        ];
+
+        const templateMeta = template.meta || {};
+        const checklistName = templateMeta.Name || displayName;
+        const checklistDate = templateMeta.Date || startDate || generatedOn;
+        if (templateMeta.Author) metaRows.push(['Template Author', templateMeta.Author]);
+        if (templateMeta.Created) metaRows.push(['Template Created', templateMeta.Created]);
+        if (checklistName) metaRows.push(['Checklist Name', checklistName]);
+        if (checklistDate) metaRows.push(['Checklist Date', checklistDate]);
+        const startShiftMeta = template.startShiftMeta || {};
+        for (const [label, value] of Object.entries(startShiftMeta)) {
+            metaRows.push([`Starting Shift ${label}`, value || '']);
+        }
+
+        const sheetRows = [['PGR Competency Checklist']];
+        sheetRows.push([]);
+        const metaStartRow = sheetRows.length;
+        for (const row of metaRows) sheetRows.push(row);
+        const metaEndRow = sheetRows.length - 1;
+        sheetRows.push([]);
+
+        const header = ['Category', 'Subcategory', 'Item', 'Details', 'Status', 'Completed On', 'Notes', 'Evidence'];
+        const headerRowIndex = sheetRows.length;
+        sheetRows.push(header);
+
+        const dataStartRow = sheetRows.length;
+        const overviewRows = [];
+        for (const section of template.sections || []) {
+            const sectionName = section.category || '';
+            const subsection = section.subcategory || '';
+            for (const item of section.items || []) {
+                const label = item.label || '';
+                const detail = item.detail || '';
+                sheetRows.push([sectionName, subsection, label, detail, '', '', '', '']);
+                overviewRows.push({
+                    Starter: displayName,
+                    StaffID: starter.StaffID || '',
+                    StartDate: startDate,
+                    Category: sectionName,
+                    Subcategory: subsection,
+                    Item: label,
+                    Details: detail
+                });
+            }
+        }
+
+        return {
+            sheetRows,
+            overviewRows,
+            metaStartRow,
+            metaEndRow,
+            headerRowIndex,
+            dataStartRow,
+            columnCount: header.length,
+            columnWidths: [22, 24, 38, 38, 16, 18, 28, 26]
+        };
+    }
+
+    function sanitizeSheetName(name) {
+        const invalid = /[\[\]\*\/\\\?:]/g;
+        let sanitized = (name || '').replace(invalid, ' ').replace(/\s+/g, ' ').trim();
+        if (!sanitized) sanitized = 'Sheet';
+        if (sanitized.length > 31) sanitized = sanitized.slice(0, 31);
+        return sanitized;
+    }
+
+    function makeUniqueSheetName(base, usedNames) {
+        const sanitizedBase = sanitizeSheetName(base);
+        let candidate = sanitizedBase;
+        let counter = 1;
+        while (usedNames.has(candidate)) {
+            counter += 1;
+            const suffix = ` ${counter}`;
+            const trimmed = sanitizedBase.slice(0, Math.max(0, 31 - suffix.length));
+            candidate = sanitizeSheetName(`${trimmed}${suffix}`);
+        }
+        usedNames.add(candidate);
+        return candidate;
+    }
+
+    function buildChecklistSheetName(starter, index, usedNames) {
+        const baseSegment = (starter?.Name && starter.Name.trim()) || `Starter ${index + 1}`;
+        const base = `Checklist ${baseSegment}`;
+        return makeUniqueSheetName(base, usedNames);
+    }
+
+    competencyTools.mapTemplateToStarter = mapTemplateToStarter;
+    competencyTools.flattenChecklist = flattenChecklist;
+    competencyTools.flattenChecklistCollection = flattenChecklistCollection;
+    competencyTools.normalizePgrChecklist = normalizePgrChecklist;
+    competencyTools.buildStaticChecklistSheet = buildStaticChecklistSheet;
+    window.__competencyTools = competencyTools;
+
+    function describeTemplate(template) {
+        if (!template) return 'No competency template loaded.';
+        const sectionCount = (template.sections || []).length;
+        return `${template.title || 'Template'} (v${template.version || '1.0'}) • ${sectionCount} section${sectionCount === 1 ? '' : 's'}`;
+    }
+
+    function describeDataset(dataset) {
+        if (!dataset) return 'No competency dataset loaded.';
+        const personCount = (dataset.people || []).length;
+        const version = dataset.templateVersion ? `v${dataset.templateVersion}` : 'unversioned';
+        return `Dataset ${version} • ${personCount} record${personCount === 1 ? '' : 's'}`;
+    }
+
+    function csvEscape(value) {
+        if (value == null) return '';
+        const str = String(value).replace(/"/g, '""');
+        return /[",\n]/.test(str) ? `"${str}"` : str;
+    }
+
+    function buildChecklistHtml(checklist, { compact = false } = {}) {
+        if (!checklist) return '<p>No checklist available.</p>';
+        const metaHtml = (checklist.metadata || []).map(m => `<div style="margin-bottom:0.25rem;"><strong>${m.label}:</strong> ${m.value || '—'}</div>`).join('');
+        const sectionHtml = (checklist.sections || []).map(section => {
+            const items = (section.items || []).map(item => {
+                return `<li style="margin-bottom:0.35rem;"><div><strong>${item.label}</strong> <span style="color:var(--brand-secondary, #D4AF37);">${item.status || '—'}</span></div>${item.description ? `<div style="font-size:0.75rem; color:var(--text-muted, #737373);">${item.description}</div>` : ''}${item.completedOn ? `<div style="font-size:0.75rem; color:var(--text-muted, #737373);">Completed: ${item.completedOn}</div>` : ''}${item.notes ? `<div style="font-size:0.75rem; color:var(--text-muted, #737373);">Notes: ${item.notes}</div>` : ''}</li>`;
+            }).join('');
+            return `<section style="margin-top:1rem;"><h4 style="margin:0 0 0.5rem; font-size:${compact ? '0.85rem' : '1rem'}; color:var(--text-primary, #f5f5f5);">${section.title}</h4>${section.description ? `<p style="margin:0 0 0.5rem; font-size:0.8rem; color:var(--text-secondary, #a3a3a3);">${section.description}</p>` : ''}<ul style="padding-left:1rem; margin:0; list-style:disc;">${items || '<li>No items configured.</li>'}</ul></section>`;
+        }).join('');
+        return `<article style="background:var(--surface, #1f1f1f); border:1px solid var(--border-primary, #404040); border-radius:var(--radius-md, 12px); padding:${compact ? '0.75rem' : '1rem'}; margin-bottom:1rem;"><header style="margin-bottom:0.75rem;"><h3 style="margin:0; color:var(--brand-secondary, #D4AF37); font-size:${compact ? '1rem' : '1.15rem'};">${checklist.name}</h3><div style="font-size:0.8rem; color:var(--text-muted, #737373);">Staff ID: ${checklist.staffId || 'N/A'} • Start: ${checklist.startDate ? toDMY(parseYMD(checklist.startDate)) : 'TBC'} • Template v${checklist.version}</div></header><div style="font-size:0.8rem; color:var(--text-secondary, #a3a3a3);">${metaHtml || '<em>No additional metadata</em>'}</div>${sectionHtml}</article>`;
+    }
+
+    function updateChecklistSummaries() {
+        const templateSummary = byId('templateSummary');
+        const datasetSummary = byId('datasetSummary');
+        if (templateSummary) templateSummary.textContent = competencyTemplate ? `${describeTemplate(competencyTemplate)}${competencySource.template ? ` • ${competencySource.template}` : ''}` : 'No competency template loaded.';
+        if (datasetSummary) datasetSummary.textContent = competencyDataset ? `${describeDataset(competencyDataset)}${competencySource.dataset ? ` • ${competencySource.dataset}` : ''}` : 'No competency dataset loaded.';
+    }
+
+    function updateChecklistSelect() {
+        const select = byId('checklistPreviewSelect');
+        if (!select) return;
+        const previousValue = selectedChecklistKey;
+        select.innerHTML = '<option value="">Select a team member...</option>';
+        for (const starter of starters) {
+            const key = getStarterKey(starter);
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = starter.StaffID ? `${starter.Name} • ${starter.StaffID}` : starter.Name;
+            if (!checklistMap.has(key)) option.disabled = !competencyTemplate;
+            select.appendChild(option);
+        }
+        if (previousValue && checklistMap.has(previousValue)) {
+            select.value = previousValue;
+        } else {
+            select.value = '';
+        }
+    }
+
+    function renderChecklistPreview(checklist) {
+        const preview = byId('checklistPreview');
+        if (!preview) return;
+        if (!competencyTemplate) {
+            preview.innerHTML = 'Load a template and dataset to preview individualized checklists.';
+            return;
+        }
+        if (!checklist) {
+            preview.innerHTML = starters.length ? 'Select a team member to preview their checklist.' : 'Add team members to generate personalized checklists.';
+            return;
+        }
+        preview.innerHTML = buildChecklistHtml(checklist, { compact: true });
+    }
+
+    function syncChecklists() {
+        checklistMap = new Map();
+        if (!competencyTemplate) {
+            updateChecklistSelect();
+            renderChecklistPreview(null);
+            return;
+        }
+        const defaults = competencyDataset?.defaults || {};
+        for (const starter of starters) {
+            const entry = findDatasetEntry(starter) || {};
+            const key = getStarterKey(starter);
+            const checklist = mapTemplateToStarter(competencyTemplate, starter, entry, defaults);
+            checklistMap.set(key, checklist);
+        }
+        updateChecklistSelect();
+        if (selectedChecklistKey && !checklistMap.has(selectedChecklistKey)) selectedChecklistKey = '';
+        if (!selectedChecklistKey && starters.length) {
+            const firstKey = getStarterKey(starters[0]);
+            if (checklistMap.has(firstKey)) selectedChecklistKey = firstKey;
+        }
+        const select = byId('checklistPreviewSelect');
+        if (select) select.value = selectedChecklistKey || '';
+        renderChecklistPreview(selectedChecklistKey ? checklistMap.get(selectedChecklistKey) : null);
+    }
+
+    function exportAllChecklistsCsv() {
+        if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
+        const rows = flattenChecklistCollection(checklistMap);
+        if (!rows.length) { showModal('Export Error', 'No checklist rows available to export.'); return; }
+        const header = ['Name', 'StaffID', 'Section', 'Item', 'Status', 'CompletedOn', 'Notes', 'Evidence'];
+        const csv = [header.join(',')].concat(rows.map(row => header.map(col => csvEscape(row[col])).join(','))).join('\n');
+        download('competency-checklists.csv', csv);
+    }
+
+    function exportSelectedChecklistCsv() {
+        if (!selectedChecklistKey || !checklistMap.has(selectedChecklistKey)) {
+            showModal('Export Error', 'Select a team member to export their checklist.');
+            return;
+        }
+        const checklist = checklistMap.get(selectedChecklistKey);
+        const rows = flattenChecklist(checklist);
+        if (!rows.length) { showModal('Export Error', 'The selected checklist has no items to export.'); return; }
+        const header = ['Name', 'StaffID', 'Section', 'Item', 'Status', 'CompletedOn', 'Notes', 'Evidence'];
+        const csv = [header.join(',')].concat(rows.map(row => header.map(col => csvEscape(row[col])).join(','))).join('\n');
+        download(`${checklist.name.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}_competency.csv`, csv);
+    }
+
+    const EXCEL_THEME = {
+        primary: 'FFB92B27',
+        secondary: 'FFD4AF37',
+        headerFont: 'FFFFFFFF',
+        titleFont: 'FFFFFFFF',
+        textDark: 'FF1F2933',
+        zebraLight: 'FFFFF8F3',
+        zebraDark: 'FFFFFFFF',
+        metaValueFill: 'FFFFFBF7',
+        border: 'FFE5E7EB'
+    };
+
+    function buildBorder(color = EXCEL_THEME.border) {
+        return {
+            top: { style: 'thin', color: { rgb: color } },
+            right: { style: 'thin', color: { rgb: color } },
+            bottom: { style: 'thin', color: { rgb: color } },
+            left: { style: 'thin', color: { rgb: color } }
+        };
+    }
+
+    function setCellStyle(ws, row, col, styleFactory, blankValue = '') {
+        const address = XLSX.utils.encode_cell({ r: row, c: col });
+        let cell = ws[address];
+        if (!cell) {
+            cell = { t: 's', v: blankValue };
+            ws[address] = cell;
+        }
+        const style = typeof styleFactory === 'function' ? styleFactory() : styleFactory;
+        cell.s = style;
+    }
+
+    function createTitleStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 16, bold: true, color: { rgb: EXCEL_THEME.titleFont } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.primary } }
+        };
+    }
+
+    function createHeaderStyle() {
+        return {
+            font: { name: 'Segoe UI Semibold', sz: 11, bold: true, color: { rgb: EXCEL_THEME.headerFont } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.primary } },
+            border: buildBorder()
+        };
+    }
+
+    function createMetaLabelStyle() {
+        return {
+            font: { name: 'Segoe UI', sz: 10, bold: true, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { horizontal: 'left', vertical: 'center' },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.secondary } },
+            border: buildBorder()
+        };
+    }
+
+    function createMetaValueStyle() {
+        return {
+            font: { name: 'Segoe UI', sz: 10, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: EXCEL_THEME.metaValueFill } },
+            border: buildBorder()
+        };
+    }
+
+    function createDataStyle(isAlternate) {
+        return {
+            font: { name: 'Segoe UI', sz: 10, color: { rgb: EXCEL_THEME.textDark } },
+            alignment: { vertical: 'center', wrapText: true },
+            fill: { patternType: 'solid', fgColor: { rgb: isAlternate ? EXCEL_THEME.zebraLight : EXCEL_THEME.zebraDark } },
+            border: buildBorder()
+        };
+    }
+
+    function ensureColumnWidths(columnCount, columnWidths = []) {
+        const widths = [];
+        for (let i = 0; i < columnCount; i++) {
+            widths.push({ wch: columnWidths[i] ?? 20 });
+        }
+        return widths;
+    }
+
+    function styleChecklistWorksheet(ws, {
+        columnCount,
+        columnWidths = [],
+        titleRowIndex = 0,
+        headerRowIndex,
+        metaStartRow,
+        metaEndRow,
+        dataStartRow
+    } = {}) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const colCount = columnCount || (range.e.c - range.s.c + 1);
+        ws['!cols'] = ensureColumnWidths(colCount, columnWidths);
+
+        if (typeof titleRowIndex === 'number') {
+            ws['!merges'] = ws['!merges'] || [];
+            ws['!merges'].push({ s: { r: titleRowIndex, c: 0 }, e: { r: titleRowIndex, c: colCount - 1 } });
+            setCellStyle(ws, titleRowIndex, 0, createTitleStyle);
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][titleRowIndex] = { hpt: 28 };
+        }
+
+        if (typeof metaStartRow === 'number' && typeof metaEndRow === 'number' && metaEndRow >= metaStartRow) {
+            for (let r = metaStartRow; r <= metaEndRow; r++) {
+                setCellStyle(ws, r, 0, createMetaLabelStyle);
+                setCellStyle(ws, r, 1, createMetaValueStyle);
+            }
+        }
+
+        if (typeof headerRowIndex === 'number') {
+            for (let c = 0; c < colCount; c++) {
+                setCellStyle(ws, headerRowIndex, c, createHeaderStyle);
+            }
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][headerRowIndex] = { hpt: 22 };
+        }
+
+        if (typeof dataStartRow === 'number') {
+            const lastRow = range.e.r;
+            if (dataStartRow <= lastRow) {
+                for (let r = dataStartRow; r <= lastRow; r++) {
+                    const isAlternate = (r - dataStartRow) % 2 === 0;
+                    for (let c = 0; c < colCount; c++) {
+                        setCellStyle(ws, r, c, () => createDataStyle(isAlternate));
+                    }
+                }
+            }
+        }
+    }
+
+    function styleTabularWorksheet(ws, {
+        columnWidths = [],
+        headerRowIndex = 0,
+        dataStartRow = headerRowIndex + 1
+    } = {}) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const columnCount = range.e.c - range.s.c + 1;
+        ws['!cols'] = ensureColumnWidths(columnCount, columnWidths);
+
+        if (typeof headerRowIndex === 'number') {
+            for (let c = 0; c < columnCount; c++) {
+                setCellStyle(ws, headerRowIndex, c, createHeaderStyle);
+            }
+            ws['!rows'] = ws['!rows'] || [];
+            ws['!rows'][headerRowIndex] = { hpt: 22 };
+        }
+
+        if (typeof dataStartRow === 'number') {
+            const lastRow = range.e.r;
+            if (dataStartRow <= lastRow) {
+                for (let r = dataStartRow; r <= lastRow; r++) {
+                    const isAlternate = (r - dataStartRow) % 2 === 0;
+                    for (let c = 0; c < columnCount; c++) {
+                        setCellStyle(ws, r, c, () => createDataStyle(isAlternate));
+                    }
+                }
+            }
+        }
+    }
+
+    function exportAllChecklistsXls() {
+        if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
+        if (typeof XLSX === 'undefined') {
+            showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
+            return;
+        }
+        const wb = XLSX.utils.book_new();
+        const formattingQueue = [];
+
+        const allRows = flattenChecklistCollection(checklistMap);
+        if (allRows.length) {
+            const formattedAllRows = allRows.map(row => ({
+                'Name': row.Name,
+                'Staff ID': row.StaffID || '',
+                'Section': row.Section,
+                'Item': row.Item,
+                'Status': row.Status,
+                'Completed On': row.CompletedOn,
+                'Notes': row.Notes,
+                'Evidence': row.Evidence
+            }));
+            const allHeaders = ['Name', 'Staff ID', 'Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence'];
+            const wsAll = XLSX.utils.json_to_sheet(formattedAllRows, { header: allHeaders });
+            const sheetName = 'All Checklists';
+            XLSX.utils.book_append_sheet(wb, wsAll, sheetName);
+            formattingQueue.push({
+                sheetName,
+                type: 'table',
+                options: {
+                    columnWidths: [26, 18, 26, 44, 16, 20, 36, 28],
+                    headerRowIndex: 0,
+                    dataStartRow: 1
+                }
+            });
+        }
+
+        for (const checklist of checklistMap.values()) {
+            const rows = flattenChecklist(checklist);
+            const generated = checklist.generatedOn ? new Date(checklist.generatedOn) : null;
+            const formattedGenerated = generated && Number.isFinite(generated.getTime()) ? toDMY(generated) : (checklist.generatedOn || '');
+            const baseMetaRows = [
+                ['Team Member', checklist.name],
+                ['Staff ID', checklist.staffId || ''],
+                ['Start Date', checklist.startDate ? toDMY(parseYMD(checklist.startDate)) : ''],
+                ['Template Version', checklist.version || ''],
+                ['Checklist Generated On', formattedGenerated]
+            ];
+            for (const meta of checklist.metadata || []) {
+                baseMetaRows.push([meta.label, meta.value || '']);
+            }
+
+            const matrix = [['PGR Competency Checklist'], []];
+            const metaStartRow = matrix.length;
+            for (const row of baseMetaRows) matrix.push(row);
+            const metaEndRow = matrix.length - 1;
+            matrix.push([]);
+            const headerRowIndex = matrix.length;
+            const headerRow = ['Section', 'Item', 'Status', 'Completed On', 'Notes', 'Evidence'];
+            matrix.push(headerRow);
+            const dataStartRow = matrix.length;
+            for (const row of rows) {
+                matrix.push([row.Section, row.Item, row.Status, row.CompletedOn, row.Notes, row.Evidence]);
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(matrix);
+            let sheetName = checklist.name || 'Checklist';
+            if (sheetName.length > 28) sheetName = sheetName.slice(0, 28);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            formattingQueue.push({
+                sheetName,
+                type: 'checklist',
+                options: {
+                    columnCount: headerRow.length,
+                    columnWidths: [26, 42, 18, 20, 34, 28],
+                    titleRowIndex: 0,
+                    metaStartRow,
+                    metaEndRow,
+                    headerRowIndex,
+                    dataStartRow
+                }
+            });
+        }
+
+        for (const cfg of formattingQueue) {
+            const ws = wb.Sheets[cfg.sheetName];
+            if (!ws) continue;
+            if (cfg.type === 'table') {
+                styleTabularWorksheet(ws, cfg.options);
+            } else if (cfg.type === 'checklist') {
+                styleChecklistWorksheet(ws, cfg.options);
+            }
+        }
+
+        XLSX.writeFile(wb, 'competency-checklists.xlsx');
+    }
+
+    function printChecklists() {
+        if (!checklistMap.size) { showModal('Print Error', 'Load a template and add starters before printing.'); return; }
+        const targets = selectedChecklistKey && checklistMap.has(selectedChecklistKey) ? [checklistMap.get(selectedChecklistKey)] : Array.from(checklistMap.values());
+        const html = `<!doctype html><html><head><meta charset="utf-8"><title>Competency Checklists</title><style>body{font-family:${getComputedStyle(document.body).fontFamily};background:#fff;color:#111;padding:32px;}h1{margin-top:0;}article{page-break-inside:avoid;box-shadow:none;border:1px solid #ccc;padding:16px;margin-bottom:24px;border-radius:8px;}section{margin-top:16px;}ul{padding-left:18px;}li{margin-bottom:8px;font-size:14px;}header{margin-bottom:12px;}@media print{body{padding:0;}article{border:none;}}</style></head><body><h1>Competency Checklists</h1>${targets.map(cl => buildChecklistHtml(cl, { compact: false })).join('<hr>')}</body></html>`;
+        const win = window.open('', '_blank');
+        if (!win) { showModal('Print Error', 'Pop-up blocked. Please enable pop-ups to print.'); return; }
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        win.print();
+    }
+
+    async function fetchText(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
+        return res.text();
+    }
+
+    async function fetchJson(url) {
+        const text = await fetchText(url);
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            throw new Error(`Failed to parse JSON from ${url}: ${error.message || error}`);
+        }
+    }
+
+    async function fetchCompetencyBundle(url) {
+        const bundle = await fetchJson(url);
+        if (!bundle || typeof bundle !== 'object') {
+            throw new Error('Bundle response was empty');
+        }
+        if (!bundle.template || !bundle.dataset) {
+            throw new Error('Bundle missing template or dataset fields');
+        }
+        return bundle;
+    }
+
+    function setCompetencyTemplate(template, sourceLabel = '') {
+        competencyTemplate = template;
+        competencySource.template = sourceLabel;
+        updateChecklistSummaries();
+    }
+
+    function setCompetencyDataset(dataset, sourceLabel = '') {
+        competencyDataset = dataset;
+        competencySource.dataset = sourceLabel;
+        updateChecklistSummaries();
+    }
+
+    async function loadDefaultCompetencies() {
+        let bundleError = null;
+        try {
+            const bundle = await fetchCompetencyBundle(DEFAULT_COMPETENCY_BUNDLE_URL);
+            const dataset = bundle.dataset;
+            const bundleLabel = bundle.bundle || DEFAULT_COMPETENCY_BUNDLE_LABEL;
+            setCompetencyTemplate(bundle.template, `Default bundle (${bundleLabel})`);
+            const datasetLabel = dataset.templateVersion
+                ? `${bundleLabel} (v${dataset.templateVersion})`
+                : bundleLabel;
+            setCompetencyDataset(dataset, datasetLabel);
+            syncChecklists();
+            return;
+        } catch (error) {
+            bundleError = error;
+            console.warn('Default competency bundle failed, attempting legacy assets:', error);
+        }
+
+        try {
+            const [template, dataset] = await Promise.all([
+                fetchJson(LEGACY_COMPETENCY_TEMPLATE_URL),
+                fetchJson(LEGACY_COMPETENCY_DATASET_URL)
+            ]);
+            setCompetencyTemplate(template, 'Legacy default bundle');
+            setCompetencyDataset(dataset, dataset.templateVersion ? `Legacy bundle (${dataset.templateVersion})` : 'Legacy bundle');
+            syncChecklists();
+        } catch (error) {
+            console.error('Default competency load failed:', error);
+            const reason = bundleError ? `Bundle: ${bundleError.message || bundleError}.` : '';
+            showModal('Load Error', `Unable to load the default competency assets.${reason ? ` ${reason}` : ''} Please try importing them manually.`);
+        }
+    }
+
+    function readJsonFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    resolve(JSON.parse(reader.result));
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = () => reject(reader.error || new Error('Unable to read file.'));
+            reader.readAsText(file);
+        });
+    }
+
+    async function handleTemplateImport(event) {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+        try {
+            const template = await readJsonFile(file);
+            setCompetencyTemplate(template, `Imported (${file.name})`);
+            syncChecklists();
+        } catch (error) {
+            console.error('Template import failed:', error);
+            showModal('Template Error', 'The selected template file is not valid JSON.');
+        }
+    }
+
+    async function handleDatasetImport(event) {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+        try {
+            const dataset = await readJsonFile(file);
+            setCompetencyDataset(dataset, `Imported (${file.name})`);
+            syncChecklists();
+        } catch (error) {
+            console.error('Dataset import failed:', error);
+            showModal('Dataset Error', 'The selected dataset file is not valid JSON.');
+        }
+    }
+
+    function handleChecklistSelectionChange(event) {
+        selectedChecklistKey = event.target.value || '';
+        renderChecklistPreview(selectedChecklistKey ? checklistMap.get(selectedChecklistKey) : null);
+    }
 
     // --- HELPER FUNCTIONS ---
     const byId = id => document.getElementById(id);
@@ -400,7 +1266,11 @@ window.onload = () => {
     // --- STARTER MANAGEMENT ---
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
-        if (starters.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`; return; }
+        if (starters.length === 0) {
+            tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
+            syncChecklists();
+            return;
+        }
         tb.innerHTML = starters.map((s, i) => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
@@ -414,6 +1284,7 @@ window.onload = () => {
             renderCalendar();
             openCalendarModal();
         });
+        syncChecklists();
     }
     function openStartDatePicker(e) {
         if (e) { e.preventDefault(); }
@@ -484,9 +1355,11 @@ window.onload = () => {
             }
         }
         const baseCounts = getBlocks().reduce((m, b) => (m[b.outlet] = b.count, m), {});
+        const conflicts = { outletConflicts: 0, dateConflicts: 0, fallbackUsed: 0, safetyTriggered: false };
         let progress = true, safety = 0; const everyone = Object.values(groups).flat();
         while (progress && safety < 5000) {
             progress = false; safety++;
+            if (safety > 4000) conflicts.safetyTriggered = true;
             for (const s of everyone) {
                 if (getPlaced(s.Name) >= MIN_SHIFTS) { s.__state = null; continue; }
                 if (!s.__state) continue;
@@ -497,11 +1370,19 @@ window.onload = () => {
                     if (!candidates.length) { s.__state = null; continue; }
                     if (shuffle) candidates = shuffled(candidates);
                     const allowedToday = candidates.filter(o => !used.has(curKey + "|" + o) && isOutletAllowedOnDate(o, cur));
+                    if (allowedToday.length === 0) conflicts.outletConflicts++;
                     outlet = allowedToday[0] || (shuffle ? shuffled(candidates)[0] : candidates[0]);
                     st.currentOutlet = outlet;
                     st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
-                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { cur = addWorkDay(cur); curKey = toYMD(cur); if (++safety > 5000) break; }
+                const initialDate = cur;
+                let dateSafety = 0;
+                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
+                    cur = addWorkDay(cur); 
+                    curKey = toYMD(cur); 
+                    if (++dateSafety > 100) break; 
+                }
+                if (cur > initialDate) conflicts.dateConflicts++;
                 const t = pickTime(outlet, allRows.length);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(curKey + "|" + outlet);
@@ -513,18 +1394,38 @@ window.onload = () => {
             let last = allRows.filter(r => r.Starter === s.Name).map(r => r.Date).sort().pop();
             let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(s.NormStart);
             let rot = 0, guard = 0; const PREF = ["SOV South Floor", "SOV South Bar", "Oasis Food", "Oasis Bar", "SOV North Floor", "SOV Dining"];
+            let fallbackNeeded = false;
             while (placed < MIN_SHIFTS && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
-                if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { cur = addWorkDay(cur); continue; }
+                if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { 
+                    cur = addWorkDay(cur); 
+                    fallbackNeeded = true;
+                    continue; 
+                }
                 const t = pickTime(outlet, rot++);
                 addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
                 used.add(key + "|" + outlet); placed++; cur = addWorkDay(cur);
             }
+            if (fallbackNeeded) conflicts.fallbackUsed++;
         }
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
-        byId('conflicts').textContent = `Built ${allRows.length} shifts for ${starters.length} starter(s)`;
+        
+        // Generate meaningful conflict status message
+        const totalConflicts = conflicts.outletConflicts + conflicts.dateConflicts + conflicts.fallbackUsed;
+        let statusMessage = `Built ${allRows.length} shifts for ${starters.length} starter(s)`;
+        
+        if (totalConflicts > 0) {
+            const conflictParts = [];
+            if (conflicts.outletConflicts > 0) conflictParts.push(`${conflicts.outletConflicts} outlet conflicts`);
+            if (conflicts.dateConflicts > 0) conflictParts.push(`${conflicts.dateConflicts} scheduling conflicts`);
+            if (conflicts.fallbackUsed > 0) conflictParts.push(`${conflicts.fallbackUsed} fallback shifts`);
+            if (conflicts.safetyTriggered) conflictParts.push('complex scheduling');
+            statusMessage += ` • Resolved: ${conflictParts.join(', ')}`;
+        }
+        
+        byId('conflicts').textContent = statusMessage;
         renderSched(allRows);
     }
     async function clearRoster() {
@@ -580,6 +1481,16 @@ window.onload = () => {
     byId('importStartersBtn').onclick = () => byId('importStarters').click();
     byId('importStarters').onchange = importStarters;
     byId('exportStartersBtn').onclick = exportStarters;
+    byId('loadDefaultCompetencies').onclick = loadDefaultCompetencies;
+    byId('importTemplateBtn').onclick = () => byId('importTemplateInput').click();
+    byId('importDatasetBtn').onclick = () => byId('importDatasetInput').click();
+    byId('importTemplateInput').onchange = handleTemplateImport;
+    byId('importDatasetInput').onchange = handleDatasetImport;
+    byId('checklistPreviewSelect').addEventListener('change', handleChecklistSelectionChange);
+    byId('exportChecklistCsv').onclick = exportAllChecklistsCsv;
+    byId('exportChecklistXls').onclick = exportAllChecklistsXls;
+    byId('exportSelectedChecklistCsv').onclick = exportSelectedChecklistCsv;
+    byId('printChecklistBtn').onclick = printChecklists;
     byId('shuffleBlocks').onclick = () => {
         shuffle = !shuffle;
         const btn = byId('shuffleBlocks');
@@ -589,9 +1500,143 @@ window.onload = () => {
     byId('buildAll').onclick = buildAll;
     byId('clearRosterBtn').onclick = clearRoster;
     byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
-    byId('exportAllXls').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const wsSchedule = XLSX.utils.json_to_sheet(allRows.map(r => ({ Starter: r.Starter, StaffID: r.StaffID || '', Date: toDMY(parseYMD(r.Date)), Start: r.Start, End: r.End, Outlet: r.Outlet, Step: r.Step, Shift: r.Shift }))); const wsStarters = XLSX.utils.json_to_sheet(starters.map(s => ({ Name: s.Name, StaffID: s.StaffID || '', StartDate: s.StartDate }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, wsSchedule, "Roster"); XLSX.utils.book_append_sheet(wb, wsStarters, "Starters"); XLSX.writeFile(wb, "roster_and_starters.xlsx"); };
+    byId('exportAllXls').onclick = async () => {
+        if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; }
+        if (typeof XLSX === 'undefined') {
+            showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
+            return;
+        }
+        let staticTemplate;
+        try {
+            staticTemplate = await ensureStaticPgrChecklist();
+        } catch (error) {
+            console.error('Failed to load PGR competency checklist:', error);
+            showModal('Export Error', 'Unable to load the competency checklist data. Please refresh and try again.');
+            return;
+        }
+        const scheduleHeaders = ['Starter', 'Staff ID', 'Date', 'Start Time', 'End Time', 'Outlet', 'Step', 'Shift Code'];
+        const scheduleRows = allRows.map(r => ({
+            'Starter': r.Starter,
+            'Staff ID': r.StaffID || '',
+            'Date': toDMY(parseYMD(r.Date)),
+            'Start Time': r.Start,
+            'End Time': r.End,
+            'Outlet': r.Outlet,
+            'Step': r.Step,
+            'Shift Code': r.Shift
+        }));
+        const wsSchedule = XLSX.utils.json_to_sheet(scheduleRows, { header: scheduleHeaders });
+
+        const starterHeaders = ['Name', 'Staff ID', 'Start Date'];
+        const starterRows = starters.map(s => ({
+            'Name': s.Name,
+            'Staff ID': s.StaffID || '',
+            'Start Date': s.StartDate ? toDMY(parseYMD(s.StartDate)) : ''
+        }));
+        const wsStarters = XLSX.utils.json_to_sheet(starterRows, { header: starterHeaders });
+
+        const wb = XLSX.utils.book_new();
+        const formattingQueue = [];
+
+        const rosterSheetName = 'Roster';
+        XLSX.utils.book_append_sheet(wb, wsSchedule, rosterSheetName);
+        formattingQueue.push({
+            sheetName: rosterSheetName,
+            type: 'table',
+            options: {
+                columnWidths: [28, 16, 16, 12, 12, 24, 12, 28],
+                headerRowIndex: 0,
+                dataStartRow: 1
+            }
+        });
+
+        const startersSheetName = 'Starters';
+        XLSX.utils.book_append_sheet(wb, wsStarters, startersSheetName);
+        formattingQueue.push({
+            sheetName: startersSheetName,
+            type: 'table',
+            options: {
+                columnWidths: [28, 16, 16],
+                headerRowIndex: 0,
+                dataStartRow: 1
+            }
+        });
+
+        const usedSheetNames = new Set([rosterSheetName, startersSheetName]);
+        const overviewRows = [];
+        starters.forEach((starter, index) => {
+            const {
+                sheetRows,
+                overviewRows: rows,
+                metaStartRow,
+                metaEndRow,
+                headerRowIndex,
+                dataStartRow,
+                columnCount,
+                columnWidths
+            } = buildStaticChecklistSheet(staticTemplate, starter, index);
+            if (sheetRows.length > 0) {
+                const wsChecklist = XLSX.utils.aoa_to_sheet(sheetRows);
+                const sheetName = buildChecklistSheetName(starter, index, usedSheetNames);
+                XLSX.utils.book_append_sheet(wb, wsChecklist, sheetName);
+                formattingQueue.push({
+                    sheetName,
+                    type: 'checklist',
+                    options: {
+                        columnCount,
+                        columnWidths,
+                        titleRowIndex: 0,
+                        metaStartRow,
+                        metaEndRow,
+                        headerRowIndex,
+                        dataStartRow
+                    }
+                });
+            }
+            if (rows && rows.length) overviewRows.push(...rows);
+        });
+
+        if (overviewRows.length) {
+            const overviewHeaders = ['Starter', 'Staff ID', 'Start Date', 'Category', 'Subcategory', 'Item', 'Details'];
+            const overviewData = overviewRows.map(row => ({
+                'Starter': row.Starter,
+                'Staff ID': row.StaffID,
+                'Start Date': row.StartDate,
+                'Category': row.Category,
+                'Subcategory': row.Subcategory,
+                'Item': row.Item,
+                'Details': row.Details
+            }));
+            const wsOverview = XLSX.utils.json_to_sheet(overviewData, { header: overviewHeaders });
+            const overviewName = makeUniqueSheetName('Competency Overview', usedSheetNames);
+            XLSX.utils.book_append_sheet(wb, wsOverview, overviewName);
+            formattingQueue.push({
+                sheetName: overviewName,
+                type: 'table',
+                options: {
+                    columnWidths: [26, 16, 16, 26, 22, 40, 36],
+                    headerRowIndex: 0,
+                    dataStartRow: 1
+                }
+            });
+        }
+
+        for (const cfg of formattingQueue) {
+            const ws = wb.Sheets[cfg.sheetName];
+            if (!ws) continue;
+            if (cfg.type === 'table') {
+                styleTabularWorksheet(ws, cfg.options);
+            } else if (cfg.type === 'checklist') {
+                styleChecklistWorksheet(ws, cfg.options);
+            }
+        }
+
+        XLSX.writeFile(wb, 'roster_and_starters.xlsx');
+    };
 
     // --- INITIAL SETUP ---
+    updateChecklistSummaries();
+    loadDefaultCompetencies();
     renderStarters();
     renderSched([]);
 };
