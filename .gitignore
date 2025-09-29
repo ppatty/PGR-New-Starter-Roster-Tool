@@ -1,0 +1,5 @@
+# Generated competency workbooks
+data/*.xlsx
+
+# Python cache
+__pycache__/

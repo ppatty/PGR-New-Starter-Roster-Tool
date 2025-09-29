@@ -73,6 +73,17 @@ The repository ships with a default competency bundle stored in `data/`:
 * `(5) PGR Competency Checklist.txt` – legacy bundle retained for historical reference.
 * `data/competency-template.json` – legacy standalone template retained for backward compatibility.
 * `data/competency-dataset.json` – legacy standalone dataset retained for backward compatibility.
+* `data/PGR_Competency_Checklist.xlsx` – generated on demand by the tooling below for hands-on training sign-off (not version controlled).
+
+### Generating the Excel workbook
+
+The curated Excel workbook can be generated at any time to pull in the latest dataset updates:
+
+```
+python scripts/generate_competency_workbook.py
+```
+
+The script applies matched section colours, status drop-downs, conditional formatting, and summary analytics so the workbook is ready for supervisors to print or upload into a shared drive. Use `--input` and `--output` to point at alternate bundles or destinations. Install the Python dependency with `pip install openpyxl` if it is not already available in your environment.
 
 If the PDF is updated, regenerate the bundle by running:
 
