@@ -1450,17 +1450,14 @@ window.onload = () => {
                         setCellStyle(ws, r, columnIndex, () => createCategoryStyle(categoryConfig));
                     } else if (highlightColumnIndex != null && c === highlightColumnIndex) {
                         const raw = getCellText(ws, r, columnIndex);
-                        const numericText = raw.replace(/[^0-9.-]/g, '');
-                        if (numericText.trim() !== '') {
-                            const numeric = Number(numericText);
-                            if (Number.isFinite(numeric)) {
-                                if (numeric <= 0) {
-                                    setCellStyle(ws, r, columnIndex, createSuccessStyle);
-                                } else {
-                                    setCellStyle(ws, r, columnIndex, createAlertStyle);
-                                }
-                                continue;
+                        const numeric = parseFloat(raw.trim());
+                        if (Number.isFinite(numeric)) {
+                            if (numeric <= 0) {
+                                setCellStyle(ws, r, columnIndex, createSuccessStyle);
+                            } else {
+                                setCellStyle(ws, r, columnIndex, createAlertStyle);
                             }
+                            continue;
                         }
                         setCellStyle(ws, r, columnIndex, () => createDataStyle(isAlternate));
                     } else {
