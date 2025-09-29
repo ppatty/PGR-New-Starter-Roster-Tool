@@ -24,7 +24,7 @@ test('pickTime enforces 20:00 limit and provides safe fallbacks', () => {
   const rulesMatch = html.match(/const RULES = {[\s\S]*?};/);
   assert.ok(rulesMatch, 'RULES definition not found');
 
-  const pickTimeMatch = html.match(/function pickTime\(outlet, i\) {[\s\S]*?}\n/);
+  const pickTimeMatch = html.match(/function pickTime\(outlet, i\) {[\s\S]*?}(?:\r?\n|$)/);
   assert.ok(pickTimeMatch, 'pickTime function not found');
 
   const sandbox = {};
