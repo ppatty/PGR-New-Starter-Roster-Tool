@@ -1376,10 +1376,11 @@ window.onload = () => {
                     st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
                 const initialDate = cur;
+                let dateSafety = 0;
                 while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
                     cur = addWorkDay(cur); 
                     curKey = toYMD(cur); 
-                    if (++safety > 5000) break; 
+                    if (++dateSafety > 100) break; 
                 }
                 if (cur > initialDate) conflicts.dateConflicts++;
                 const t = pickTime(outlet, allRows.length);
