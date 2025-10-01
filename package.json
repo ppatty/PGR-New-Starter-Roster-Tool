@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "PGR New Starter Roster Tool",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "start:backend": "node backend/server.js"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
 }

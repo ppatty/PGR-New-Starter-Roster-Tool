@@ -4,3 +4,6 @@ data/*.xlsx
 # Python cache
 __pycache__/
 .env
+
+# Node dependencies
+node_modules/
