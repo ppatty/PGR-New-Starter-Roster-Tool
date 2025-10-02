@@ -1,4 +1,4 @@
-PGR Roster Creator - v7.0
+PGR Roster Creator - v10.5
 Created by Patrick Price 2025
 
 A professional, single-file web application designed to rapidly and intelligently generate training rosters for new team members in the Private Gaming Rooms (PGR) at The Star Gold Coast. This tool is built to be intuitive for supervisors, requiring no technical expertise to operate.
