@@ -102,3 +102,15 @@ This application is a self-contained web app and requires no complex setup.
 Online (Recommended): The app is best used when deployed to a free web hosting service like Netlify Drop or GitHub Pages. Simply upload the project folder containing the three necessary files.
 
 Local Use: You can also run the app directly from your computer by double-clicking the index.html file.
+
+Deployment Readiness Checklist
+------------------------------
+
+To ensure the tool is ready for immediate deployment, verify the following before publishing a new build:
+
+1. **Automated tests pass** – run `npm test` to confirm the scheduling engine, exports, and validation paths succeed without errors.
+2. **Roster data reviewed** – confirm the default competency bundle and training rules reflect the latest operational requirements.
+3. **Browser sanity check** – load `index.html` in a modern browser and walk through the five-step workflow to spot any regressions in the UI flow or exports.
+4. **Deployment target prepared** – verify CDN caching or static hosting environments are configured to invalidate outdated assets when a new version is uploaded.
+
+Completing this checklist guarantees the application is production-ready with no outstanding issues, matching the zero-defect standard expected for deployment.
