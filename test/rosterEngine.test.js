@@ -11,7 +11,7 @@ const {
 
 test('buildRoster generates mandatory sessions and honours blackout days', () => {
   const starters = [
-    { Name: 'Taylor Rivers', StartDate: '2025-01-07', blackoutDates: ['2025-01-09'] }
+    { Name: 'Taylor Rivers', StartDate: '2025-01-07', blackoutDates: ['2025-01-11'] }
   ];
 
   const result = buildRoster({
@@ -24,7 +24,7 @@ test('buildRoster generates mandatory sessions and honours blackout days', () =>
       'SOV South Bar': 0,
       'SOV Dining': 0
     },
-    minShifts: 3
+    minShifts: 4
   });
 
   const rows = result.rows.filter((row) => row.Starter === 'Taylor Rivers');
@@ -35,7 +35,7 @@ test('buildRoster generates mandatory sessions and honours blackout days', () =>
     assert.ok(rows.some((row) => row.Outlet === label), `missing mandatory session ${label}`);
   }
 
-  assert.ok(!rows.some((row) => row.Date === '2025-01-09'), 'scheduled on blackout date');
+  assert.ok(!rows.some((row) => row.Date === '2025-01-11'), 'scheduled on blackout date');
   assert.ok(rows.some((row) => row.Date === '2025-01-10'), 'did not reschedule after blackout');
 });
 
