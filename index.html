@@ -231,9 +231,10 @@
     <section class="card" aria-labelledby="mandatory-h">
       <div class="hd"><h2 id="mandatory-h">Step 4: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
       <div class="bd">
-        <div class="grid g2">
+        <div class="grid g3">
           <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
           <div><label for="onboardDaySel">PGR Onboarding</label><select id="onboardDaySel"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3" selected>Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
+          <div><label for="elevateDaySel">Elevate Training</label><select id="elevateDaySel"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4" selected>Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
         </div>
       </div>
     </section>
@@ -273,7 +274,8 @@ window.onload = () => {
     const MIN_SHIFTS = 15;
     const MANDATORY_SESSIONS = [
         { name: 'Welcome Day', label: 'Welcome Day', start: '09:00' },
-        { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' }
+        { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' },
+        { name: 'Elevate Training', label: 'Elevate Training', start: '09:00' }
     ];
     const RULES = {
         "Oasis Food": ["08:00", "11:00", "16:00"],
@@ -1161,7 +1163,10 @@ window.onload = () => {
     }
 
     // --- CORE ROSTERING FUNCTIONS ---
-    function isMandatory(r) { return r.Outlet === MANDATORY_SESSIONS[0].label || r.Outlet === MANDATORY_SESSIONS[1].label; }
+    function isMandatory(r) { 
+        const mandatoryLabels = new Set(MANDATORY_SESSIONS.map((s) => s.label));
+        return mandatoryLabels.has(r.Outlet);
+    }
     function shiftsInLastNDaysFor(starterName, dateObj, n) {
         const start = new Date(dateObj); start.setDate(start.getDate() - (n - 1));
         const startKey = toYMD(start), endKey = toYMD(dateObj);
@@ -1342,15 +1347,18 @@ window.onload = () => {
         const used = new Set();
         const welcomeDow = +byId('welcomeDaySel').value;
         const onboardDow = +byId('onboardDaySel').value;
+        const elevateDow = +byId('elevateDaySel').value;
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
         for (const dayKey of Object.keys(groups).sort()) {
             let day1 = nextDow(parseYMD(dayKey), welcomeDow);
             let day2 = nextDow(day1, onboardDow, false);
+            let day3 = nextDow(day2, elevateDow, false);
             for (const s of groups[dayKey]) {
                 addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
                 addRow(makeRow(s, day2, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
-                s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(day2) };
+                addRow(makeRow(s, day3, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3));
+                s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(day3) };
             }
         }
         const baseCounts = getBlocks().reduce((m, b) => (m[b.outlet] = b.count, m), {});

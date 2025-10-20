@@ -3,7 +3,8 @@
 const DEFAULT_MIN_SHIFTS = 15;
 const MANDATORY_SESSIONS = [
   { name: 'Welcome Day', label: 'Welcome Day', start: '09:00' },
-  { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' }
+  { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' },
+  { name: 'Elevate Training', label: 'Elevate Training', start: '09:00' }
 ];
 const RULES = {
   'Oasis Food': ['08:00', '11:00', '16:00'],
@@ -159,9 +160,10 @@ function shiftsInLastNDays(rows, starterName, dateObj, n) {
   const startKey = toYMD(start);
   const endKey = toYMD(dateObj);
   let count = 0;
+  const mandatoryLabels = new Set(MANDATORY_SESSIONS.map((s) => s.label));
   for (const row of rows) {
     if (row.Starter !== starterName) continue;
-    if (row.Outlet === MANDATORY_SESSIONS[0].label || row.Outlet === MANDATORY_SESSIONS[1].label) continue;
+    if (mandatoryLabels.has(row.Outlet)) continue;
     if (row.Date >= startKey && row.Date <= endKey) count++;
   }
   return count;
@@ -198,12 +200,13 @@ function buildRoster(options = {}) {
     blocks,
     welcomeDay = 2,
     onboardDay = 3,
+    elevateDay = 4,
     shuffle = false,
     minShifts = DEFAULT_MIN_SHIFTS
   } = options;
 
-  if (welcomeDay < 0 || welcomeDay > 6 || onboardDay < 0 || onboardDay > 6) {
-    throw new Error('welcomeDay and onboardDay must be between 0 (Sunday) and 6 (Saturday).');
+  if (welcomeDay < 0 || welcomeDay > 6 || onboardDay < 0 || onboardDay > 6 || elevateDay < 0 || elevateDay > 6) {
+    throw new Error('welcomeDay, onboardDay, and elevateDay must be between 0 (Sunday) and 6 (Saturday).');
   }
 
   const starters = sanitizeStarters(rawStarters);
@@ -254,13 +257,15 @@ function buildRoster(options = {}) {
   for (const dayKey of sortedKeys) {
     const welcomeDate = nextDow(parseYMD(dayKey), welcomeDay);
     const onboardingDate = nextDow(welcomeDate, onboardDay, false);
+    const elevateDate = nextDow(onboardingDate, elevateDay, false);
     for (const starter of groups[dayKey]) {
       addRow(makeRow(starter, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
       addRow(makeRow(starter, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
+      addRow(makeRow(starter, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3));
       starter.__state = {
         currentOutlet: null,
         remaining: 0,
-        nextDate: addWorkDay(onboardingDate)
+        nextDate: addWorkDay(elevateDate)
       };
     }
   }
@@ -399,7 +404,8 @@ function buildRoster(options = {}) {
       starters: starters.length,
       minShifts,
       welcomeDay,
-      onboardDay
+      onboardDay,
+      elevateDay
     }
   };
 }
