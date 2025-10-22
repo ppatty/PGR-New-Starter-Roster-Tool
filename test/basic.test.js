@@ -160,3 +160,28 @@ test('PGR static checklist builds individualized sheets', () => {
   assert.ok(overviewRows.length >= startingShift.items.length, 'overview rows shorter than expected');
   assert.ok(overviewRows.some(row => /Ensure grooming/i.test(row.Item)), 'overview rows missing grooming item');
 });
+
+test('default session days are set correctly', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  
+  // Check Welcome Day defaults to Tuesday (value="2")
+  const welcomeDayMatch = html.match(/<select id="welcomeDaySel">.*?<\/select>/s);
+  assert.ok(welcomeDayMatch, 'Welcome Day selector not found');
+  const welcomeDaySelected = welcomeDayMatch[0].match(/<option value="(\d)" selected>/);
+  assert.ok(welcomeDaySelected, 'Welcome Day default not found');
+  assert.strictEqual(welcomeDaySelected[1], '2', 'Welcome Day should default to Tuesday (value 2)');
+  
+  // Check PGR Onboarding defaults to Thursday (value="4")
+  const onboardDayMatch = html.match(/<select id="onboardDaySel">.*?<\/select>/s);
+  assert.ok(onboardDayMatch, 'PGR Onboarding selector not found');
+  const onboardDaySelected = onboardDayMatch[0].match(/<option value="(\d)" selected>/);
+  assert.ok(onboardDaySelected, 'PGR Onboarding default not found');
+  assert.strictEqual(onboardDaySelected[1], '4', 'PGR Onboarding should default to Thursday (value 4)');
+  
+  // Check Elevate Training defaults to Wednesday (value="3")
+  const elevateDayMatch = html.match(/<select id="elevateDaySel">.*?<\/select>/s);
+  assert.ok(elevateDayMatch, 'Elevate Training selector not found');
+  const elevateDaySelected = elevateDayMatch[0].match(/<option value="(\d)" selected>/);
+  assert.ok(elevateDaySelected, 'Elevate Training default not found');
+  assert.strictEqual(elevateDaySelected[1], '3', 'Elevate Training should default to Wednesday (value 3)');
+});
