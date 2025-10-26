@@ -56,7 +56,7 @@ function isMon(date) {
 
 function nextWorking(date) {
   const d = new Date(date);
-  while (isSun(d) || isMon(d)) {
+  while (isSun(d)) {
     d.setDate(d.getDate() + 1);
   }
   return d;
@@ -76,8 +76,8 @@ function isOutletAllowedOnDate(outlet, dateObj) {
 }
 
 function pickTime(outlet, index) {
-  const times = (RULES[outlet] || ['09:00']).filter((time) => time <= '20:00');
-  const safe = times.length ? times : ['20:00'];
+  const times = (RULES[outlet] || ['09:00']).filter((time) => time <= '19:00');
+  const safe = times.length ? times : ['19:00'];
   return safe[index % safe.length];
 }
 

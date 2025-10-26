@@ -143,7 +143,7 @@
     </div>
     <div class="nav-group">
       <h2>Roster Rules</h2>
-      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Mon off</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div><div class="chip">Start ≤20:00</div></div>
+      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div><div class="chip">Start ≤19:00</div></div>
     </div>
   </aside>
 
@@ -1146,7 +1146,7 @@ window.onload = () => {
     function getStartDateISO() { return stDateInput.dataset.iso || ''; }
     const isMon = d => d.getDay() === 1;
     const isSun = d => d.getDay() === 0;
-    const nextWorking = d => { let x = new Date(d); while (isSun(x) || isMon(x)) x.setDate(x.getDate() + 1); return x; };
+    const nextWorking = d => { let x = new Date(d); while (isSun(x)) x.setDate(x.getDate() + 1); return x; };
     function addWorkDay(d) { const x = new Date(d); x.setDate(x.getDate() + 1); return nextWorking(x); }
     function nextDow(startDate, dow, includeStart = true) { const d = new Date(startDate); if (!includeStart) d.setDate(d.getDate() + 1); while (d.getDay() !== dow) d.setDate(d.getDate() + 1); return d; }
     function shuffled(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -1467,8 +1467,8 @@ window.onload = () => {
     function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
     function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Avatar: starter.Avatar || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
     function pickTime(outlet, i) {
-        const times = (RULES[outlet] || ["09:00"]).filter(t => t <= "20:00");
-        const safeTimes = times.length ? times : ["20:00"];
+        const times = (RULES[outlet] || ["09:00"]).filter(t => t <= "19:00");
+        const safeTimes = times.length ? times : ["19:00"];
         return safeTimes[i % safeTimes.length];
     }
 

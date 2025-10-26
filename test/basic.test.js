@@ -7,18 +7,18 @@ test('smoke test', () => {
   assert.strictEqual(1, 1);
 });
 
-test('start times are no later than 20:00', () => {
+test('start times are no later than 19:00', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const match = html.match(/const RULES = {[\s\S]*?};/);
   assert.ok(match, 'RULES constant not found');
   const times = [...match[0].matchAll(/"(\d{2}:\d{2})"/g)].map(m => m[1]);
   for (const t of times) {
     const [h, m] = t.split(':').map(Number);
-    assert.ok(h < 20 || (h === 20 && m === 0), `${t} exceeds 20:00`);
+    assert.ok(h < 19 || (h === 19 && m === 0), `${t} exceeds 19:00`);
   }
 });
 
-test('pickTime enforces 20:00 limit and provides safe fallbacks', () => {
+test('pickTime enforces 19:00 limit and provides safe fallbacks', () => {
   const html = fs.readFileSync('index.html', 'utf8');
 
   const rulesMatch = html.match(/const RULES = {[\s\S]*?};/);
@@ -38,15 +38,15 @@ test('pickTime enforces 20:00 limit and provides safe fallbacks', () => {
   for (const outlet of Object.keys(RULES)) {
     for (let i = 0; i < 10; i++) {
       const time = pickTime(outlet, i);
-      assert.ok(time <= '20:00', `${outlet} time ${time} exceeds 20:00`);
+      assert.ok(time <= '19:00', `${outlet} time ${time} exceeds 19:00`);
     }
   }
 
-  RULES.TestOutlet = ['22:30', '19:45'];
-  assert.strictEqual(pickTime('TestOutlet', 0), '19:45');
+  RULES.TestOutlet = ['22:30', '18:45'];
+  assert.strictEqual(pickTime('TestOutlet', 0), '18:45');
 
   RULES.AllLate = ['22:30'];
-  assert.strictEqual(pickTime('AllLate', 0), '20:00');
+  assert.strictEqual(pickTime('AllLate', 0), '19:00');
 });
 
 test('competency template maps to starters and exports rows', () => {
