@@ -143,11 +143,16 @@ function sanitizeStarters(starters) {
       throw new Error(`Starter "${Name}" is missing StartDate.`);
     }
     parseYMD(startDate);
+    const birthDate = s.BirthDate || s.birthDate || '';
+    if (birthDate) {
+      parseYMD(birthDate);
+    }
     const blackout = Array.isArray(s.blackoutDates) ? s.blackoutDates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)) : [];
     return {
       Name,
       StaffID: (s.StaffID || s.staffId || '').trim(),
       StartDate: startDate,
+      BirthDate: birthDate,
       blackoutDates: blackout,
       Avatar: s.Avatar || s.avatar || ''
     };
