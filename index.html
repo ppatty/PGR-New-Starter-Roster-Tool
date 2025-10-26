@@ -1380,15 +1380,27 @@ window.onload = () => {
             // Trigger file input
             const fileInput = byId('importBirthdayList');
             const existingFile = await new Promise(resolve => {
-                fileInput.onchange = (e) => {
-                    resolve(e.target.files[0]);
-                    fileInput.value = null;
+                let resolved = false;
+                const handleChange = (e) => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(e.target.files[0]);
+                        fileInput.removeEventListener('change', handleChange);
+                        fileInput.removeEventListener('cancel', handleCancel);
+                        fileInput.value = null;
+                    }
                 };
+                const handleCancel = () => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(null);
+                        fileInput.removeEventListener('change', handleChange);
+                        fileInput.removeEventListener('cancel', handleCancel);
+                    }
+                };
+                fileInput.addEventListener('change', handleChange);
+                fileInput.addEventListener('cancel', handleCancel);
                 fileInput.click();
-                // Set a timeout in case user cancels
-                setTimeout(() => {
-                    if (!fileInput.files.length) resolve(null);
-                }, 100);
             });
             
             if (existingFile) {

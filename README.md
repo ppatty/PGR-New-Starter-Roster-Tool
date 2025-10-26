@@ -30,7 +30,7 @@ How to Use
 
 Step 1: Add New Team Members
 
-Enter the team member's Full Name, Staff ID (optional), and their First Day of Work.
+Enter the team member's Full Name, Staff ID (optional), their First Day of Work, and optionally their Birth Date.
 
 Click "Add Person".
 
@@ -39,6 +39,12 @@ Repeat for all new team members.
 (Optional) Use the "Import from CSV" button to upload a list. The CSV file must have three columns: Name, StaffID, StartDate.
 
 (Optional) Click the "Calendar" button next to any person's name to mark their specific unavailable days.
+
+(Optional) Use the "Export Birthday List" button to add new team members' birth dates to the existing Birthday List file. When clicked:
+  * You'll be prompted to select whether to merge with an existing birthday list or create a new one.
+  * If merging, select the existing "(Birthday List PGR).xlsx" file.
+  * The tool will automatically merge new birthdays with existing ones, remove duplicates, sort by month and day, and export the updated list.
+  * Only team members with birth dates entered will be included in the export.
 
 Step 2: Set Training Shifts
 
