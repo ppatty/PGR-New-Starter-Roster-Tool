@@ -159,21 +159,23 @@
     <section class="card" aria-labelledby="starters-h">
       <div class="hd"><h2 id="starters-h">Step 1: Add New Team Members</h2><span class="sub">Add manually or import a CSV file</span></div>
       <div class="bd">
-        <div class="grid g3">
+        <div class="grid g4">
           <div><label for="stName">Full Name</label><input id="stName" placeholder="Dakota Parata"></div>
           <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
           <div><label for="stDate">First Day of Work</label><input id="stDate" class="date-input" type="text" placeholder="Select a date" readonly aria-haspopup="dialog" aria-expanded="false"></div>
+          <div><label for="stBirthDate">Birth Date (Optional)</label><input id="stBirthDate" class="date-input" type="text" placeholder="Select birth date" readonly aria-haspopup="dialog" aria-expanded="false"></div>
         </div>
         <div class="grid g4 mt-4">
           <button id="addStarter" class="btn primary" type="button">Add Person</button>
           <button id="importStartersBtn" class="btn" type="button">Import from CSV</button>
           <button id="exportStartersBtn" class="btn" type="button">Export to CSV</button>
+          <button id="exportBirthdayListBtn" class="btn" type="button">Export Birthday List</button>
           <button id="clearStarters" class="btn" type="button">Clear All People</button>
           <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
         </div>
         <div class="mt-4 table-wrapper">
           <table id="startersTbl">
-            <thead><tr><th>#</th><th>Name</th><th>Staff ID</th><th>Start Date</th><th>Days Off</th><th>Actions</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>Staff ID</th><th>Start Date</th><th>Birth Date</th><th>Days Off</th><th>Actions</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -1134,6 +1136,7 @@ window.onload = () => {
     const toDMY = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
     const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
     const stDateInput = byId('stDate');
+    const stBirthDateInput = byId('stBirthDate');
     function setStartDateISO(iso) {
         if (iso) {
             stDateInput.dataset.iso = iso;
@@ -1144,6 +1147,16 @@ window.onload = () => {
         }
     }
     function getStartDateISO() { return stDateInput.dataset.iso || ''; }
+    function setBirthDateISO(iso) {
+        if (iso) {
+            stBirthDateInput.dataset.iso = iso;
+            stBirthDateInput.value = toDMY(parseYMD(iso));
+        } else {
+            stBirthDateInput.dataset.iso = '';
+            stBirthDateInput.value = '';
+        }
+    }
+    function getBirthDateISO() { return stBirthDateInput.dataset.iso || ''; }
     const isMon = d => d.getDay() === 1;
     const isSun = d => d.getDay() === 0;
     const nextWorking = d => { let x = new Date(d); while (isSun(x)) x.setDate(x.getDate() + 1); return x; };
@@ -1215,6 +1228,8 @@ window.onload = () => {
             helper.textContent = `Toggle blackout days for ${starter.Name}.`;
         } else if (mode === 'startDate') {
             helper.textContent = 'Choose the starter\'s first day of work.';
+        } else if (mode === 'birthDate') {
+            helper.textContent = 'Choose the birth date (optional).';
         } else {
             helper.textContent = '';
             return;
@@ -1228,7 +1243,7 @@ window.onload = () => {
         const firstDayOfMonth = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         for (let i = 0; i < firstDayOfMonth; i++) { calendarDays.innerHTML += `<div class="calendar-day empty"></div>`; }
-        const selectedIso = mode === 'blackout' ? starter.StartDate : getStartDateISO();
+        const selectedIso = mode === 'blackout' ? starter.StartDate : (mode === 'birthDate' ? getBirthDateISO() : getStartDateISO());
         for (let i = 1; i <= daysInMonth; i++) {
             const dayEl = document.createElement('div');
             dayEl.className = 'calendar-day';
@@ -1247,6 +1262,10 @@ window.onload = () => {
                         dayEl.classList.add('blackout');
                     }
                     renderStarters();
+                } else if (mode === 'birthDate') {
+                    setBirthDateISO(dateStr);
+                    closeCalendarModal();
+                    stBirthDateInput.focus();
                 } else {
                     setStartDateISO(dateStr);
                     closeCalendarModal();
@@ -1260,25 +1279,28 @@ window.onload = () => {
     function closeCalendarModal() {
         byId('calendar-modal').classList.remove('visible');
         if (calendarContext?.mode === 'startDate') stDateInput.setAttribute('aria-expanded', 'false');
+        if (calendarContext?.mode === 'birthDate') stBirthDateInput.setAttribute('aria-expanded', 'false');
         calendarContext = null;
     }
     function openCalendarModal() {
         byId('calendar-modal').classList.add('visible');
         if (calendarContext?.mode === 'startDate') stDateInput.setAttribute('aria-expanded', 'true');
+        if (calendarContext?.mode === 'birthDate') stBirthDateInput.setAttribute('aria-expanded', 'true');
     }
 
     // --- STARTER MANAGEMENT ---
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
         if (starters.length === 0) {
-            tb.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
+            tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
             syncChecklists();
             return;
         }
         tb.innerHTML = starters.map((s, i) => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
-            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
+            const birthDateDisplay = s.BirthDate ? toDMY(parseYMD(s.BirthDate)) : 'N/A';
+            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
@@ -1298,12 +1320,20 @@ window.onload = () => {
         renderCalendar();
         openCalendarModal();
     }
+    function openBirthDatePicker(e) {
+        if (e) { e.preventDefault(); }
+        calendarContext = { mode: 'birthDate' };
+        const currentIso = getBirthDateISO();
+        currentCalendarDate = currentIso ? parseYMD(currentIso) : new Date();
+        renderCalendar();
+        openCalendarModal();
+    }
     function addStarter() {
-        const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = getStartDateISO();
+        const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = getStartDateISO(); const BirthDate = getBirthDateISO();
         if (!Name || !StartDate) { showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
-        starters.push({ Name, StaffID, StartDate, blackoutDates: [], Avatar: getRandomAvatar() });
+        starters.push({ Name, StaffID, StartDate, BirthDate, blackoutDates: [], Avatar: getRandomAvatar() });
         renderStarters();
-        byId('stName').value = ''; byId('stId').value = ''; setStartDateISO('');
+        byId('stName').value = ''; byId('stId').value = ''; setStartDateISO(''); setBirthDateISO('');
     }
     async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; renderStarters(); } }
     function importStarters(e) {
@@ -1313,7 +1343,7 @@ window.onload = () => {
         fr.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
-            starters = lines.map(l => { const [Name, StaffID, StartDate] = l.split(','); return { Name, StaffID, StartDate, blackoutDates: [], Avatar: getRandomAvatar() }; });
+            starters = lines.map(l => { const [Name, StaffID, StartDate, BirthDate] = l.split(','); return { Name, StaffID, StartDate, BirthDate: BirthDate || '', blackoutDates: [], Avatar: getRandomAvatar() }; });
             renderStarters();
         };
         fr.readAsText(f);
@@ -1321,11 +1351,61 @@ window.onload = () => {
     }
     function exportStarters() {
         if (starters.length === 0) { showModal('No Starters', 'There are no starters to export.'); return; }
-        const header = ['Name', 'StaffID', 'StartDate'];
-        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate].join(','))).join('\n');
+        const header = ['Name', 'StaffID', 'StartDate', 'BirthDate'];
+        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate, s.BirthDate || ''].join(','))).join('\n');
         download('starters.csv', csv);
     }
     function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
+    
+    function exportBirthdayList() {
+        if (!starters.length) { showModal('Export Error', 'No starters to export.'); return; }
+        const startersWithBirthdays = starters.filter(s => s.BirthDate);
+        if (startersWithBirthdays.length === 0) { showModal('Export Error', 'No starters have birth dates entered.'); return; }
+        if (typeof XLSX === 'undefined') {
+            showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
+            return;
+        }
+        
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const birthdayRows = startersWithBirthdays.map((s, index) => {
+            const nameParts = s.Name.trim().split(/\s+/);
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            const birthDate = parseYMD(s.BirthDate);
+            const month = monthNames[birthDate.getMonth()];
+            return {
+                'No.': index + 1,
+                'First Name': firstName,
+                'Last Name': lastName,
+                'Date of Birth': birthDate,
+                'Month': month
+            };
+        });
+        
+        const ws = XLSX.utils.json_to_sheet(birthdayRows, { 
+            header: ['No.', 'First Name', 'Last Name', 'Date of Birth', 'Month']
+        });
+        
+        ws['!cols'] = [
+            { wch: 6 },   // No.
+            { wch: 18 },  // First Name
+            { wch: 18 },  // Last Name
+            { wch: 16 },  // Date of Birth
+            { wch: 10 }   // Month
+        ];
+        
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let r = range.s.r + 1; r <= range.e.r; r++) {
+            const dobCell = ws[XLSX.utils.encode_cell({ r, c: 3 })];
+            if (dobCell && dobCell.t === 'd') {
+                dobCell.z = 'd/m/yyyy';
+            }
+        }
+        
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'report_Birthday');
+        XLSX.writeFile(wb, '(Birthday List PGR).xlsx');
+    }
 
     // --- BUILDER & RENDER LOGIC ---
     async function buildAll() {
@@ -1481,13 +1561,17 @@ window.onload = () => {
     byId('calendar-close').onclick = closeCalendarModal;
     byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) closeCalendarModal(); };
     setStartDateISO(getStartDateISO());
+    setBirthDateISO(getBirthDateISO());
     stDateInput.addEventListener('click', openStartDatePicker);
     stDateInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openStartDatePicker(e); });
+    stBirthDateInput.addEventListener('click', openBirthDatePicker);
+    stBirthDateInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openBirthDatePicker(e); });
     byId('addStarter').onclick = addStarter;
     byId('clearStarters').onclick = clearStarters;
     byId('importStartersBtn').onclick = () => byId('importStarters').click();
     byId('importStarters').onchange = importStarters;
     byId('exportStartersBtn').onclick = exportStarters;
+    byId('exportBirthdayListBtn').onclick = exportBirthdayList;
     byId('loadDefaultCompetencies').onclick = loadDefaultCompetencies;
     byId('importTemplateBtn').onclick = () => byId('importTemplateInput').click();
     byId('importDatasetBtn').onclick = () => byId('importDatasetInput').click();

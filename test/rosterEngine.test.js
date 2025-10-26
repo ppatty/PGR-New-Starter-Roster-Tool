@@ -49,6 +49,26 @@ test('sanitizeStarters validates required fields', () => {
   assert.equal(sanitized.blackoutDates[0], '2025-02-05');
 });
 
+test('sanitizeStarters handles optional birth date field', () => {
+  const startersWithBirthDate = [
+    { Name: 'Alice Smith', StartDate: '2025-01-10', BirthDate: '1995-03-15' }
+  ];
+  const [sanitized] = sanitizeStarters(startersWithBirthDate);
+  assert.equal(sanitized.Name, 'Alice Smith');
+  assert.equal(sanitized.BirthDate, '1995-03-15');
+
+  const startersWithoutBirthDate = [
+    { Name: 'Bob Jones', StartDate: '2025-01-11' }
+  ];
+  const [sanitized2] = sanitizeStarters(startersWithoutBirthDate);
+  assert.equal(sanitized2.Name, 'Bob Jones');
+  assert.equal(sanitized2.BirthDate, '');
+
+  assert.throws(() => sanitizeStarters([
+    { Name: 'Invalid Birth', StartDate: '2025-01-12', BirthDate: 'not-a-date' }
+  ]), /Invalid ISO date string/);
+});
+
 test('buildRoster defaults produce a summary with the starter count', () => {
   const starters = [
     { Name: 'Alex Johnson', StartDate: '2025-01-07' },
