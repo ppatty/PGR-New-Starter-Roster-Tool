@@ -172,6 +172,7 @@
           <button id="exportBirthdayListBtn" class="btn" type="button">Export Birthday List</button>
           <button id="clearStarters" class="btn" type="button">Clear All People</button>
           <input type="file" id="importStarters" accept=".csv" class="visually-hidden" />
+          <input type="file" id="importBirthdayList" accept=".xlsx" class="visually-hidden" />
         </div>
         <div class="mt-4 table-wrapper">
           <table id="startersTbl">
@@ -1357,7 +1358,7 @@ window.onload = () => {
     }
     function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
     
-    function exportBirthdayList() {
+    async function exportBirthdayList() {
         if (!starters.length) { showModal('Export Error', 'No starters to export.'); return; }
         const startersWithBirthdays = starters.filter(s => s.BirthDate);
         if (startersWithBirthdays.length === 0) { showModal('Export Error', 'No starters have birth dates entered.'); return; }
@@ -1366,21 +1367,122 @@ window.onload = () => {
             return;
         }
         
+        // Prompt user to import existing birthday list
+        const shouldImport = await showModal(
+            'Import Existing Birthday List', 
+            'Do you want to add new birthdays to the existing Birthday List? Click OK to select the existing file, or Cancel to create a new list with only new starters.', 
+            true
+        );
+        
+        let existingBirthdays = [];
+        
+        if (shouldImport) {
+            // Trigger file input
+            const fileInput = byId('importBirthdayList');
+            const existingFile = await new Promise(resolve => {
+                let resolved = false;
+                const handleChange = (e) => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(e.target.files[0]);
+                        cleanup();
+                    }
+                };
+                const handleFocus = () => {
+                    // Use a timeout to check if a file was selected
+                    setTimeout(() => {
+                        if (!resolved && !fileInput.files.length) {
+                            resolved = true;
+                            resolve(null);
+                            cleanup();
+                        }
+                    }, 100);
+                };
+                const cleanup = () => {
+                    fileInput.removeEventListener('change', handleChange);
+                    window.removeEventListener('focus', handleFocus);
+                    fileInput.value = null;
+                };
+                fileInput.addEventListener('change', handleChange);
+                window.addEventListener('focus', handleFocus);
+                fileInput.click();
+            });
+            
+            if (existingFile) {
+                try {
+                    const data = await existingFile.arrayBuffer();
+                    const wb = XLSX.read(data, { type: 'array' });
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
+                    
+                    // Skip header row and parse existing birthdays
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (row && row.length >= 4 && row[1] && row[2]) {
+                            existingBirthdays.push({
+                                firstName: row[1],
+                                lastName: row[2],
+                                dateOfBirth: row[3],
+                                month: row[4]
+                            });
+                        }
+                    }
+                } catch (error) {
+                    showModal('Import Error', 'Failed to read the existing Birthday List file. Creating a new list instead.');
+                    existingBirthdays = [];
+                }
+            }
+        }
+        
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const birthdayRows = startersWithBirthdays.map((s, index) => {
+        
+        // Convert new starters to birthday format
+        const newBirthdays = startersWithBirthdays.map(s => {
             const nameParts = s.Name.trim().split(/\s+/);
             const firstName = nameParts[0] || '';
             const lastName = nameParts.slice(1).join(' ') || '';
             const birthDate = parseYMD(s.BirthDate);
             const month = monthNames[birthDate.getMonth()];
             return {
-                'No.': index + 1,
-                'First Name': firstName,
-                'Last Name': lastName,
-                'Date of Birth': birthDate,
-                'Month': month
+                firstName,
+                lastName,
+                dateOfBirth: birthDate,
+                month
             };
         });
+        
+        // Merge existing and new birthdays, avoiding duplicates
+        const allBirthdays = [...existingBirthdays];
+        for (const newBday of newBirthdays) {
+            const isDuplicate = existingBirthdays.some(existing => 
+                existing.firstName === newBday.firstName && 
+                existing.lastName === newBday.lastName
+            );
+            if (!isDuplicate) {
+                allBirthdays.push(newBday);
+            }
+        }
+        
+        // Sort by month, then by day
+        const monthOrder = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 };
+        allBirthdays.sort((a, b) => {
+            const monthDiff = monthOrder[a.month] - monthOrder[b.month];
+            if (monthDiff !== 0) return monthDiff;
+            
+            // Compare by day within the same month
+            const dateA = a.dateOfBirth instanceof Date ? a.dateOfBirth : new Date(a.dateOfBirth);
+            const dateB = b.dateOfBirth instanceof Date ? b.dateOfBirth : new Date(b.dateOfBirth);
+            return dateA.getDate() - dateB.getDate();
+        });
+        
+        // Renumber all entries
+        const birthdayRows = allBirthdays.map((bday, index) => ({
+            'No.': index + 1,
+            'First Name': bday.firstName,
+            'Last Name': bday.lastName,
+            'Date of Birth': bday.dateOfBirth instanceof Date ? bday.dateOfBirth : new Date(bday.dateOfBirth),
+            'Month': bday.month
+        }));
         
         const ws = XLSX.utils.json_to_sheet(birthdayRows, { 
             header: ['No.', 'First Name', 'Last Name', 'Date of Birth', 'Month']
@@ -1405,6 +1507,9 @@ window.onload = () => {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'report_Birthday');
         XLSX.writeFile(wb, '(Birthday List PGR).xlsx');
+        
+        const addedCount = allBirthdays.length - existingBirthdays.length;
+        showModal('Export Complete', `Birthday List exported successfully. ${addedCount} new ${addedCount === 1 ? 'entry' : 'entries'} added.`);
     }
 
     // --- BUILDER & RENDER LOGIC ---
