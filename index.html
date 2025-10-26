@@ -1385,21 +1385,26 @@ window.onload = () => {
                     if (!resolved) {
                         resolved = true;
                         resolve(e.target.files[0]);
-                        fileInput.removeEventListener('change', handleChange);
-                        fileInput.removeEventListener('cancel', handleCancel);
-                        fileInput.value = null;
+                        cleanup();
                     }
                 };
-                const handleCancel = () => {
-                    if (!resolved) {
-                        resolved = true;
-                        resolve(null);
-                        fileInput.removeEventListener('change', handleChange);
-                        fileInput.removeEventListener('cancel', handleCancel);
-                    }
+                const handleFocus = () => {
+                    // Use a timeout to check if a file was selected
+                    setTimeout(() => {
+                        if (!resolved && !fileInput.files.length) {
+                            resolved = true;
+                            resolve(null);
+                            cleanup();
+                        }
+                    }, 100);
+                };
+                const cleanup = () => {
+                    fileInput.removeEventListener('change', handleChange);
+                    window.removeEventListener('focus', handleFocus);
+                    fileInput.value = null;
                 };
                 fileInput.addEventListener('change', handleChange);
-                fileInput.addEventListener('cancel', handleCancel);
+                window.addEventListener('focus', handleFocus);
                 fileInput.click();
             });
             
