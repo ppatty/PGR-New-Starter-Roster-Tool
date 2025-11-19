@@ -274,6 +274,28 @@ window.onload = () => {
     let calendarContext = null;
     let currentCalendarDate = new Date();
 
+    const STORAGE_KEY = 'pgr_roster_starters_v1';
+
+    function saveStartersToStorage() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(starters));
+        } catch (e) {
+            console.warn('Failed to save to local storage', e);
+        }
+    }
+
+    function loadStartersFromStorage() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                starters = JSON.parse(saved);
+                renderStarters();
+            }
+        } catch (e) {
+            console.warn('Failed to load from local storage', e);
+        }
+    }
+
     const MIN_SHIFTS = 15;
     const MANDATORY_SESSIONS = [
         { name: 'Welcome Day', label: 'Welcome Day', start: '09:00' },
@@ -1262,6 +1284,7 @@ window.onload = () => {
                         starter.blackoutDates.push(dateStr);
                         dayEl.classList.add('blackout');
                     }
+                    saveStartersToStorage();
                     renderStarters();
                 } else if (mode === 'birthDate') {
                     setBirthDateISO(dateStr);
@@ -1303,7 +1326,7 @@ window.onload = () => {
             const birthDateDisplay = s.BirthDate ? toDMY(parseYMD(s.BirthDate)) : 'N/A';
             return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
-        tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); renderStarters(); } });
+        tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); saveStartersToStorage(); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
             activeStarterIndex = +b.dataset.i;
             calendarContext = { mode: 'blackout' };
@@ -1332,11 +1355,16 @@ window.onload = () => {
     function addStarter() {
         const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = getStartDateISO(); const BirthDate = getBirthDateISO();
         if (!Name || !StartDate) { showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
+        if (StaffID && starters.some(s => s.StaffID === StaffID)) {
+            showModal('Duplicate ID', `Staff ID ${StaffID} is already assigned to another person.`);
+            return;
+        }
         starters.push({ Name, StaffID, StartDate, BirthDate, blackoutDates: [], Avatar: getRandomAvatar() });
+        saveStartersToStorage();
         renderStarters();
         byId('stName').value = ''; byId('stId').value = ''; setStartDateISO(''); setBirthDateISO('');
     }
-    async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; renderStarters(); } }
+    async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; saveStartersToStorage(); renderStarters(); } }
     function importStarters(e) {
         const f = e.target.files[0];
         if (!f) return;
@@ -1345,6 +1373,7 @@ window.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
             starters = lines.map(l => { const [Name, StaffID, StartDate, BirthDate] = l.split(','); return { Name, StaffID, StartDate, BirthDate: BirthDate || '', blackoutDates: [], Avatar: getRandomAvatar() }; });
+            saveStartersToStorage();
             renderStarters();
         };
         fr.readAsText(f);
@@ -1548,7 +1577,10 @@ window.onload = () => {
         }
         const baseCounts = getBlocks().reduce((m, b) => (m[b.outlet] = b.count, m), {});
         const conflicts = { outletConflicts: 0, dateConflicts: 0, fallbackUsed: 0, safetyTriggered: false };
-        let progress = true, safety = 0; const everyone = Object.values(groups).flat();
+        let progress = true, safety = 0;
+        const everyone = Object.values(groups).flat().sort((a, b) => {
+            return (b.blackoutDates.length || 0) - (a.blackoutDates.length || 0);
+        });
         while (progress && safety < 5000) {
             progress = false; safety++;
             if (safety > 4000) conflicts.safetyTriggered = true;
@@ -1833,6 +1865,7 @@ window.onload = () => {
     // --- INITIAL SETUP ---
     updateChecklistSummaries();
     loadDefaultCompetencies();
+    loadStartersFromStorage();
     renderStarters();
     renderSched([]);
 };
