@@ -50,6 +50,46 @@
       --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -2px rgb(0 0 0 / 0.1);
     }
 
+    :root[data-theme="midnight"] {
+      --bg-primary: #0b1220;
+      --bg-secondary: #121a2a;
+      --bg-tertiary: #192338;
+      --surface: #131b2c;
+      --surface-alt: #0d1522;
+      --bg-gradient: radial-gradient(circle at top left, #1c2740 0%, #0b1220 100%);
+
+      --text-primary: #f3f7ff;
+      --text-secondary: #c2cff5;
+      --text-muted: #8fa3d3;
+
+      --border-primary: #273553;
+      --border-secondary: #32446a;
+
+      --brand-primary: #2563eb;
+      --brand-secondary: #38bdf8;
+      --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, #60a5fa 100%);
+    }
+
+    :root[data-theme="emerald"] {
+      --bg-primary: #0c1a14;
+      --bg-secondary: #12241c;
+      --bg-tertiary: #183025;
+      --surface: #14281f;
+      --surface-alt: #0f1f18;
+      --bg-gradient: radial-gradient(circle at top left, #1d2e26 0%, #0b1812 100%);
+
+      --text-primary: #ecfdf3;
+      --text-secondary: #bbf7d0;
+      --text-muted: #86efac;
+
+      --border-primary: #1f3b2d;
+      --border-secondary: #265038;
+
+      --brand-primary: #10b981;
+      --brand-secondary: #34d399;
+      --brand-gradient: linear-gradient(90deg, var(--brand-primary) 0%, #22c55e 100%);
+    }
+
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--text-primary); background: var(--bg-gradient); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -65,6 +105,8 @@
     .nav-group h2 { font-family: var(--font-serif); font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
     .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .chip { display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; border-radius: var(--radius-md); background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+    .theme-switcher { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.75rem 0.5rem; border: 1px solid var(--border-primary); border-radius: var(--radius-md); background-color: var(--bg-tertiary); }
+    .theme-switcher .theme-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
     .starter-cell { display: inline-flex; align-items: center; gap: 0.5rem; }
     .starter-avatar { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 1.2rem; }
     .group-row-header { display: flex; align-items: center; gap: 0.75rem; }
@@ -138,12 +180,21 @@
         <div class="subbrand">Private Gaming Rooms</div>
         <div class="tagline">Let's train some newbies!</div>
         <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Developed by Patrick Price and tested by Stacey Hickman</div>
-        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">V11.0</div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">V12.0</div>
       </div>
     </div>
     <div class="nav-group">
       <h2>Roster Rules</h2>
       <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div><div class="chip">Start ≤19:00</div></div>
+    </div>
+
+    <div class="theme-switcher" aria-label="Colour scheme">
+      <div class="theme-label">Colour Scheme</div>
+      <select id="themeSelect" aria-label="Select colour scheme">
+        <option value="classic">Classic PGR</option>
+        <option value="midnight">Midnight Steel</option>
+        <option value="emerald">Emerald Sands</option>
+      </select>
     </div>
   </aside>
 
@@ -275,6 +326,32 @@ window.onload = () => {
     let currentCalendarDate = new Date();
 
     const STORAGE_KEY = 'pgr_roster_starters_v1';
+    const THEME_STORAGE_KEY = 'pgr_roster_theme_v1';
+
+    function updateThemeMeta() {
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) return;
+        const bgPrimary = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim();
+        if (bgPrimary) meta.setAttribute('content', bgPrimary);
+    }
+
+    function applyTheme(theme) {
+        const nextTheme = theme || 'classic';
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        try {
+            localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+        } catch (error) {
+            console.warn('Unable to persist theme preference', error);
+        }
+        const select = document.getElementById('themeSelect');
+        if (select) select.value = nextTheme;
+        updateThemeMeta();
+    }
+
+    function initTheme() {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        applyTheme(stored || 'classic');
+    }
 
     function saveStartersToStorage() {
         try {
@@ -1697,6 +1774,7 @@ window.onload = () => {
     byId('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
     byId('calendar-close').onclick = closeCalendarModal;
     byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) closeCalendarModal(); };
+    byId('themeSelect').addEventListener('change', (event) => applyTheme(event.target.value));
     setStartDateISO(getStartDateISO());
     setBirthDateISO(getBirthDateISO());
     stDateInput.addEventListener('click', openStartDatePicker);
@@ -1863,6 +1941,7 @@ window.onload = () => {
     };
 
     // --- INITIAL SETUP ---
+    initTheme();
     updateChecklistSummaries();
     loadDefaultCompetencies();
     loadStartersFromStorage();
