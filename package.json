@@ -1,6 +1,6 @@
 {
   "name": "pgr-new-starter-roster-tool",
-  "version": "1.0.0",
+  "version": "12.0.0",
   "description": "PGR New Starter Roster Tool",
   "scripts": {
     "test": "node --test",
