@@ -113,6 +113,9 @@
     .group-row-header { display: flex; align-items: center; gap: 0.75rem; }
     .group-row-subtext { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
     .toolbar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 1rem; margin: -2rem -2rem 0; background: linear-gradient(180deg, rgba(16, 12, 12, 0.95) 70%, transparent 100%); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-primary); }
+    .mode-switch { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.75rem; background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); }
+    .mode-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .mode-switch select { width: auto; min-width: 140px; }
     #conflicts { margin-left: auto; font-size: 0.875rem; color: var(--text-secondary); background-color: var(--bg-tertiary); padding: 0.5rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-primary); }
     .card { background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%); border: 1px solid var(--border-primary); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; }
     .card .hd { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-primary); background-color: var(--bg-tertiary); }
@@ -206,6 +209,13 @@
       <button id="clearRosterBtn" class="btn" type="button">Clear Roster</button>
       <button id="exportAllCsv" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export CSV</button>
       <button id="exportAllXls" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>Export Excel</button>
+      <div class="mode-switch" aria-label="Mode selector">
+        <span class="mode-label">Mode</span>
+        <select id="modeSelect" aria-label="Toggle between basic and advanced modes">
+          <option value="basic">Basic</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
       <span id="conflicts" aria-live="polite">—</span>
     </div>
 
@@ -254,7 +264,7 @@
       </div>
     </section>
 
-    <section class="card" aria-labelledby="competency-h">
+    <section id="competencyCard" class="card" aria-labelledby="competency-h">
       <div class="hd"><h2 id="competency-h">Step 3: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
       <div class="bd">
         <div class="grid g3">
@@ -329,6 +339,10 @@ window.onload = () => {
 
     const STORAGE_KEY = 'pgr_roster_starters_v1';
     const THEME_STORAGE_KEY = 'pgr_roster_theme_v1';
+    const MODE_STORAGE_KEY = 'pgr_roster_mode_v1';
+    const MODES = { BASIC: 'basic', ADVANCED: 'advanced' };
+    let appMode = MODES.ADVANCED;
+    let hasAttemptedDefaultCompetencyLoad = false;
 
     function updateThemeMeta() {
         const meta = document.querySelector('meta[name="theme-color"]');
@@ -353,6 +367,54 @@ window.onload = () => {
     function initTheme() {
         const stored = localStorage.getItem(THEME_STORAGE_KEY);
         applyTheme(stored || 'classic');
+    }
+
+    function loadSavedMode() {
+        try {
+            const stored = localStorage.getItem(MODE_STORAGE_KEY);
+            return stored === MODES.BASIC ? MODES.BASIC : MODES.ADVANCED;
+        } catch (error) {
+            console.warn('Unable to read mode preference', error);
+            return MODES.ADVANCED;
+        }
+    }
+
+    function isAdvancedMode() {
+        return appMode === MODES.ADVANCED;
+    }
+
+    function maybeLoadDefaultCompetencies() {
+        if (hasAttemptedDefaultCompetencyLoad || !isAdvancedMode()) return;
+        hasAttemptedDefaultCompetencyLoad = true;
+        loadDefaultCompetencies();
+    }
+
+    function applyMode(mode, { skipPersist = false, skipAutoLoad = false } = {}) {
+        appMode = mode === MODES.BASIC ? MODES.BASIC : MODES.ADVANCED;
+        if (!skipPersist) {
+            try {
+                localStorage.setItem(MODE_STORAGE_KEY, appMode);
+            } catch (error) {
+                console.warn('Unable to persist mode preference', error);
+            }
+        }
+
+        const modeSelect = document.getElementById('modeSelect');
+        if (modeSelect) modeSelect.value = appMode;
+
+        const competencyCard = document.getElementById('competencyCard');
+        if (competencyCard) competencyCard.style.display = isAdvancedMode() ? '' : 'none';
+
+        if (!isAdvancedMode()) {
+            selectedChecklistKey = '';
+            checklistMap = new Map();
+            updateChecklistSelect();
+            renderChecklistPreview(null);
+        } else {
+            syncChecklists();
+            if (!skipAutoLoad) maybeLoadDefaultCompetencies();
+        }
+        updateChecklistSummaries();
     }
 
     function saveStartersToStorage() {
@@ -754,6 +816,11 @@ window.onload = () => {
     function updateChecklistSummaries() {
         const templateSummary = byId('templateSummary');
         const datasetSummary = byId('datasetSummary');
+        if (!isAdvancedMode()) {
+            if (templateSummary) templateSummary.textContent = 'Competency checklists are hidden in Basic mode.';
+            if (datasetSummary) datasetSummary.textContent = 'Switch to Advanced mode to load templates and datasets.';
+            return;
+        }
         if (templateSummary) templateSummary.textContent = competencyTemplate ? `${describeTemplate(competencyTemplate)}${competencySource.template ? ` • ${competencySource.template}` : ''}` : 'No competency template loaded.';
         if (datasetSummary) datasetSummary.textContent = competencyDataset ? `${describeDataset(competencyDataset)}${competencySource.dataset ? ` • ${competencySource.dataset}` : ''}` : 'No competency dataset loaded.';
     }
@@ -761,6 +828,11 @@ window.onload = () => {
     function updateChecklistSelect() {
         const select = byId('checklistPreviewSelect');
         if (!select) return;
+        select.disabled = !isAdvancedMode();
+        if (!isAdvancedMode()) {
+            select.innerHTML = '<option value="">Enable Advanced mode to preview checklists.</option>';
+            return;
+        }
         const previousValue = selectedChecklistKey;
         select.innerHTML = '<option value="">Select a team member...</option>';
         for (const starter of starters) {
@@ -781,6 +853,10 @@ window.onload = () => {
     function renderChecklistPreview(checklist) {
         const preview = byId('checklistPreview');
         if (!preview) return;
+        if (!isAdvancedMode()) {
+            preview.innerHTML = 'Switch to Advanced mode to configure competency checklists.';
+            return;
+        }
         if (!competencyTemplate) {
             preview.innerHTML = 'Load a template and dataset to preview individualized checklists.';
             return;
@@ -794,6 +870,11 @@ window.onload = () => {
 
     function syncChecklists() {
         checklistMap = new Map();
+        if (!isAdvancedMode()) {
+            updateChecklistSelect();
+            renderChecklistPreview(null);
+            return;
+        }
         if (!competencyTemplate) {
             updateChecklistSelect();
             renderChecklistPreview(null);
@@ -818,6 +899,7 @@ window.onload = () => {
     }
 
     function exportAllChecklistsCsv() {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to export checklists.'); return; }
         if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
         const rows = flattenChecklistCollection(checklistMap);
         if (!rows.length) { showModal('Export Error', 'No checklist rows available to export.'); return; }
@@ -827,6 +909,7 @@ window.onload = () => {
     }
 
     function exportSelectedChecklistCsv() {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to export checklists.'); return; }
         if (!selectedChecklistKey || !checklistMap.has(selectedChecklistKey)) {
             showModal('Export Error', 'Select a team member to export their checklist.');
             return;
@@ -1005,6 +1088,7 @@ window.onload = () => {
     }
 
     function exportAllChecklistsXls() {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to export checklists.'); return; }
         if (!checklistMap.size) { showModal('Export Error', 'Load a template and add starters before exporting.'); return; }
         if (typeof XLSX === 'undefined') {
             showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
@@ -1101,6 +1185,7 @@ window.onload = () => {
     }
 
     function printChecklists() {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to print checklists.'); return; }
         if (!checklistMap.size) { showModal('Print Error', 'Load a template and add starters before printing.'); return; }
         const targets = selectedChecklistKey && checklistMap.has(selectedChecklistKey) ? [checklistMap.get(selectedChecklistKey)] : Array.from(checklistMap.values());
         const html = `<!doctype html><html><head><meta charset="utf-8"><title>Competency Checklists</title><style>body{font-family:${getComputedStyle(document.body).fontFamily};background:#fff;color:#111;padding:32px;}h1{margin-top:0;}article{page-break-inside:avoid;box-shadow:none;border:1px solid #ccc;padding:16px;margin-bottom:24px;border-radius:8px;}section{margin-top:16px;}ul{padding-left:18px;}li{margin-bottom:8px;font-size:14px;}header{margin-bottom:12px;}@media print{body{padding:0;}article{border:none;}}</style></head><body><h1>Competency Checklists</h1>${targets.map(cl => buildChecklistHtml(cl, { compact: false })).join('<hr>')}</body></html>`;
@@ -1151,6 +1236,11 @@ window.onload = () => {
     }
 
     async function loadDefaultCompetencies() {
+        if (!isAdvancedMode()) {
+            showModal('Advanced Mode Required', 'Switch to Advanced mode to load default competencies.');
+            return;
+        }
+        hasAttemptedDefaultCompetencyLoad = true;
         let bundleError = null;
         try {
             const bundle = await fetchCompetencyBundle(DEFAULT_COMPETENCY_BUNDLE_URL);
@@ -1199,6 +1289,7 @@ window.onload = () => {
     }
 
     async function handleTemplateImport(event) {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to import templates.'); return; }
         const file = event.target.files?.[0];
         event.target.value = '';
         if (!file) return;
@@ -1213,6 +1304,7 @@ window.onload = () => {
     }
 
     async function handleDatasetImport(event) {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to import datasets.'); return; }
         const file = event.target.files?.[0];
         event.target.value = '';
         if (!file) return;
@@ -1227,6 +1319,7 @@ window.onload = () => {
     }
 
     function handleChecklistSelectionChange(event) {
+        if (!isAdvancedMode()) { return; }
         selectedChecklistKey = event.target.value || '';
         renderChecklistPreview(selectedChecklistKey ? checklistMap.get(selectedChecklistKey) : null);
     }
@@ -1777,6 +1870,7 @@ window.onload = () => {
     byId('calendar-close').onclick = closeCalendarModal;
     byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) closeCalendarModal(); };
     byId('themeSelect').addEventListener('change', (event) => applyTheme(event.target.value));
+    byId('modeSelect').addEventListener('change', (event) => applyMode(event.target.value));
     setStartDateISO(getStartDateISO());
     setBirthDateISO(getBirthDateISO());
     stDateInput.addEventListener('click', openStartDatePicker);
@@ -1790,8 +1884,14 @@ window.onload = () => {
     byId('exportStartersBtn').onclick = exportStarters;
     byId('exportBirthdayListBtn').onclick = exportBirthdayList;
     byId('loadDefaultCompetencies').onclick = loadDefaultCompetencies;
-    byId('importTemplateBtn').onclick = () => byId('importTemplateInput').click();
-    byId('importDatasetBtn').onclick = () => byId('importDatasetInput').click();
+    byId('importTemplateBtn').onclick = () => {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to import templates.'); return; }
+        byId('importTemplateInput').click();
+    };
+    byId('importDatasetBtn').onclick = () => {
+        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to import datasets.'); return; }
+        byId('importDatasetInput').click();
+    };
     byId('importTemplateInput').onchange = handleTemplateImport;
     byId('importDatasetInput').onchange = handleDatasetImport;
     byId('checklistPreviewSelect').addEventListener('change', handleChecklistSelectionChange);
@@ -1944,8 +2044,8 @@ window.onload = () => {
 
     // --- INITIAL SETUP ---
     initTheme();
-    updateChecklistSummaries();
-    loadDefaultCompetencies();
+    applyMode(loadSavedMode(), { skipPersist: true, skipAutoLoad: true });
+    if (isAdvancedMode()) maybeLoadDefaultCompetencies();
     loadStartersFromStorage();
     renderStarters();
     renderSched([]);
