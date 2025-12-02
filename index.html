@@ -106,6 +106,7 @@
     .nav-group h2 { font-family: var(--font-serif); font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 0.5rem; padding: 0 0.5rem; }
     .nav-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .chip { display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; border-radius: var(--radius-md); background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+    .control-note { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
     .theme-switcher { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.75rem 0.5rem; border: 1px solid var(--border-primary); border-radius: var(--radius-md); background-color: var(--bg-tertiary); }
     .theme-switcher .theme-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
     .starter-cell { display: inline-flex; align-items: center; gap: 0.5rem; }
@@ -201,6 +202,15 @@
         <option value="emerald">Emerald Sands</option>
       </select>
     </div>
+
+    <div class="theme-switcher" aria-label="Mode selection">
+      <div class="theme-label">Mode</div>
+      <select id="modeSelect" aria-label="Select export mode">
+        <option value="advanced">Advanced (Full workbook)</option>
+        <option value="basic">Basic (Roster + Starters)</option>
+      </select>
+      <div class="control-note">Basic mode exports roster and starters only. Advanced includes competency sheets.</div>
+    </div>
   </aside>
 
   <main class="main">
@@ -209,13 +219,7 @@
       <button id="clearRosterBtn" class="btn" type="button">Clear Roster</button>
       <button id="exportAllCsv" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export CSV</button>
       <button id="exportAllXls" class="btn" type="button"><svg class="ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"/></svg>Export Excel</button>
-      <div class="mode-switch" aria-label="Mode selector">
-        <span class="mode-label">Mode</span>
-        <select id="modeSelect" aria-label="Toggle between basic and advanced modes">
-          <option value="basic">Basic</option>
-          <option value="advanced">Advanced</option>
-        </select>
-      </div>
+      <span id="modeBadge" class="chip" aria-live="polite"></span>
       <span id="conflicts" aria-live="polite">—</span>
     </div>
 
@@ -336,13 +340,11 @@ window.onload = () => {
     let activeStarterIndex = -1;
     let calendarContext = null;
     let currentCalendarDate = new Date();
+    let appMode = 'advanced';
 
     const STORAGE_KEY = 'pgr_roster_starters_v1';
     const THEME_STORAGE_KEY = 'pgr_roster_theme_v1';
     const MODE_STORAGE_KEY = 'pgr_roster_mode_v1';
-    const MODES = { BASIC: 'basic', ADVANCED: 'advanced' };
-    let appMode = MODES.ADVANCED;
-    let hasAttemptedDefaultCompetencyLoad = false;
 
     function updateThemeMeta() {
         const meta = document.querySelector('meta[name="theme-color"]');
@@ -369,52 +371,41 @@ window.onload = () => {
         applyTheme(stored || 'classic');
     }
 
-    function loadSavedMode() {
+    function getModeLabel(mode = appMode) {
+        return mode === 'basic' ? 'Basic mode' : 'Advanced mode';
+    }
+
+    function setMode(mode) {
+        const normalized = mode === 'basic' ? 'basic' : 'advanced';
+        appMode = normalized;
         try {
-            const stored = localStorage.getItem(MODE_STORAGE_KEY);
-            return stored === MODES.BASIC ? MODES.BASIC : MODES.ADVANCED;
+            localStorage.setItem(MODE_STORAGE_KEY, normalized);
         } catch (error) {
-            console.warn('Unable to read mode preference', error);
-            return MODES.ADVANCED;
+            console.warn('Unable to persist mode preference', error);
+        }
+        const select = document.getElementById('modeSelect');
+        if (select) select.value = normalized;
+        const badge = document.getElementById('modeBadge');
+        if (badge) {
+            badge.textContent = normalized === 'basic'
+                ? 'Basic mode: roster + starters only'
+                : 'Advanced mode: full workbook export';
         }
     }
 
-    function isAdvancedMode() {
-        return appMode === MODES.ADVANCED;
-    }
-
-    function maybeLoadDefaultCompetencies() {
-        if (hasAttemptedDefaultCompetencyLoad || !isAdvancedMode()) return;
-        hasAttemptedDefaultCompetencyLoad = true;
-        loadDefaultCompetencies();
-    }
-
-    function applyMode(mode, { skipPersist = false, skipAutoLoad = false } = {}) {
-        appMode = mode === MODES.BASIC ? MODES.BASIC : MODES.ADVANCED;
-        if (!skipPersist) {
-            try {
-                localStorage.setItem(MODE_STORAGE_KEY, appMode);
-            } catch (error) {
-                console.warn('Unable to persist mode preference', error);
-            }
-        }
-
-        const modeSelect = document.getElementById('modeSelect');
-        if (modeSelect) modeSelect.value = appMode;
-
-        const competencyCard = document.getElementById('competencyCard');
-        if (competencyCard) competencyCard.style.display = isAdvancedMode() ? '' : 'none';
-
-        if (!isAdvancedMode()) {
-            selectedChecklistKey = '';
-            checklistMap = new Map();
-            updateChecklistSelect();
-            renderChecklistPreview(null);
+    function initMode() {
+        const params = new URLSearchParams(window.location.search);
+        const requested = params.get('mode');
+        const stored = localStorage.getItem(MODE_STORAGE_KEY);
+        if (requested === 'basic') {
+            setMode('basic');
+        } else if (requested === 'advanced') {
+            setMode('advanced');
+        } else if (stored === 'basic' || stored === 'advanced') {
+            setMode(stored);
         } else {
-            syncChecklists();
-            if (!skipAutoLoad) maybeLoadDefaultCompetencies();
+            setMode('advanced');
         }
-        updateChecklistSummaries();
     }
 
     function saveStartersToStorage() {
@@ -1870,7 +1861,7 @@ window.onload = () => {
     byId('calendar-close').onclick = closeCalendarModal;
     byId('calendar-modal').onclick = (e) => { if (e.target === byId('calendar-modal')) closeCalendarModal(); };
     byId('themeSelect').addEventListener('change', (event) => applyTheme(event.target.value));
-    byId('modeSelect').addEventListener('change', (event) => applyMode(event.target.value));
+    byId('modeSelect').addEventListener('change', (event) => setMode(event.target.value));
     setStartDateISO(getStartDateISO());
     setBirthDateISO(getBirthDateISO());
     stDateInput.addEventListener('click', openStartDatePicker);
@@ -1909,17 +1900,10 @@ window.onload = () => {
     byId('clearRosterBtn').onclick = clearRoster;
     byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
     byId('exportAllXls').onclick = async () => {
-        if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; }
+        const modeLabel = getModeLabel();
+        if (!allRows.length) { showModal('Export Error', `${modeLabel} export requires building a schedule first.`); return; }
         if (typeof XLSX === 'undefined') {
-            showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
-            return;
-        }
-        let staticTemplate;
-        try {
-            staticTemplate = await ensureStaticPgrChecklist();
-        } catch (error) {
-            console.error('Failed to load PGR competency checklist:', error);
-            showModal('Export Error', 'Unable to load the competency checklist data. Please refresh and try again.');
+            showModal('Export Error', `${modeLabel} export is not available. The required library could not be loaded.`);
             return;
         }
         const scheduleHeaders = ['Starter', 'Staff ID', 'Date', 'Start Time', 'End Time', 'Outlet', 'Step', 'Shift Code'];
@@ -1971,62 +1955,74 @@ window.onload = () => {
         });
 
         const usedSheetNames = new Set([rosterSheetName, startersSheetName]);
-        const overviewRows = [];
-        starters.forEach((starter, index) => {
-            const {
-                sheetRows,
-                overviewRows: rows,
-                metaStartRow,
-                metaEndRow,
-                headerRowIndex,
-                dataStartRow,
-                columnCount,
-                columnWidths
-            } = buildStaticChecklistSheet(staticTemplate, starter, index);
-            if (sheetRows.length > 0) {
-                const wsChecklist = XLSX.utils.aoa_to_sheet(sheetRows);
-                const sheetName = buildChecklistSheetName(starter, index, usedSheetNames);
-                XLSX.utils.book_append_sheet(wb, wsChecklist, sheetName);
+
+        if (appMode === 'advanced') {
+            let staticTemplate;
+            try {
+                staticTemplate = await ensureStaticPgrChecklist();
+            } catch (error) {
+                console.error('Failed to load PGR competency checklist:', error);
+                showModal('Export Error', 'Advanced mode requires the competency checklist data. Refresh and try again, or switch to Basic mode to export without checklists.');
+                return;
+            }
+
+            const overviewRows = [];
+            starters.forEach((starter, index) => {
+                const {
+                    sheetRows,
+                    overviewRows: rows,
+                    metaStartRow,
+                    metaEndRow,
+                    headerRowIndex,
+                    dataStartRow,
+                    columnCount,
+                    columnWidths
+                } = buildStaticChecklistSheet(staticTemplate, starter, index);
+                if (sheetRows.length > 0) {
+                    const wsChecklist = XLSX.utils.aoa_to_sheet(sheetRows);
+                    const sheetName = buildChecklistSheetName(starter, index, usedSheetNames);
+                    XLSX.utils.book_append_sheet(wb, wsChecklist, sheetName);
+                    formattingQueue.push({
+                        sheetName,
+                        type: 'checklist',
+                        options: {
+                            columnCount,
+                            columnWidths,
+                            titleRowIndex: 0,
+                            metaStartRow,
+                            metaEndRow,
+                            headerRowIndex,
+                            dataStartRow
+                        }
+                    });
+                }
+                if (rows && rows.length) overviewRows.push(...rows);
+            });
+
+            if (overviewRows.length) {
+                const overviewHeaders = ['Starter', 'Staff ID', 'Start Date', 'Category', 'Subcategory', 'Item', 'Details'];
+                const overviewData = overviewRows.map(row => ({
+                    'Starter': row.Starter,
+                    'Staff ID': row.StaffID,
+                    'Start Date': row.StartDate,
+                    'Category': row.Category,
+                    'Subcategory': row.Subcategory,
+                    'Item': row.Item,
+                    'Details': row.Details
+                }));
+                const wsOverview = XLSX.utils.json_to_sheet(overviewData, { header: overviewHeaders });
+                const overviewName = makeUniqueSheetName('Competency Overview', usedSheetNames);
+                XLSX.utils.book_append_sheet(wb, wsOverview, overviewName);
                 formattingQueue.push({
-                    sheetName,
-                    type: 'checklist',
+                    sheetName: overviewName,
+                    type: 'table',
                     options: {
-                        columnCount,
-                        columnWidths,
-                        titleRowIndex: 0,
-                        metaStartRow,
-                        metaEndRow,
-                        headerRowIndex,
-                        dataStartRow
+                        columnWidths: [26, 16, 16, 26, 22, 40, 36],
+                        headerRowIndex: 0,
+                        dataStartRow: 1
                     }
                 });
             }
-            if (rows && rows.length) overviewRows.push(...rows);
-        });
-
-        if (overviewRows.length) {
-            const overviewHeaders = ['Starter', 'Staff ID', 'Start Date', 'Category', 'Subcategory', 'Item', 'Details'];
-            const overviewData = overviewRows.map(row => ({
-                'Starter': row.Starter,
-                'Staff ID': row.StaffID,
-                'Start Date': row.StartDate,
-                'Category': row.Category,
-                'Subcategory': row.Subcategory,
-                'Item': row.Item,
-                'Details': row.Details
-            }));
-            const wsOverview = XLSX.utils.json_to_sheet(overviewData, { header: overviewHeaders });
-            const overviewName = makeUniqueSheetName('Competency Overview', usedSheetNames);
-            XLSX.utils.book_append_sheet(wb, wsOverview, overviewName);
-            formattingQueue.push({
-                sheetName: overviewName,
-                type: 'table',
-                options: {
-                    columnWidths: [26, 16, 16, 26, 22, 40, 36],
-                    headerRowIndex: 0,
-                    dataStartRow: 1
-                }
-            });
         }
 
         for (const cfg of formattingQueue) {
@@ -2044,8 +2040,9 @@ window.onload = () => {
 
     // --- INITIAL SETUP ---
     initTheme();
-    applyMode(loadSavedMode(), { skipPersist: true, skipAutoLoad: true });
-    if (isAdvancedMode()) maybeLoadDefaultCompetencies();
+    initMode();
+    updateChecklistSummaries();
+    loadDefaultCompetencies();
     loadStartersFromStorage();
     renderStarters();
     renderSched([]);
