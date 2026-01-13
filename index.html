@@ -191,7 +191,7 @@
     </div>
     <div class="nav-group">
       <h2>Roster Rules</h2>
-      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Min 15 shifts</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div><div class="chip">Start ≤19:00</div></div>
+      <div class="nav-chips"><div class="chip">One shift/day</div><div class="chip">No Sundays</div><div class="chip">Plan + sessions</div><div class="chip">≥2 off / 10d</div><div class="chip">Capacity 1/day/outlet</div><div class="chip">Start ≤19:00</div></div>
     </div>
 
     <div class="theme-switcher" aria-label="Colour scheme">
@@ -428,7 +428,6 @@ window.onload = () => {
         }
     }
 
-    const MIN_SHIFTS = 15;
     const MANDATORY_SESSIONS = [
         { name: 'Welcome Day', label: 'Welcome Day', start: '09:00' },
         { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' },
@@ -1738,7 +1737,9 @@ window.onload = () => {
                 s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(day3) };
             }
         }
-        const baseCounts = getBlocks().reduce((m, b) => (m[b.outlet] = b.count, m), {});
+        const blocks = getBlocks();
+        const baseCounts = blocks.reduce((m, b) => (m[b.outlet] = b.count, m), {});
+        const minShifts = getRequiredShiftCount(blocks);
         const conflicts = { outletConflicts: 0, dateConflicts: 0, fallbackUsed: 0, safetyTriggered: false };
         let progress = true, safety = 0;
         const everyone = Object.values(groups).flat().sort((a, b) => {
@@ -1748,7 +1749,7 @@ window.onload = () => {
             progress = false; safety++;
             if (safety > 4000) conflicts.safetyTriggered = true;
             for (const s of everyone) {
-                if (getPlaced(s.Name) >= MIN_SHIFTS) { s.__state = null; continue; }
+                if (getPlaced(s.Name) >= minShifts) { s.__state = null; continue; }
                 if (!s.__state) continue;
                 let st = s.__state; let cur = nextWorking(st.nextDate); let curKey = toYMD(cur);
                 let outlet = st.currentOutlet;
@@ -1777,12 +1778,12 @@ window.onload = () => {
             }
         }
         for (const s of everyone) {
-            let placed = getPlaced(s.Name); if (placed >= MIN_SHIFTS) continue;
+            let placed = getPlaced(s.Name); if (placed >= minShifts) continue;
             let last = allRows.filter(r => r.Starter === s.Name).map(r => r.Date).sort().pop();
             let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(s.NormStart);
             let rot = 0, guard = 0; const PREF = ["SOV South Floor", "SOV South Bar", "Oasis Food", "Oasis Bar", "SOV North Floor", "SOV Dining"];
             let fallbackNeeded = false;
-            while (placed < MIN_SHIFTS && guard < 5000) {
+            while (placed < minShifts && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
                 let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
@@ -1845,6 +1846,10 @@ window.onload = () => {
         }
     }
     function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
+    function getRequiredShiftCount(blocks = getBlocks()) {
+        const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
+        return MANDATORY_SESSIONS.length + totalBlocks;
+    }
     function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Avatar: starter.Avatar || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
     function pickTime(outlet, i) {
         const times = (RULES[outlet] || ["09:00"]).filter(t => t <= "19:00");

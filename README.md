@@ -17,7 +17,7 @@ Unavailability Management: A simple calendar interface allows you to mark any te
 
 Customizable Training Plan: Set the required number of training shifts for each outlet directly in the UI.
 
-Intelligent Roster Generation: The core logic creates a balanced 15-shift roster, adhering to critical rules like days off, shift frequency, and outlet-specific constraints.
+Intelligent Roster Generation: The core logic creates a balanced roster that matches the configured training plan, adhering to critical rules like days off, shift frequency, and outlet-specific constraints.
 
 Flexible Workflow: Clear the generated roster with a single click to start over without losing your list of team members. The app also prompts for confirmation before overwriting an existing schedule.
 

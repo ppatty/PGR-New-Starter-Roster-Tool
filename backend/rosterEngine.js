@@ -1,6 +1,5 @@
 'use strict';
 
-const DEFAULT_MIN_SHIFTS = 15;
 const MANDATORY_SESSIONS = [
   { name: 'Welcome Day', label: 'Welcome Day', start: '09:00' },
   { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' },
@@ -25,6 +24,7 @@ const DEFAULT_BLOCKS = {
 const MINIMUM_BLOCKS = {
   'SOV South Floor': 3
 };
+const DEFAULT_MIN_SHIFTS = calculateMinimumShifts(DEFAULT_BLOCKS);
 
 function parseYMD(iso) {
   if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
@@ -100,6 +100,10 @@ function makeRow(starter, dateObj, start, outlet, step) {
     Step: step,
     Shift: `${start.replace(':', '')}-${pad2(endH)}${pad2(endM)} ${outlet} TRN`
   };
+}
+
+function calculateMinimumShifts(blockMap) {
+  return MANDATORY_SESSIONS.length + Object.values(blockMap || {}).reduce((sum, value) => sum + Number(value || 0), 0);
 }
 
 function sanitizeBlocks(blocks = []) {
@@ -207,7 +211,7 @@ function buildRoster(options = {}) {
     onboardDay = 3,
     elevateDay = 4,
     shuffle = false,
-    minShifts = DEFAULT_MIN_SHIFTS
+    minShifts
   } = options;
 
   if (welcomeDay < 0 || welcomeDay > 6 || onboardDay < 0 || onboardDay > 6 || elevateDay < 0 || elevateDay > 6) {
@@ -216,6 +220,7 @@ function buildRoster(options = {}) {
 
   const starters = sanitizeStarters(rawStarters);
   const blockMap = sanitizeBlocks(blocks);
+  const targetMinShifts = Number.isFinite(minShifts) ? minShifts : calculateMinimumShifts(blockMap);
   const allRows = [];
   const placedByStarter = new Map();
   const placedByStarterOutlet = new Map();
@@ -292,7 +297,7 @@ function buildRoster(options = {}) {
     if (safety > 4000) conflicts.safetyTriggered = true;
 
     for (const starter of everyone) {
-      if (getPlaced(starter.Name) >= minShifts) {
+      if (getPlaced(starter.Name) >= targetMinShifts) {
         starter.__state = null;
         continue;
       }
@@ -346,7 +351,7 @@ function buildRoster(options = {}) {
 
   for (const starter of everyone) {
     let placed = getPlaced(starter.Name);
-    if (placed >= minShifts) continue;
+    if (placed >= targetMinShifts) continue;
     let last = allRows.filter((row) => row.Starter === starter.Name).map((row) => row.Date).sort().pop();
     let current = last ? addWorkDay(parseYMD(last)) : nextWorking(starter.NormStart);
     let rotation = 0;
@@ -354,7 +359,7 @@ function buildRoster(options = {}) {
     const preferences = ['SOV South Floor', 'SOV South Bar', 'Oasis Food', 'Oasis Bar', 'SOV North Floor', 'SOV Dining'];
     let fallbackNeeded = false;
 
-    while (placed < minShifts && guard < 5000) {
+    while (placed < targetMinShifts && guard < 5000) {
       guard += 1;
       const key = toYMD(current);
       if (starter.blackoutDates.includes(key)) {
@@ -407,7 +412,7 @@ function buildRoster(options = {}) {
     summary,
     stats: {
       starters: starters.length,
-      minShifts,
+      minShifts: targetMinShifts,
       welcomeDay,
       onboardDay,
       elevateDay
