@@ -431,6 +431,7 @@ function shuffleArray(values) {
 
 module.exports = {
   buildRoster,
+  generateSplitShift,
   sanitizeBlocks,
   sanitizeStarters,
   DEFAULT_MIN_SHIFTS,
