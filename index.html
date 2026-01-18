@@ -1875,9 +1875,17 @@ window.onload = () => {
         const elevateDow = +byId('elevateDaySel').value;
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
-        const splitConfig = getSplitConfig();
+        const blocks = getBlocks();
+        const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
+        function inferSplitPairsFromBlocks(blocksToCheck) {
+            const activeOutlets = blocksToCheck.filter(block => block.count > 0).map(block => block.outlet);
+            if (activeOutlets.length !== 2) return null;
+            const [first, second] = activeOutlets;
+            return { [first]: second, [second]: first };
+        }
+        const splitConfig = getSplitConfig() || (splitTraining ? inferSplitPairsFromBlocks(blocks) : null);
         if (splitTraining && !splitConfig) {
-            showModal('Split Shift', 'Select at least one split pairing for training shifts.');
+            showModal('Split Shift', 'Select at least one split pairing, or set shifts in exactly two outlets to auto-pair.');
             return;
         }
         function getOutletSlots(outlet) {
@@ -1917,15 +1925,13 @@ window.onload = () => {
             for (let i = 0; i < startersForDay.length; i++) {
                 const s = startersForDay[i];
                 const onboardDate = onboardSplitEnabled && i >= onboardSplitSize ? day2Alt : day2;
-                const elevateDate = nextDow(onboardDate, elevateDow, false);
+                const elevateDate = nextDow(onboardDate, elevateDow, true);
                 addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, MANDATORY_SESSION_HOURS));
                 addRow(makeRow(s, onboardDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, MANDATORY_SESSION_HOURS));
                 addRow(makeRow(s, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, MANDATORY_SESSION_HOURS));
                 s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(elevateDate) };
             }
         }
-        const blocks = getBlocks();
-        const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
         if (totalBlocks !== REQUIRED_TRAINING_SHIFTS) {
             showModal('Training Shifts', `Please allocate exactly ${REQUIRED_TRAINING_SHIFTS} training shifts across the outlets.`);
             return;
