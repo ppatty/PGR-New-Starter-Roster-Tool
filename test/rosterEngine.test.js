@@ -83,6 +83,7 @@ test('buildRoster defaults produce a summary with the starter count', () => {
 });
 
 test('default training shifts total five and run for eight hours', () => {
+  const MINUTES_PER_DAY = 24 * 60;
   const totalBlocks = Object.values(DEFAULT_BLOCKS).reduce((sum, value) => sum + value, 0);
   assert.equal(totalBlocks, 5, 'default blocks should total five training shifts');
   assert.equal(DEFAULT_MIN_SHIFTS, MANDATORY_SESSIONS.length + 5);
@@ -97,6 +98,6 @@ test('default training shifts total five and run for eight hours', () => {
   const [endH, endM] = trainingRow.End.split(':').map(Number);
   const startMinutes = startH * 60 + startM;
   const endMinutes = endH * 60 + endM;
-  const duration = (endMinutes - startMinutes + 24 * 60) % (24 * 60);
+  const duration = (endMinutes - startMinutes + MINUTES_PER_DAY) % MINUTES_PER_DAY;
   assert.equal(duration, 8 * 60, 'training shift should be 8 hours long');
 });
