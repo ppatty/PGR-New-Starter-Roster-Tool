@@ -5,6 +5,7 @@ const MANDATORY_SESSIONS = [
   { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' },
   { name: 'Elevate Training', label: 'Elevate Training', start: '09:00' }
 ];
+const MANDATORY_SESSION_HOURS = 5;
 const RULES = {
   'Oasis Food': ['08:00', '11:00', '16:00'],
   'Oasis Bar': ['06:00', '08:00', '10:00', '14:00', '16:00', '17:00', '18:00', '19:00'],
@@ -14,17 +15,17 @@ const RULES = {
   'SOV Dining': ['17:00']
 };
 const DEFAULT_BLOCKS = {
-  'Oasis Food': 3,
-  'Oasis Bar': 2,
-  'SOV South Floor': 3,
-  'SOV North Floor': 1,
-  'SOV South Bar': 1,
-  'SOV Dining': 4
+  'Oasis Food': 5,
+  'Oasis Bar': 0,
+  'SOV South Floor': 0,
+  'SOV North Floor': 0,
+  'SOV South Bar': 0,
+  'SOV Dining': 0
 };
-const MINIMUM_BLOCKS = {
-  'SOV South Floor': 3
-};
+const MINIMUM_BLOCKS = {};
 const DEFAULT_MIN_SHIFTS = calculateMinimumShifts(DEFAULT_BLOCKS);
+const SPLIT_SHIFT_LEG_MINUTES = 210;
+const SPLIT_SHIFT_BREAK_MINUTES = 60;
 
 function parseYMD(iso) {
   if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
@@ -85,9 +86,9 @@ function pad2(value) {
   return value < 10 ? `0${value}` : `${value}`;
 }
 
-function makeRow(starter, dateObj, start, outlet, step) {
+function makeRow(starter, dateObj, start, outlet, step, durationHours = 8) {
   const [hh, mm] = start.split(':').map(Number);
-  const endH = (hh + 5) % 24;
+  const endH = (hh + durationHours) % 24;
   const endM = mm;
   return {
     Starter: starter.Name,
@@ -112,9 +113,9 @@ function addMinutes(timeStr, minutes) {
 }
 
 function generateSplitShift(startTime, areaOne = 'Sovereign', areaTwo = 'Oasis') {
-  const firstLegEnd = addMinutes(startTime, 240);
-  const secondLegStart = addMinutes(firstLegEnd, 30);
-  const secondLegEnd = addMinutes(secondLegStart, 240);
+  const firstLegEnd = addMinutes(startTime, SPLIT_SHIFT_LEG_MINUTES);
+  const secondLegStart = addMinutes(firstLegEnd, SPLIT_SHIFT_BREAK_MINUTES);
+  const secondLegEnd = addMinutes(secondLegStart, SPLIT_SHIFT_LEG_MINUTES);
   const rosterString = `${startTime} - ${firstLegEnd} (${areaOne}) / ${secondLegStart} - ${secondLegEnd} (${areaTwo})`;
 
   return {
@@ -293,9 +294,9 @@ function buildRoster(options = {}) {
     const onboardingDate = nextDow(welcomeDate, onboardDay, false);
     const elevateDate = nextDow(onboardingDate, elevateDay, false);
     for (const starter of groups[dayKey]) {
-      addRow(makeRow(starter, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
-      addRow(makeRow(starter, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
-      addRow(makeRow(starter, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3));
+      addRow(makeRow(starter, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, MANDATORY_SESSION_HOURS));
+      addRow(makeRow(starter, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, MANDATORY_SESSION_HOURS));
+      addRow(makeRow(starter, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, MANDATORY_SESSION_HOURS));
       starter.__state = {
         currentOutlet: null,
         remaining: 0,
@@ -365,7 +366,7 @@ function buildRoster(options = {}) {
 
       if (currentDate > initialDate) conflicts.dateConflicts += 1;
       const startTime = pickTime(outlet, allRows.length);
-      addRow(makeRow(starter, currentDate, startTime, outlet, getPlaced(starter.Name) + 1));
+      addRow(makeRow(starter, currentDate, startTime, outlet, getPlaced(starter.Name) + 1, 8));
       usedSlots.add(`${currentKey}|${outlet}`);
       state.remaining -= 1;
       state.nextDate = addWorkDay(currentDate);
@@ -404,7 +405,7 @@ function buildRoster(options = {}) {
       }
 
       const startTime = pickTime(outlet, rotation++);
-      addRow(makeRow(starter, current, startTime, outlet, getPlaced(starter.Name) + 1));
+      addRow(makeRow(starter, current, startTime, outlet, getPlaced(starter.Name) + 1, 8));
       usedSlots.add(`${key}|${outlet}`);
       placed += 1;
       current = addWorkDay(current);
