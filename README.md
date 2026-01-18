@@ -15,7 +15,7 @@ Team Member Management: Easily add new hires manually or bulk-import them from a
 
 Unavailability Management: A simple calendar interface allows you to mark any team member's unavailable days, which the roster builder will automatically respect.
 
-Customizable Training Plan: Set the required number of training shifts for each outlet directly in the UI.
+Standardized Training Plan: Every starter completes five 8-hour training shifts, with Oasis Food trainees split across Oasis Food and either South Floor or Oasis Bar.
 
 Intelligent Roster Generation: The core logic creates a balanced roster that matches the configured training plan, adhering to critical rules like days off, shift frequency, and outlet-specific constraints.
 
@@ -48,9 +48,9 @@ Repeat for all new team members.
   * The tool will automatically merge new birthdays with existing ones, remove duplicates, sort by month and day, and export the updated list.
   * Only team members with birth dates entered will be included in the export.
 
-Step 2: Set Training Shifts
+Step 2: Training Shifts
 
-In this section, enter the number of shifts you want each new team member to complete in each outlet.
+Each starter completes five training shifts of eight hours. Standard (Oasis Food) starters are automatically split between Oasis Food and either South Floor or Oasis Bar within each shift.
 
 (Optional) Toggle the "Shuffle" button to ON if you want the order of the training blocks to be randomized for each person.
 

@@ -253,15 +253,15 @@
     </section>
 
     <section class="card" aria-labelledby="blocks-h">
-      <div class="hd"><h2 id="blocks-h">Step 2: Set Training Shifts</h2><span class="sub">Set how many training shifts each person gets per area</span></div>
+      <div class="hd"><h2 id="blocks-h">Step 2: Training Shifts</h2><span class="sub">Every starter completes five training shifts of 8 hours each (standard track splits Oasis Food with South Floor or Oasis Bar)</span></div>
       <div class="bd">
         <div class="grid g3">
-          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="2" min="0"></div>
-          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="1" min="0"></div>
-          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="2" min="0"></div>
-          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
-          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="0" min="0"></div>
-          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="0" min="0"></div>
+          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="5" min="0" disabled></div>
+          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0" disabled></div>
+          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="0" min="0" disabled></div>
+          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0" disabled></div>
+          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="0" min="0" disabled></div>
+          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="0" min="0" disabled></div>
         </div>
         <div class="mt-4">
           <label>Randomize Shift Order?</label>
@@ -270,24 +270,8 @@
       </div>
     </section>
 
-    <section class="card" aria-labelledby="post-training-h">
-      <div class="hd"><h2 id="post-training-h">Step 3: Post-Training Roster Shifts</h2><span class="sub">Add roster fill shifts after training to cover the month</span></div>
-      <div class="bd">
-        <div class="grid g4">
-          <div><label for="postShiftCount">Roster shifts per person</label><input type="number" id="postShiftCount" value="5" min="0"></div>
-          <div><label for="postShiftHours">Shift length (hours)</label><input type="number" id="postShiftHours" value="8" min="1" max="12"></div>
-          <div><label for="postOutletA">Roster location A</label><select id="postOutletA"><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor" selected>SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
-          <div><label for="postOutletB">Roster location B</label><select id="postOutletB"><option value="Oasis Food" selected>Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
-        </div>
-        <div class="grid g2 mt-4">
-          <div><label for="postShiftSpacing">Working days between roster shifts</label><input type="number" id="postShiftSpacing" value="3" min="0"></div>
-          <div class="control-note">Roster fill shifts are placed after training, alternating between the two locations.</div>
-        </div>
-      </div>
-    </section>
-
     <section id="competencyCard" class="card" aria-labelledby="competency-h">
-      <div class="hd"><h2 id="competency-h">Step 4: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
+      <div class="hd"><h2 id="competency-h">Step 3: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
       <div class="bd">
         <div class="grid g3">
           <button id="loadDefaultCompetencies" class="btn" type="button">Use Default Template</button>
@@ -317,7 +301,7 @@
     </section>
 
     <section class="card" aria-labelledby="mandatory-h">
-      <div class="hd"><h2 id="mandatory-h">Step 5: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
+      <div class="hd"><h2 id="mandatory-h">Step 4: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
       <div class="bd">
         <div class="grid g3">
           <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
@@ -333,7 +317,7 @@
     </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Step 6: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="hd"><h2 id="schedule-h">Step 5: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
@@ -1771,11 +1755,6 @@ window.onload = () => {
         const onboardSplitSize = Math.max(1, +byId('onboardSplitSize').value || 1);
         const onboardSplitEnabled = splitOnboarding;
         const elevateDow = +byId('elevateDaySel').value;
-        const postShiftCount = Math.max(0, +byId('postShiftCount').value || 0);
-        const postShiftHours = Math.max(1, +byId('postShiftHours').value || 8);
-        const postShiftSpacing = Math.max(0, +byId('postShiftSpacing').value || 0);
-        const postOutlets = [byId('postOutletA').value, byId('postOutletB').value].filter(Boolean);
-        const postOutletsUnique = Array.from(new Set(postOutlets));
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
         function getSplitSecondaryOutlet(starterName) {
@@ -1904,32 +1883,6 @@ window.onload = () => {
             if (fallbackNeeded) conflicts.fallbackUsed++;
         }
 
-        let postShiftAdded = 0;
-        if (postShiftCount > 0 && postOutletsUnique.length > 0) {
-            for (const s of everyone) {
-                let rosterPlaced = 0;
-                let guard = 0;
-                let outletIndex = 0;
-                let last = allRows.filter(r => r.Starter === s.Name).map(r => r.Date).sort().pop();
-                let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(s.NormStart);
-                while (rosterPlaced < postShiftCount && guard < 5000) {
-                    guard++;
-                    const outlet = postOutletsUnique[outletIndex % postOutletsUnique.length];
-                    const key = toYMD(cur);
-                    if (s.blackoutDates.includes(key) || used.has(key + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rosterPlaced))) {
-                        cur = addWorkDay(cur);
-                        continue;
-                    }
-                    const t = pickTime(outlet, rosterPlaced);
-                    addRow(makeRow(s, cur, t, outlet, `Roster Fill ${rosterPlaced + 1}`, postShiftHours, 'RST'));
-                    used.add(key + "|" + outlet);
-                    rosterPlaced++;
-                    outletIndex++;
-                    cur = addWorkDays(cur, postShiftSpacing + 1);
-                }
-                postShiftAdded += rosterPlaced;
-            }
-        }
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
         
         // Generate meaningful conflict status message
@@ -1944,10 +1897,6 @@ window.onload = () => {
             if (conflicts.safetyTriggered) conflictParts.push('complex scheduling');
             statusMessage += ` • Resolved: ${conflictParts.join(', ')}`;
         }
-        if (postShiftAdded > 0) {
-            statusMessage += ` • Added ${postShiftAdded} roster fill shifts`;
-        }
-        
         byId('conflicts').textContent = statusMessage;
         renderSched(allRows);
     }
@@ -1980,7 +1929,7 @@ window.onload = () => {
             tb.appendChild(tr);
         }
     }
-    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
+    function getBlocks() { return [{ outlet: "Oasis Food", count: 5 }, { outlet: "Oasis Bar", count: 0 }, { outlet: "SOV South Floor", count: 0 }, { outlet: "SOV North Floor", count: 0 }, { outlet: "SOV South Bar", count: 0 }, { outlet: "SOV Dining", count: 0 }]; }
     function getBlocksForStarter(starter) {
         const base = getBlocks();
         if (starter?.TrainingTrack !== 'dining') return base;

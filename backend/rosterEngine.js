@@ -14,16 +14,14 @@ const RULES = {
   'SOV Dining': ['17:00']
 };
 const DEFAULT_BLOCKS = {
-  'Oasis Food': 3,
-  'Oasis Bar': 2,
-  'SOV South Floor': 3,
-  'SOV North Floor': 1,
-  'SOV South Bar': 1,
-  'SOV Dining': 4
+  'Oasis Food': 5,
+  'Oasis Bar': 0,
+  'SOV South Floor': 0,
+  'SOV North Floor': 0,
+  'SOV South Bar': 0,
+  'SOV Dining': 0
 };
-const MINIMUM_BLOCKS = {
-  'SOV South Floor': 3
-};
+const MINIMUM_BLOCKS = {};
 const DEFAULT_MIN_SHIFTS = calculateMinimumShifts(DEFAULT_BLOCKS);
 
 function parseYMD(iso) {
@@ -85,9 +83,9 @@ function pad2(value) {
   return value < 10 ? `0${value}` : `${value}`;
 }
 
-function makeRow(starter, dateObj, start, outlet, step) {
+function makeRow(starter, dateObj, start, outlet, step, durationHours = 5) {
   const [hh, mm] = start.split(':').map(Number);
-  const endH = (hh + 5) % 24;
+  const endH = (hh + durationHours) % 24;
   const endM = mm;
   return {
     Starter: starter.Name,
@@ -112,9 +110,9 @@ function addMinutes(timeStr, minutes) {
 }
 
 function generateSplitShift(startTime, areaOne = 'Sovereign', areaTwo = 'Oasis') {
-  const firstLegEnd = addMinutes(startTime, 240);
-  const secondLegStart = addMinutes(firstLegEnd, 30);
-  const secondLegEnd = addMinutes(secondLegStart, 240);
+  const firstLegEnd = addMinutes(startTime, 210);
+  const secondLegStart = addMinutes(firstLegEnd, 60);
+  const secondLegEnd = addMinutes(secondLegStart, 210);
   const rosterString = `${startTime} - ${firstLegEnd} (${areaOne}) / ${secondLegStart} - ${secondLegEnd} (${areaTwo})`;
 
   return {
@@ -365,7 +363,7 @@ function buildRoster(options = {}) {
 
       if (currentDate > initialDate) conflicts.dateConflicts += 1;
       const startTime = pickTime(outlet, allRows.length);
-      addRow(makeRow(starter, currentDate, startTime, outlet, getPlaced(starter.Name) + 1));
+      addRow(makeRow(starter, currentDate, startTime, outlet, getPlaced(starter.Name) + 1, 8));
       usedSlots.add(`${currentKey}|${outlet}`);
       state.remaining -= 1;
       state.nextDate = addWorkDay(currentDate);
@@ -404,7 +402,7 @@ function buildRoster(options = {}) {
       }
 
       const startTime = pickTime(outlet, rotation++);
-      addRow(makeRow(starter, current, startTime, outlet, getPlaced(starter.Name) + 1));
+      addRow(makeRow(starter, current, startTime, outlet, getPlaced(starter.Name) + 1, 8));
       usedSlots.add(`${key}|${outlet}`);
       placed += 1;
       current = addWorkDay(current);

@@ -6,6 +6,7 @@ const {
   buildRoster,
   sanitizeStarters,
   DEFAULT_MIN_SHIFTS,
+  DEFAULT_BLOCKS,
   MANDATORY_SESSIONS
 } = require('../backend/rosterEngine');
 
@@ -79,4 +80,23 @@ test('buildRoster defaults produce a summary with the starter count', () => {
   assert.ok(result.summary.includes('2 starter'), 'summary should include starter count');
   const alexRows = result.rows.filter((row) => row.Starter === 'Alex Johnson');
   assert.ok(alexRows.length >= DEFAULT_MIN_SHIFTS, 'Alex should receive the minimum number of shifts');
+});
+
+test('default training shifts total five and run for eight hours', () => {
+  const totalBlocks = Object.values(DEFAULT_BLOCKS).reduce((sum, value) => sum + value, 0);
+  assert.equal(totalBlocks, 5, 'default blocks should total five training shifts');
+  assert.equal(DEFAULT_MIN_SHIFTS, MANDATORY_SESSIONS.length + 5);
+
+  const starters = [{ Name: 'Morgan Lee', StartDate: '2025-01-09' }];
+  const result = buildRoster({ starters, blocks: DEFAULT_BLOCKS, minShifts: MANDATORY_SESSIONS.length + 5 });
+  const mandatoryLabels = new Set(MANDATORY_SESSIONS.map((session) => session.label));
+  const trainingRow = result.rows.find((row) => !mandatoryLabels.has(row.Outlet));
+  assert.ok(trainingRow, 'expected at least one training shift');
+
+  const [startH, startM] = trainingRow.Start.split(':').map(Number);
+  const [endH, endM] = trainingRow.End.split(':').map(Number);
+  const startMinutes = startH * 60 + startM;
+  const endMinutes = endH * 60 + endM;
+  const duration = (endMinutes - startMinutes + 24 * 60) % (24 * 60);
+  assert.equal(duration, 8 * 60, 'training shift should be 8 hours long');
 });
