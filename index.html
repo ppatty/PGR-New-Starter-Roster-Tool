@@ -1800,9 +1800,9 @@ window.onload = () => {
                 const s = startersForDay[i];
                 const onboardDate = onboardSplitEnabled && i >= onboardSplitSize ? day2Alt : day2;
                 const elevateDate = nextDow(onboardDate, elevateDow, false);
-                addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
-                addRow(makeRow(s, onboardDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
-                addRow(makeRow(s, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3));
+                addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, 5));
+                addRow(makeRow(s, onboardDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, 5));
+                addRow(makeRow(s, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, 5));
                 s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(elevateDate) };
             }
         }
@@ -1944,7 +1944,7 @@ window.onload = () => {
         const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
         return MANDATORY_SESSIONS.length + totalBlocks;
     }
-    function makeRow(starter, dateObj, start, outlet, step, durationHours = 5, shiftTag = 'TRN') {
+    function makeRow(starter, dateObj, start, outlet, step, durationHours = 8, shiftTag = 'TRN') {
         const [hh, mm] = start.split(":").map(Number);
         const endDate = new Date(2024, 0, 1, hh, mm);
         endDate.setHours(endDate.getHours() + durationHours);

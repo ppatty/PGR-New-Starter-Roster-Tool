@@ -85,7 +85,7 @@ function pad2(value) {
   return value < 10 ? `0${value}` : `${value}`;
 }
 
-function makeRow(starter, dateObj, start, outlet, step, durationHours = 5) {
+function makeRow(starter, dateObj, start, outlet, step, durationHours = 8) {
   const [hh, mm] = start.split(':').map(Number);
   const endH = (hh + durationHours) % 24;
   const endM = mm;
@@ -293,9 +293,9 @@ function buildRoster(options = {}) {
     const onboardingDate = nextDow(welcomeDate, onboardDay, false);
     const elevateDate = nextDow(onboardingDate, elevateDay, false);
     for (const starter of groups[dayKey]) {
-      addRow(makeRow(starter, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
-      addRow(makeRow(starter, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
-      addRow(makeRow(starter, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3));
+      addRow(makeRow(starter, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, 5));
+      addRow(makeRow(starter, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, 5));
+      addRow(makeRow(starter, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, 5));
       starter.__state = {
         currentOutlet: null,
         remaining: 0,
