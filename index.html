@@ -212,7 +212,7 @@
         <option value="advanced">Advanced (Full workbook)</option>
         <option value="basic">Basic (Roster + Starters)</option>
       </select>
-      <div class="control-note">Basic mode exports roster and starters only. Advanced includes competency sheets.</div>
+      <div class="control-note">Basic mode exports roster and starters only. Advanced mode currently matches basic while checklists are paused.</div>
     </div>
   </aside>
 
@@ -266,8 +266,14 @@
         </div>
         <div class="grid g3 mt-4">
           <div><label>Split a training shift?</label><button id="splitTrainingBtn" class="btn" type="button">Split: OFF</button></div>
-          <div><label for="splitPrimaryOutlet">Primary Outlet</label><select id="splitPrimaryOutlet" disabled><option value="Oasis Food" selected>Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
-          <div><label for="splitSecondaryOutlet">Secondary Outlet</label><select id="splitSecondaryOutlet" disabled><option value="SOV South Floor" selected>SOV South Floor</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+        </div>
+        <div class="grid g3 mt-4" id="splitTrainingConfig">
+          <div><label for="splitPair_food">Oasis Food split with</label><select id="splitPair_food" disabled><option value="">No split</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+          <div><label for="splitPair_obar">Oasis Bar split with</label><select id="splitPair_obar" disabled><option value="">No split</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+          <div><label for="splitPair_floor">SOV South Floor split with</label><select id="splitPair_floor" disabled><option value="">No split</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+          <div><label for="splitPair_nfloor">SOV North Floor split with</label><select id="splitPair_nfloor" disabled><option value="">No split</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+          <div><label for="splitPair_bar">SOV South Bar split with</label><select id="splitPair_bar" disabled><option value="">No split</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+          <div><label for="splitPair_dining">SOV Dining split with</label><select id="splitPair_dining" disabled><option value="">No split</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
         </div>
         <div class="mt-4">
           <label>Randomize Shift Order?</label>
@@ -276,38 +282,8 @@
       </div>
     </section>
 
-    <section id="competencyCard" class="card" aria-labelledby="competency-h">
-      <div class="hd"><h2 id="competency-h">Step 3: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
-      <div class="bd">
-        <div class="grid g3">
-          <button id="loadDefaultCompetencies" class="btn" type="button">Use Default Template</button>
-          <button id="importTemplateBtn" class="btn" type="button">Import Template JSON</button>
-          <button id="importDatasetBtn" class="btn" type="button">Import Dataset JSON</button>
-          <input type="file" id="importTemplateInput" accept=".json" class="visually-hidden" />
-          <input type="file" id="importDatasetInput" accept=".json" class="visually-hidden" />
-        </div>
-        <div class="mt-4">
-          <div id="templateSummary" style="font-size:0.85rem; color:var(--text-secondary);">No competency template loaded.</div>
-          <div id="datasetSummary" style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.5rem;">No competency dataset loaded.</div>
-        </div>
-        <div class="mt-4">
-          <label for="checklistPreviewSelect">Preview Checklist For</label>
-          <select id="checklistPreviewSelect"><option value="">Select a team member...</option></select>
-        </div>
-        <div id="checklistPreview" class="mt-4" style="border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:1rem; background:var(--bg-tertiary); max-height:260px; overflow:auto; color:var(--text-secondary);">
-          Load a template and dataset to preview individualized checklists.
-        </div>
-        <div class="grid g2 mt-4">
-          <button id="exportChecklistCsv" class="btn" type="button">Export All Checklists (CSV)</button>
-          <button id="exportChecklistXls" class="btn" type="button">Export All Checklists (Excel)</button>
-          <button id="exportSelectedChecklistCsv" class="btn" type="button">Download Selected Checklist (CSV)</button>
-          <button id="printChecklistBtn" class="btn" type="button">Print Checklist</button>
-        </div>
-      </div>
-    </section>
-
     <section class="card" aria-labelledby="mandatory-h">
-      <div class="hd"><h2 id="mandatory-h">Step 4: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
+      <div class="hd"><h2 id="mandatory-h">Step 3: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
       <div class="bd">
         <div class="grid g3">
           <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
@@ -323,7 +299,7 @@
     </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Step 5: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="hd"><h2 id="schedule-h">Step 4: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
@@ -404,7 +380,7 @@ window.onload = () => {
         if (badge) {
             badge.textContent = normalized === 'basic'
                 ? 'Basic mode: roster + starters only'
-                : 'Advanced mode: full workbook export';
+                : 'Advanced mode: roster + starters (checklists paused)';
         }
     }
 
@@ -461,6 +437,15 @@ window.onload = () => {
         "SOV North Floor": ["18:00"],
         "SOV South Bar": ["06:00", "10:00", "14:00", "18:00"],
         "SOV Dining": ["17:00"]
+    };
+    const OUTLETS = ["Oasis Food", "Oasis Bar", "SOV South Floor", "SOV North Floor", "SOV South Bar", "SOV Dining"];
+    const SPLIT_PAIR_SELECTORS = {
+        "Oasis Food": "splitPair_food",
+        "Oasis Bar": "splitPair_obar",
+        "SOV South Floor": "splitPair_floor",
+        "SOV North Floor": "splitPair_nfloor",
+        "SOV South Bar": "splitPair_bar",
+        "SOV Dining": "splitPair_dining"
     };
     const AVATARS = ['🦊', '🐼', '🦉', '🦁', '🐙', '🐳', '🦄', '🐲', '🌟', '🚀', '🎲', '🎯'];
     const AVATAR_TOOLTIP = 'This avatar is just for fun and has no effect on scheduling.';
@@ -1761,10 +1746,14 @@ window.onload = () => {
     // --- BUILDER & RENDER LOGIC ---
     function getSplitConfig() {
         if (!splitTraining) return null;
-        const primary = byId('splitPrimaryOutlet')?.value;
-        const secondary = byId('splitSecondaryOutlet')?.value;
-        if (!primary || !secondary || primary === secondary) return null;
-        return { primary, secondary };
+        const pairs = {};
+        for (const [outlet, selectId] of Object.entries(SPLIT_PAIR_SELECTORS)) {
+            const value = byId(selectId)?.value || '';
+            if (value && value !== outlet) {
+                pairs[outlet] = value;
+            }
+        }
+        return Object.keys(pairs).length ? pairs : null;
     }
     async function buildAll() {
         if (allRows.length > 0) {
@@ -1791,15 +1780,22 @@ window.onload = () => {
         const elevateDow = +byId('elevateDaySel').value;
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
-        const splitConfig = getSplitConfig();
+        const blocks = getBlocks();
+        const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
+        function inferSplitPairsFromBlocks(blocksToCheck) {
+            const activeOutlets = blocksToCheck.filter(block => block.count > 0).map(block => block.outlet);
+            if (activeOutlets.length !== 2) return null;
+            const [first, second] = activeOutlets;
+            return { [first]: second, [second]: first };
+        }
+        const splitConfig = getSplitConfig() || (splitTraining ? inferSplitPairsFromBlocks(blocks) : null);
         if (splitTraining && !splitConfig) {
-            showModal('Split Shift', 'Please select two different outlets for split training shifts.');
+            showModal('Split Shift', 'Select at least one split pairing, or set shifts in exactly two outlets to auto-pair.');
             return;
         }
         function getOutletSlots(outlet) {
-            if (splitConfig && outlet === splitConfig.primary) {
-                return [splitConfig.primary, splitConfig.secondary];
-            }
+            const pairedOutlet = splitConfig?.[outlet];
+            if (pairedOutlet) return [outlet, pairedOutlet];
             return [outlet];
         }
         function isOutletSlotAvailable(outlet, dateObj, dateKey) {
@@ -1816,8 +1812,8 @@ window.onload = () => {
         }
         function makeTrainingRow(starter, dateObj, startTime, outlet, step) {
             const durationHours = 8;
-            if (splitConfig && outlet === splitConfig.primary) {
-                const secondaryOutlet = splitConfig.secondary;
+            const secondaryOutlet = splitConfig?.[outlet];
+            if (secondaryOutlet) {
                 const row = makeRow(starter, dateObj, startTime, outlet, step, durationHours, 'TRN');
                 row.PrimaryOutlet = outlet;
                 row.Outlet = `${outlet} + ${secondaryOutlet}`;
@@ -1834,15 +1830,13 @@ window.onload = () => {
             for (let i = 0; i < startersForDay.length; i++) {
                 const s = startersForDay[i];
                 const onboardDate = onboardSplitEnabled && i >= onboardSplitSize ? day2Alt : day2;
-                const elevateDate = nextDow(onboardDate, elevateDow, false);
+                const elevateDate = nextDow(onboardDate, elevateDow, true);
                 addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, MANDATORY_SESSION_HOURS));
                 addRow(makeRow(s, onboardDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, MANDATORY_SESSION_HOURS));
                 addRow(makeRow(s, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, MANDATORY_SESSION_HOURS));
                 s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(elevateDate) };
             }
         }
-        const blocks = getBlocks();
-        const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
         if (totalBlocks !== REQUIRED_TRAINING_SHIFTS) {
             showModal('Training Shifts', `Please allocate exactly ${REQUIRED_TRAINING_SHIFTS} training shifts across the outlets.`);
             return;
@@ -1939,6 +1933,10 @@ window.onload = () => {
         }
         byId('conflicts').textContent = statusMessage;
         renderSched(allRows);
+        const scheduleSection = document.querySelector('[aria-labelledby="schedule-h"]');
+        if (scheduleSection) {
+            scheduleSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
     async function clearRoster() {
         if (allRows.length === 0) {
@@ -2023,22 +2021,6 @@ window.onload = () => {
     byId('importStarters').onchange = importStarters;
     byId('exportStartersBtn').onclick = exportStarters;
     byId('exportBirthdayListBtn').onclick = exportBirthdayList;
-    byId('loadDefaultCompetencies').onclick = loadDefaultCompetencies;
-    byId('importTemplateBtn').onclick = () => {
-        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to import templates.'); return; }
-        byId('importTemplateInput').click();
-    };
-    byId('importDatasetBtn').onclick = () => {
-        if (!isAdvancedMode()) { showModal('Advanced Mode Required', 'Switch to Advanced mode to import datasets.'); return; }
-        byId('importDatasetInput').click();
-    };
-    byId('importTemplateInput').onchange = handleTemplateImport;
-    byId('importDatasetInput').onchange = handleDatasetImport;
-    byId('checklistPreviewSelect').addEventListener('change', handleChecklistSelectionChange);
-    byId('exportChecklistCsv').onclick = exportAllChecklistsCsv;
-    byId('exportChecklistXls').onclick = exportAllChecklistsXls;
-    byId('exportSelectedChecklistCsv').onclick = exportSelectedChecklistCsv;
-    byId('printChecklistBtn').onclick = printChecklists;
     byId('shuffleBlocks').onclick = () => {
         shuffle = !shuffle;
         const btn = byId('shuffleBlocks');
@@ -2047,25 +2029,22 @@ window.onload = () => {
     };
     function syncSplitTrainingUI() {
         const btn = byId('splitTrainingBtn');
-        const primary = byId('splitPrimaryOutlet');
-        const secondary = byId('splitSecondaryOutlet');
         btn.textContent = 'Split: ' + (splitTraining ? 'ON' : 'OFF');
         btn.style.borderColor = splitTraining ? 'var(--brand-secondary)' : 'var(--border-secondary)';
-        primary.disabled = !splitTraining;
-        secondary.disabled = !splitTraining;
+        for (const selectId of Object.values(SPLIT_PAIR_SELECTORS)) {
+            const select = byId(selectId);
+            if (select) select.disabled = !splitTraining;
+        }
         syncSplitTrainingOptions();
     }
     function syncSplitTrainingOptions() {
-        const primary = byId('splitPrimaryOutlet');
-        const secondary = byId('splitSecondaryOutlet');
-        if (!primary || !secondary) return;
-        const primaryValue = primary.value;
-        Array.from(secondary.options).forEach(option => {
-            option.disabled = option.value === primaryValue;
-        });
-        if (secondary.value === primaryValue) {
-            const fallback = Array.from(secondary.options).find(option => !option.disabled);
-            if (fallback) secondary.value = fallback.value;
+        for (const [outlet, selectId] of Object.entries(SPLIT_PAIR_SELECTORS)) {
+            const select = byId(selectId);
+            if (!select) continue;
+            Array.from(select.options).forEach(option => {
+                option.disabled = option.value === outlet;
+            });
+            if (select.value === outlet) select.value = '';
         }
     }
     function syncSplitOnboardingUI() {
@@ -2081,8 +2060,11 @@ window.onload = () => {
         splitTraining = !splitTraining;
         syncSplitTrainingUI();
     };
-    byId('splitPrimaryOutlet').addEventListener('change', syncSplitTrainingOptions);
-    byId('splitSecondaryOutlet').addEventListener('change', syncSplitTrainingOptions);
+    for (const selectId of Object.values(SPLIT_PAIR_SELECTORS)) {
+        const select = byId(selectId);
+        if (!select) continue;
+        select.addEventListener('change', syncSplitTrainingOptions);
+    }
     byId('splitOnboardingBtn').onclick = () => {
         splitOnboarding = !splitOnboarding;
         syncSplitOnboardingUI();
@@ -2150,75 +2132,6 @@ window.onload = () => {
 
         const usedSheetNames = new Set([rosterSheetName, startersSheetName]);
 
-        if (appMode === 'advanced') {
-            let staticTemplate;
-            try {
-                staticTemplate = await ensureStaticPgrChecklist();
-            } catch (error) {
-                console.error('Failed to load PGR competency checklist:', error);
-                showModal('Export Error', 'Advanced mode requires the competency checklist data. Refresh and try again, or switch to Basic mode to export without checklists.');
-                return;
-            }
-
-            const overviewRows = [];
-            starters.forEach((starter, index) => {
-                const {
-                    sheetRows,
-                    overviewRows: rows,
-                    metaStartRow,
-                    metaEndRow,
-                    headerRowIndex,
-                    dataStartRow,
-                    columnCount,
-                    columnWidths
-                } = buildStaticChecklistSheet(staticTemplate, starter, index);
-                if (sheetRows.length > 0) {
-                    const wsChecklist = XLSX.utils.aoa_to_sheet(sheetRows);
-                    const sheetName = buildChecklistSheetName(starter, index, usedSheetNames);
-                    XLSX.utils.book_append_sheet(wb, wsChecklist, sheetName);
-                    formattingQueue.push({
-                        sheetName,
-                        type: 'checklist',
-                        options: {
-                            columnCount,
-                            columnWidths,
-                            titleRowIndex: 0,
-                            metaStartRow,
-                            metaEndRow,
-                            headerRowIndex,
-                            dataStartRow
-                        }
-                    });
-                }
-                if (rows && rows.length) overviewRows.push(...rows);
-            });
-
-            if (overviewRows.length) {
-                const overviewHeaders = ['Starter', 'Staff ID', 'Start Date', 'Category', 'Subcategory', 'Item', 'Details'];
-                const overviewData = overviewRows.map(row => ({
-                    'Starter': row.Starter,
-                    'Staff ID': row.StaffID,
-                    'Start Date': row.StartDate,
-                    'Category': row.Category,
-                    'Subcategory': row.Subcategory,
-                    'Item': row.Item,
-                    'Details': row.Details
-                }));
-                const wsOverview = XLSX.utils.json_to_sheet(overviewData, { header: overviewHeaders });
-                const overviewName = makeUniqueSheetName('Competency Overview', usedSheetNames);
-                XLSX.utils.book_append_sheet(wb, wsOverview, overviewName);
-                formattingQueue.push({
-                    sheetName: overviewName,
-                    type: 'table',
-                    options: {
-                        columnWidths: [26, 16, 16, 26, 22, 40, 36],
-                        headerRowIndex: 0,
-                        dataStartRow: 1
-                    }
-                });
-            }
-        }
-
         for (const cfg of formattingQueue) {
             const ws = wb.Sheets[cfg.sheetName];
             if (!ws) continue;
@@ -2235,8 +2148,6 @@ window.onload = () => {
     // --- INITIAL SETUP ---
     initTheme();
     initMode();
-    updateChecklistSummaries();
-    loadDefaultCompetencies();
     loadStartersFromStorage();
     renderStarters();
     renderSched([]);
