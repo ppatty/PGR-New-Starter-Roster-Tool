@@ -1457,12 +1457,14 @@ window.onload = () => {
             calendarTitle.textContent = monthLabel;
             calendarYearSelect.style.display = 'inline-flex';
             calendarYearSelect.innerHTML = '';
+            const yearOptions = document.createDocumentFragment();
             for (let y = currentYear; y >= EARLIEST_BIRTH_YEAR; y--) {
                 const option = document.createElement('option');
                 option.value = String(y);
                 option.textContent = String(y);
-                calendarYearSelect.appendChild(option);
+                yearOptions.appendChild(option);
             }
+            calendarYearSelect.appendChild(yearOptions);
             calendarYearSelect.value = String(year);
             calendarYearSelect.onchange = () => {
                 currentCalendarDate.setFullYear(Number(calendarYearSelect.value));
@@ -1791,7 +1793,7 @@ window.onload = () => {
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
         const splitConfig = getSplitConfig();
         if (splitTraining && !splitConfig) {
-            showModal('Split Shift', 'Select two different outlets to split a training shift.');
+            showModal('Split Shift', 'Please select two different outlets for split training shifts.');
             return;
         }
         function getOutletSlots(outlet) {
