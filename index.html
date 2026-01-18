@@ -256,12 +256,12 @@
       <div class="hd"><h2 id="blocks-h">Step 2: Set Training Shifts</h2><span class="sub">Set how many training shifts each person gets per area</span></div>
       <div class="bd">
         <div class="grid g3">
-          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
-          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="2" min="0"></div>
-          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
-          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="1" min="0"></div>
-          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="1" min="0"></div>
-          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
+          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="2" min="0"></div>
+          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="1" min="0"></div>
+          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="2" min="0"></div>
+          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
+          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="0" min="0"></div>
+          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="0" min="0"></div>
         </div>
         <div class="mt-4">
           <label>Randomize Shift Order?</label>
@@ -1762,7 +1762,7 @@ window.onload = () => {
         function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
         function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
         function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
-        function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
+        function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.PrimaryOutlet || r.Outlet); }
 
         const used = new Set();
         const welcomeDow = +byId('welcomeDaySel').value;
@@ -1778,6 +1778,40 @@ window.onload = () => {
         const postOutletsUnique = Array.from(new Set(postOutlets));
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
+        function getSplitSecondaryOutlet(starterName) {
+            const oasisCount = getPlacedOutlet(starterName, 'Oasis Food') + 1;
+            return oasisCount % 2 === 1 ? 'SOV South Floor' : 'Oasis Bar';
+        }
+        function getOutletSlotsForStarter(starter, outlet) {
+            if (starter?.TrainingTrack === 'standard' && outlet === 'Oasis Food') {
+                return [outlet, getSplitSecondaryOutlet(starter.Name)];
+            }
+            return [outlet];
+        }
+        function isOutletSlotAvailable(starter, outlet, dateObj, dateKey) {
+            const outlets = getOutletSlotsForStarter(starter, outlet);
+            return outlets.every((slot) => !used.has(dateKey + "|" + slot) && isOutletAllowedOnDate(slot, dateObj));
+        }
+        function markUsedSlots(dateKey, outlets) { outlets.forEach((slot) => used.add(dateKey + "|" + slot)); }
+        function buildSplitShiftCode(startTime, primary, secondary) {
+            const firstLegEnd = addMinutes(startTime, 210);
+            const secondLegStart = addMinutes(firstLegEnd, 60);
+            const secondLegEnd = addMinutes(secondLegStart, 210);
+            const endTime = addMinutes(startTime, 480);
+            return `${startTime.replace(":", "")}-${endTime.replace(":", "")} ${primary}/${secondary} TRN SPLIT (${startTime}-${firstLegEnd} ${primary} + ${secondLegStart}-${secondLegEnd} ${secondary})`;
+        }
+        function makeTrainingRow(starter, dateObj, startTime, outlet, step) {
+            const durationHours = 8;
+            if (starter?.TrainingTrack === 'standard' && outlet === 'Oasis Food') {
+                const secondaryOutlet = getSplitSecondaryOutlet(starter.Name);
+                const row = makeRow(starter, dateObj, startTime, outlet, step, durationHours, 'TRN');
+                row.PrimaryOutlet = outlet;
+                row.Outlet = `${outlet} + ${secondaryOutlet}`;
+                row.Shift = buildSplitShiftCode(startTime, outlet, secondaryOutlet);
+                return { row, usedOutlets: [outlet, secondaryOutlet] };
+            }
+            return { row: makeRow(starter, dateObj, startTime, outlet, step, durationHours, 'TRN'), usedOutlets: [outlet] };
+        }
         for (const dayKey of Object.keys(groups).sort()) {
             let day1 = nextDow(parseYMD(dayKey), welcomeDow);
             let day2 = nextDow(day1, onboardDow, false);
@@ -1822,7 +1856,7 @@ window.onload = () => {
                     let candidates = Object.keys(starterCounts).filter(o => getPlacedOutlet(s.Name, o) < starterCounts[o]);
                     if (!candidates.length) { s.__state = null; continue; }
                     if (shuffle) candidates = shuffled(candidates);
-                    const allowedToday = candidates.filter(o => !used.has(curKey + "|" + o) && isOutletAllowedOnDate(o, cur));
+                    const allowedToday = candidates.filter(o => isOutletSlotAvailable(s, o, cur, curKey));
                     if (allowedToday.length === 0) conflicts.outletConflicts++;
                     outlet = allowedToday[0] || (shuffle ? shuffled(candidates)[0] : candidates[0]);
                     st.currentOutlet = outlet;
@@ -1830,15 +1864,16 @@ window.onload = () => {
                 }
                 const initialDate = cur;
                 let dateSafety = 0;
-                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
+                while (s.blackoutDates.includes(curKey) || !isOutletSlotAvailable(s, outlet, cur, curKey) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
                     cur = addWorkDay(cur); 
                     curKey = toYMD(cur); 
                     if (++dateSafety > 100) break; 
                 }
                 if (cur > initialDate) conflicts.dateConflicts++;
                 const t = pickTime(outlet, allRows.length);
-                addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
-                used.add(curKey + "|" + outlet);
+                const { row, usedOutlets } = makeTrainingRow(s, cur, t, outlet, getPlaced(s.Name) + 1);
+                addRow(row);
+                markUsedSlots(curKey, usedOutlets);
                 st.remaining -= 1; st.nextDate = addWorkDay(cur); progress = true;
             }
         }
@@ -1854,15 +1889,17 @@ window.onload = () => {
             while (placed < starterMinShifts && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
-                let outlet = fallbackOrder.find(o => getPlacedOutlet(s.Name, o) < starterCounts[o] && !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
+                let outlet = fallbackOrder.find(o => getPlacedOutlet(s.Name, o) < starterCounts[o] && isOutletSlotAvailable(s, o, cur, key));
                 if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { 
                     cur = addWorkDay(cur); 
                     fallbackNeeded = true;
                     continue; 
                 }
                 const t = pickTime(outlet, rot++);
-                addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
-                used.add(key + "|" + outlet); placed++; cur = addWorkDay(cur);
+                const { row, usedOutlets } = makeTrainingRow(s, cur, t, outlet, getPlaced(s.Name) + 1);
+                addRow(row);
+                markUsedSlots(key, usedOutlets);
+                placed++; cur = addWorkDay(cur);
             }
             if (fallbackNeeded) conflicts.fallbackUsed++;
         }
