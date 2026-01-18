@@ -1829,7 +1829,11 @@ window.onload = () => {
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
         const invalidStarters = starters.filter(s => !isValidIsoDate(s.StartDate));
         if (invalidStarters.length) {
-            showModal('Invalid Start Date', 'One or more starters have an invalid start date. Update the dates to YYYY-MM-DD before building the roster.');
+            const invalidNames = invalidStarters.map(s => (s?.Name || '').trim()).filter(Boolean);
+            const listedNames = invalidNames.slice(0, 3).join(', ');
+            const extraNames = invalidNames.length > 3 ? ` and ${invalidNames.length - 3} more` : '';
+            const detail = listedNames ? `Update the start dates for ${listedNames}${extraNames}.` : 'One or more starters have an invalid start date.';
+            showModal('Invalid Start Date', `${detail} Dates must be YYYY-MM-DD before building the roster.`);
             return;
         }
 
