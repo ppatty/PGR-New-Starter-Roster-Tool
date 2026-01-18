@@ -1930,7 +1930,7 @@ window.onload = () => {
             tb.appendChild(tr);
         }
     }
-    function getBlocks() { return [{ outlet: "Oasis Food", count: 5 }, { outlet: "Oasis Bar", count: 0 }, { outlet: "SOV South Floor", count: 0 }, { outlet: "SOV North Floor", count: 0 }, { outlet: "SOV South Bar", count: 0 }, { outlet: "SOV Dining", count: 0 }]; }
+    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(0, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
     function getBlocksForStarter(starter) {
         const base = getBlocks();
         if (starter?.TrainingTrack !== 'dining') return base;
