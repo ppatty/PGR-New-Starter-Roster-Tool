@@ -24,8 +24,8 @@ const DEFAULT_BLOCKS = {
 };
 const MINIMUM_BLOCKS = {};
 const DEFAULT_MIN_SHIFTS = calculateMinimumShifts(DEFAULT_BLOCKS);
-const SPLIT_LEG_MINUTES = 210;
-const SPLIT_BREAK_MINUTES = 60;
+const SPLIT_SHIFT_LEG_MINUTES = 210;
+const SPLIT_SHIFT_BREAK_MINUTES = 60;
 
 function parseYMD(iso) {
   if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
@@ -113,9 +113,9 @@ function addMinutes(timeStr, minutes) {
 }
 
 function generateSplitShift(startTime, areaOne = 'Sovereign', areaTwo = 'Oasis') {
-  const firstLegEnd = addMinutes(startTime, SPLIT_LEG_MINUTES);
-  const secondLegStart = addMinutes(firstLegEnd, SPLIT_BREAK_MINUTES);
-  const secondLegEnd = addMinutes(secondLegStart, SPLIT_LEG_MINUTES);
+  const firstLegEnd = addMinutes(startTime, SPLIT_SHIFT_LEG_MINUTES);
+  const secondLegStart = addMinutes(firstLegEnd, SPLIT_SHIFT_BREAK_MINUTES);
+  const secondLegEnd = addMinutes(secondLegStart, SPLIT_SHIFT_LEG_MINUTES);
   const rosterString = `${startTime} - ${firstLegEnd} (${areaOne}) / ${secondLegStart} - ${secondLegEnd} (${areaTwo})`;
 
   return {
