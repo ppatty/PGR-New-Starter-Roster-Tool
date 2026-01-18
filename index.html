@@ -437,13 +437,16 @@ window.onload = () => {
             if (saved) {
                 const parsed = JSON.parse(saved);
                 let invalidCount = 0;
+                let invalidBirthCount = 0;
                 starters = parsed.map(starter => {
                     const normalizedStart = normalizeIsoDate(starter?.StartDate || '');
                     if (!normalizedStart) {
                         invalidCount += 1;
                         return null;
                     }
-                    const normalizedBirth = normalizeIsoDate(starter?.BirthDate || '');
+                    const rawBirth = starter?.BirthDate || '';
+                    const normalizedBirth = normalizeIsoDate(rawBirth);
+                    if (rawBirth && !normalizedBirth) invalidBirthCount += 1;
                     return {
                         ...starter,
                         StartDate: normalizedStart,
@@ -451,8 +454,15 @@ window.onload = () => {
                         blackoutDates: Array.isArray(starter.blackoutDates) ? starter.blackoutDates : []
                     };
                 }).filter(Boolean);
+                const warnings = [];
                 if (invalidCount) {
-                    showModal('Invalid Start Dates', `${invalidCount} saved ${invalidCount === 1 ? 'entry was' : 'entries were'} removed because the start date was invalid.`);
+                    warnings.push(`${invalidCount} saved ${invalidCount === 1 ? 'entry was' : 'entries were'} removed because the start date was invalid.`);
+                }
+                if (invalidBirthCount) {
+                    warnings.push(`${invalidBirthCount} ${invalidBirthCount === 1 ? 'birth date was' : 'birth dates were'} cleared because the value was invalid.`);
+                }
+                if (warnings.length) {
+                    showModal('Invalid Dates', warnings.join(' '));
                 }
                 renderStarters();
             }
@@ -1626,6 +1636,7 @@ window.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
             let invalidCount = 0;
+            let invalidBirthCount = 0;
             const imported = lines.map(l => {
                 const [Name, StaffID, StartDate, BirthDate] = l.split(',');
                 const trimmedName = (Name || '').trim();
@@ -1634,7 +1645,9 @@ window.onload = () => {
                     invalidCount += 1;
                     return null;
                 }
-                const normalizedBirth = normalizeIsoDate(BirthDate || '');
+                const rawBirth = BirthDate || '';
+                const normalizedBirth = normalizeIsoDate(rawBirth);
+                if (rawBirth && !normalizedBirth) invalidBirthCount += 1;
                 return {
                     Name: trimmedName,
                     StaffID: (StaffID || '').trim(),
@@ -1651,8 +1664,15 @@ window.onload = () => {
             starters = imported;
             saveStartersToStorage();
             renderStarters();
-            if (invalidCount) {
-                showModal('Import Notice', `${invalidCount} ${invalidCount === 1 ? 'row was' : 'rows were'} skipped because the name or start date was invalid.`);
+            if (invalidCount || invalidBirthCount) {
+                const notices = [];
+                if (invalidCount) {
+                    notices.push(`${invalidCount} ${invalidCount === 1 ? 'row was' : 'rows were'} skipped because the name or start date was invalid.`);
+                }
+                if (invalidBirthCount) {
+                    notices.push(`${invalidBirthCount} ${invalidBirthCount === 1 ? 'birth date was' : 'birth dates were'} cleared because the value was invalid.`);
+                }
+                showModal('Import Notice', notices.join(' '));
             }
         };
         fr.readAsText(f);
