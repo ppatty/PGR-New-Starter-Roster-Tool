@@ -2051,6 +2051,20 @@ window.onload = () => {
         btn.style.borderColor = splitTraining ? 'var(--brand-secondary)' : 'var(--border-secondary)';
         primary.disabled = !splitTraining;
         secondary.disabled = !splitTraining;
+        syncSplitTrainingOptions();
+    }
+    function syncSplitTrainingOptions() {
+        const primary = byId('splitPrimaryOutlet');
+        const secondary = byId('splitSecondaryOutlet');
+        if (!primary || !secondary) return;
+        const primaryValue = primary.value;
+        Array.from(secondary.options).forEach(option => {
+            option.disabled = option.value === primaryValue;
+        });
+        if (secondary.value === primaryValue) {
+            const fallback = Array.from(secondary.options).find(option => !option.disabled);
+            if (fallback) secondary.value = fallback.value;
+        }
     }
     function syncSplitOnboardingUI() {
         const btn = byId('splitOnboardingBtn');
@@ -2065,6 +2079,8 @@ window.onload = () => {
         splitTraining = !splitTraining;
         syncSplitTrainingUI();
     };
+    byId('splitPrimaryOutlet').addEventListener('change', syncSplitTrainingOptions);
+    byId('splitSecondaryOutlet').addEventListener('change', syncSplitTrainingOptions);
     byId('splitOnboardingBtn').onclick = () => {
         splitOnboarding = !splitOnboarding;
         syncSplitOnboardingUI();
