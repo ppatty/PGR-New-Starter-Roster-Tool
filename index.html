@@ -127,6 +127,7 @@
     .g2 { grid-template-columns: repeat(2, 1fr); }
     .g3 { grid-template-columns: repeat(3, 1fr); }
     .g4 { grid-template-columns: repeat(4, 1fr); }
+    .g5 { grid-template-columns: repeat(5, 1fr); }
     label { display: block; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.5rem; }
     input, textarea, select { width: 100%; font-family: inherit; font-size: 0.875rem; color: var(--text-primary); background-color: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 0.625rem 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; }
     input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--brand-primary); }
@@ -171,7 +172,7 @@
     .date-input { cursor: pointer; }
     .date-input::placeholder { color: var(--text-muted); }
     @media (max-width: 1024px) { .app { grid-template-columns: 1fr; } .side { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border-primary); } .toolbar { margin: -2rem -2rem 0; } }
-    @media (max-width: 768px) { .main { padding: 1.5rem; } .toolbar { margin: -1.5rem -1.5rem 0; } .g2, .g3, .g4 { grid-template-columns: 1fr; } .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; } }
+    @media (max-width: 768px) { .main { padding: 1.5rem; } .toolbar { margin: -1.5rem -1.5rem 0; } .g2, .g3, .g4, .g5 { grid-template-columns: 1fr; } .card .hd { flex-direction: column; align-items: flex-start; gap: 0.25rem; } }
   </style>
 </head>
 <body>
@@ -226,11 +227,12 @@
     <section class="card" aria-labelledby="starters-h">
       <div class="hd"><h2 id="starters-h">Step 1: Add New Team Members</h2><span class="sub">Add manually or import a CSV file</span></div>
       <div class="bd">
-        <div class="grid g4">
+        <div class="grid g5">
           <div><label for="stName">Full Name</label><input id="stName" placeholder="Dakota Parata"></div>
           <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
           <div><label for="stDate">First Day of Work</label><input id="stDate" class="date-input" type="text" placeholder="Select a date" readonly aria-haspopup="dialog" aria-expanded="false"></div>
           <div><label for="stBirthDate">Birth Date (Optional)</label><input id="stBirthDate" class="date-input" type="text" placeholder="Select birth date" readonly aria-haspopup="dialog" aria-expanded="false"></div>
+          <div><label for="stTrack">Training Track</label><select id="stTrack"><option value="standard" selected>Standard (Oasis Food)</option><option value="dining">Dining Focus (Replace Oasis Food)</option></select></div>
         </div>
         <div class="grid g4 mt-4">
           <button id="addStarter" class="btn primary" type="button">Add Person</button>
@@ -243,7 +245,7 @@
         </div>
         <div class="mt-4 table-wrapper">
           <table id="startersTbl">
-            <thead><tr><th>#</th><th>Name</th><th>Staff ID</th><th>Start Date</th><th>Birth Date</th><th>Days Off</th><th>Actions</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>Staff ID</th><th>Start Date</th><th>Birth Date</th><th>Training Track</th><th>Days Off</th><th>Actions</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -254,12 +256,12 @@
       <div class="hd"><h2 id="blocks-h">Step 2: Set Training Shifts</h2><span class="sub">Set how many training shifts each person gets per area</span></div>
       <div class="bd">
         <div class="grid g3">
-          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="3" min="0"></div>
-          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="2" min="0"></div>
-          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="3" min="0" title="Minimum 3 in a row enforced"></div>
-          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="1" min="0"></div>
-          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="1" min="0"></div>
-          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="4" min="0"></div>
+          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="2" min="0"></div>
+          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="1" min="0"></div>
+          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="2" min="0"></div>
+          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
+          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="0" min="0"></div>
+          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="0" min="0"></div>
         </div>
         <div class="mt-4">
           <label>Randomize Shift Order?</label>
@@ -306,6 +308,11 @@
           <div><label for="onboardDaySel">PGR Onboarding</label><select id="onboardDaySel"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4" selected>Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
           <div><label for="elevateDaySel">Elevate Training</label><select id="elevateDaySel"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3" selected>Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
         </div>
+        <div class="grid g3 mt-4">
+          <div><label>Split Onboarding?</label><button id="splitOnboardingBtn" class="btn" type="button">Split: OFF</button></div>
+          <div><label for="onboardDaySelAlt">PGR Onboarding (Group B)</label><select id="onboardDaySelAlt" disabled><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
+          <div><label for="onboardSplitSize">Max starters per onboarding day</label><input type="number" id="onboardSplitSize" value="5" min="1" disabled></div>
+        </div>
       </div>
     </section>
 
@@ -341,6 +348,7 @@ window.onload = () => {
     let calendarContext = null;
     let currentCalendarDate = new Date();
     let appMode = 'advanced';
+    let splitOnboarding = false;
 
     const STORAGE_KEY = 'pgr_roster_starters_v1';
     const THEME_STORAGE_KEY = 'pgr_roster_theme_v1';
@@ -420,7 +428,10 @@ window.onload = () => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
-                starters = JSON.parse(saved);
+                starters = JSON.parse(saved).map(starter => ({
+                    TrainingTrack: 'standard',
+                    ...starter
+                }));
                 renderStarters();
             }
         } catch (e) {
@@ -443,6 +454,10 @@ window.onload = () => {
     };
     const AVATARS = ['🦊', '🐼', '🦉', '🦁', '🐙', '🐳', '🦄', '🐲', '🌟', '🚀', '🎲', '🎯'];
     const AVATAR_TOOLTIP = 'This avatar is just for fun and has no effect on scheduling.';
+    const TRAINING_TRACKS = {
+        standard: { label: 'Standard (Oasis Food)', mode: 'standard' },
+        dining: { label: 'Dining Focus', mode: 'dining' }
+    };
     const DEFAULT_COMPETENCY_BUNDLE_URL = 'data/pgr_competency_checklist_bundle.json';
     const DEFAULT_COMPETENCY_BUNDLE_LABEL = 'PGR Competency Checklist (PDF)';
     const LEGACY_COMPETENCY_TEMPLATE_URL = 'data/competency-template.json';
@@ -459,6 +474,7 @@ window.onload = () => {
 
     function getRandomAvatar() { return AVATARS[Math.floor(Math.random() * AVATARS.length)]; }
     function getAvatarMarkup(avatar) { return avatar ? `<span class="starter-avatar" title="${AVATAR_TOOLTIP}">${avatar}</span>` : ''; }
+    function getTrainingTrackLabel(track) { return TRAINING_TRACKS[track]?.label || TRAINING_TRACKS.standard.label; }
 
     // --- COMPETENCY CHECKLIST HELPERS ---
     const competencyTools = {};
@@ -1346,6 +1362,14 @@ window.onload = () => {
     const isSun = d => d.getDay() === 0;
     const nextWorking = d => { let x = new Date(d); while (isSun(x)) x.setDate(x.getDate() + 1); return x; };
     function addWorkDay(d) { const x = new Date(d); x.setDate(x.getDate() + 1); return nextWorking(x); }
+    function addMinutes(timeStr, minutes) {
+        const [hours, mins] = timeStr.split(':').map(Number);
+        const totalMinutes = hours * 60 + mins + minutes;
+        const normalized = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
+        const nextHours = Math.floor(normalized / 60);
+        const nextMinutes = normalized % 60;
+        return `${pad2(nextHours)}:${pad2(nextMinutes)}`;
+    }
     function nextDow(startDate, dow, includeStart = true) { const d = new Date(startDate); if (!includeStart) d.setDate(d.getDate() + 1); while (d.getDay() !== dow) d.setDate(d.getDate() + 1); return d; }
     function shuffled(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
     function isOutletAllowedOnDate(outlet, dateObj) { const dow = dateObj.getDay(); if (dow === 0) return false; if (outlet === "SOV North Floor") return (dow === 5 || dow === 6); return true; }
@@ -1478,7 +1502,7 @@ window.onload = () => {
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
         if (starters.length === 0) {
-            tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
+            tb.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
             syncChecklists();
             return;
         }
@@ -1486,7 +1510,8 @@ window.onload = () => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
             const birthDateDisplay = s.BirthDate ? toDMY(parseYMD(s.BirthDate)) : 'N/A';
-            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
+            const trackLabel = getTrainingTrackLabel(s.TrainingTrack);
+            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${trackLabel}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); saveStartersToStorage(); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
@@ -1516,15 +1541,16 @@ window.onload = () => {
     }
     function addStarter() {
         const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = getStartDateISO(); const BirthDate = getBirthDateISO();
+        const TrainingTrack = byId('stTrack').value || 'standard';
         if (!Name || !StartDate) { showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
         if (StaffID && starters.some(s => s.StaffID === StaffID)) {
             showModal('Duplicate ID', `Staff ID ${StaffID} is already assigned to another person.`);
             return;
         }
-        starters.push({ Name, StaffID, StartDate, BirthDate, blackoutDates: [], Avatar: getRandomAvatar() });
+        starters.push({ Name, StaffID, StartDate, BirthDate, TrainingTrack, blackoutDates: [], Avatar: getRandomAvatar() });
         saveStartersToStorage();
         renderStarters();
-        byId('stName').value = ''; byId('stId').value = ''; setStartDateISO(''); setBirthDateISO('');
+        byId('stName').value = ''; byId('stId').value = ''; setStartDateISO(''); setBirthDateISO(''); byId('stTrack').value = 'standard';
     }
     async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; saveStartersToStorage(); renderStarters(); } }
     function importStarters(e) {
@@ -1534,7 +1560,10 @@ window.onload = () => {
         fr.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
-            starters = lines.map(l => { const [Name, StaffID, StartDate, BirthDate] = l.split(','); return { Name, StaffID, StartDate, BirthDate: BirthDate || '', blackoutDates: [], Avatar: getRandomAvatar() }; });
+            starters = lines.map(l => {
+                const [Name, StaffID, StartDate, BirthDate, TrainingTrack] = l.split(',');
+                return { Name, StaffID, StartDate, BirthDate: BirthDate || '', TrainingTrack: TrainingTrack || 'standard', blackoutDates: [], Avatar: getRandomAvatar() };
+            });
             saveStartersToStorage();
             renderStarters();
         };
@@ -1543,8 +1572,8 @@ window.onload = () => {
     }
     function exportStarters() {
         if (starters.length === 0) { showModal('No Starters', 'There are no starters to export.'); return; }
-        const header = ['Name', 'StaffID', 'StartDate', 'BirthDate'];
-        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate, s.BirthDate || ''].join(','))).join('\n');
+        const header = ['Name', 'StaffID', 'StartDate', 'BirthDate', 'TrainingTrack'];
+        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate, s.BirthDate || '', s.TrainingTrack || 'standard'].join(','))).join('\n');
         download('starters.csv', csv);
     }
     function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
@@ -1718,28 +1747,76 @@ window.onload = () => {
         function incPlaced(starterName, outlet) { placedByStarter.set(starterName, (placedByStarter.get(starterName) || 0) + 1); if (!placedByStarterOutlet.has(starterName)) placedByStarterOutlet.set(starterName, new Map()); const m = placedByStarterOutlet.get(starterName); m.set(outlet, (m.get(outlet) || 0) + 1); }
         function getPlaced(starterName) { return placedByStarter.get(starterName) || 0; }
         function getPlacedOutlet(starterName, outlet) { return placedByStarterOutlet.get(starterName)?.get(outlet) || 0; }
-        function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.Outlet); }
+        function addRow(r) { allRows.push(r); incPlaced(r.Starter, r.PrimaryOutlet || r.Outlet); }
 
         const used = new Set();
         const welcomeDow = +byId('welcomeDaySel').value;
         const onboardDow = +byId('onboardDaySel').value;
+        const onboardDowAlt = +byId('onboardDaySelAlt').value;
+        const onboardSplitSize = Math.max(1, +byId('onboardSplitSize').value || 1);
+        const onboardSplitEnabled = splitOnboarding;
         const elevateDow = +byId('elevateDaySel').value;
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
+        function getSplitSecondaryOutlet(starterName) {
+            const oasisCount = getPlacedOutlet(starterName, 'Oasis Food') + 1;
+            return oasisCount % 2 === 1 ? 'SOV South Floor' : 'Oasis Bar';
+        }
+        function getOutletSlotsForStarter(starter, outlet) {
+            if (starter?.TrainingTrack === 'standard' && outlet === 'Oasis Food') {
+                return [outlet, getSplitSecondaryOutlet(starter.Name)];
+            }
+            return [outlet];
+        }
+        function isOutletSlotAvailable(starter, outlet, dateObj, dateKey) {
+            const outlets = getOutletSlotsForStarter(starter, outlet);
+            return outlets.every((slot) => !used.has(dateKey + "|" + slot) && isOutletAllowedOnDate(slot, dateObj));
+        }
+        function markUsedSlots(dateKey, outlets) { outlets.forEach((slot) => used.add(dateKey + "|" + slot)); }
+        function buildSplitShiftCode(startTime, primary, secondary) {
+            const firstLegEnd = addMinutes(startTime, 210);
+            const secondLegStart = addMinutes(firstLegEnd, 60);
+            const secondLegEnd = addMinutes(secondLegStart, 210);
+            const endTime = addMinutes(startTime, 480);
+            return `${startTime.replace(":", "")}-${endTime.replace(":", "")} ${primary}/${secondary} TRN SPLIT (${startTime}-${firstLegEnd} ${primary} + ${secondLegStart}-${secondLegEnd} ${secondary})`;
+        }
+        function makeTrainingRow(starter, dateObj, startTime, outlet, step) {
+            const durationHours = 8;
+            if (starter?.TrainingTrack === 'standard' && outlet === 'Oasis Food') {
+                const secondaryOutlet = getSplitSecondaryOutlet(starter.Name);
+                const row = makeRow(starter, dateObj, startTime, outlet, step, durationHours, 'TRN');
+                row.PrimaryOutlet = outlet;
+                row.Outlet = `${outlet} + ${secondaryOutlet}`;
+                row.Shift = buildSplitShiftCode(startTime, outlet, secondaryOutlet);
+                return { row, usedOutlets: [outlet, secondaryOutlet] };
+            }
+            return { row: makeRow(starter, dateObj, startTime, outlet, step, durationHours, 'TRN'), usedOutlets: [outlet] };
+        }
         for (const dayKey of Object.keys(groups).sort()) {
             let day1 = nextDow(parseYMD(dayKey), welcomeDow);
             let day2 = nextDow(day1, onboardDow, false);
-            let day3 = nextDow(day2, elevateDow, false);
-            for (const s of groups[dayKey]) {
+            let day2Alt = onboardSplitEnabled ? nextDow(day1, onboardDowAlt, false) : day2;
+            const startersForDay = groups[dayKey];
+            for (let i = 0; i < startersForDay.length; i++) {
+                const s = startersForDay[i];
+                const onboardDate = onboardSplitEnabled && i >= onboardSplitSize ? day2Alt : day2;
+                const elevateDate = nextDow(onboardDate, elevateDow, false);
                 addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1));
-                addRow(makeRow(s, day2, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
-                addRow(makeRow(s, day3, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3));
-                s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(day3) };
+                addRow(makeRow(s, onboardDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2));
+                addRow(makeRow(s, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3));
+                s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(elevateDate) };
             }
         }
         const blocks = getBlocks();
         const baseCounts = blocks.reduce((m, b) => (m[b.outlet] = b.count, m), {});
         const minShifts = getRequiredShiftCount(blocks);
+        const minShiftsByStarter = new Map();
+        const blockCountsByStarter = new Map();
+        for (const s of norm) {
+            const starterBlocks = getBlocksForStarter(s);
+            blockCountsByStarter.set(s.Name, starterBlocks.reduce((m, b) => (m[b.outlet] = b.count, m), {}));
+            minShiftsByStarter.set(s.Name, getRequiredShiftCount(starterBlocks));
+        }
         const conflicts = { outletConflicts: 0, dateConflicts: 0, fallbackUsed: 0, safetyTriggered: false };
         let progress = true, safety = 0;
         const everyone = Object.values(groups).flat().sort((a, b) => {
@@ -1749,55 +1826,64 @@ window.onload = () => {
             progress = false; safety++;
             if (safety > 4000) conflicts.safetyTriggered = true;
             for (const s of everyone) {
-                if (getPlaced(s.Name) >= minShifts) { s.__state = null; continue; }
+                const starterMinShifts = minShiftsByStarter.get(s.Name) ?? minShifts;
+                const starterCounts = blockCountsByStarter.get(s.Name) || baseCounts;
+                if (getPlaced(s.Name) >= starterMinShifts) { s.__state = null; continue; }
                 if (!s.__state) continue;
                 let st = s.__state; let cur = nextWorking(st.nextDate); let curKey = toYMD(cur);
                 let outlet = st.currentOutlet;
                 if (st.remaining <= 0) {
-                    let candidates = Object.keys(baseCounts).filter(o => getPlacedOutlet(s.Name, o) < baseCounts[o]);
+                    let candidates = Object.keys(starterCounts).filter(o => getPlacedOutlet(s.Name, o) < starterCounts[o]);
                     if (!candidates.length) { s.__state = null; continue; }
                     if (shuffle) candidates = shuffled(candidates);
-                    const allowedToday = candidates.filter(o => !used.has(curKey + "|" + o) && isOutletAllowedOnDate(o, cur));
+                    const allowedToday = candidates.filter(o => isOutletSlotAvailable(s, o, cur, curKey));
                     if (allowedToday.length === 0) conflicts.outletConflicts++;
                     outlet = allowedToday[0] || (shuffle ? shuffled(candidates)[0] : candidates[0]);
                     st.currentOutlet = outlet;
-                    st.remaining = Math.max(0, baseCounts[outlet] - getPlacedOutlet(s.Name, outlet));
+                    st.remaining = Math.max(0, starterCounts[outlet] - getPlacedOutlet(s.Name, outlet));
                 }
                 const initialDate = cur;
                 let dateSafety = 0;
-                while (s.blackoutDates.includes(curKey) || used.has(curKey + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
+                while (s.blackoutDates.includes(curKey) || !isOutletSlotAvailable(s, outlet, cur, curKey) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
                     cur = addWorkDay(cur); 
                     curKey = toYMD(cur); 
                     if (++dateSafety > 100) break; 
                 }
                 if (cur > initialDate) conflicts.dateConflicts++;
                 const t = pickTime(outlet, allRows.length);
-                addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
-                used.add(curKey + "|" + outlet);
+                const { row, usedOutlets } = makeTrainingRow(s, cur, t, outlet, getPlaced(s.Name) + 1);
+                addRow(row);
+                markUsedSlots(curKey, usedOutlets);
                 st.remaining -= 1; st.nextDate = addWorkDay(cur); progress = true;
             }
         }
         for (const s of everyone) {
-            let placed = getPlaced(s.Name); if (placed >= minShifts) continue;
+            const starterMinShifts = minShiftsByStarter.get(s.Name) ?? minShifts;
+            let placed = getPlaced(s.Name); if (placed >= starterMinShifts) continue;
             let last = allRows.filter(r => r.Starter === s.Name).map(r => r.Date).sort().pop();
             let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(s.NormStart);
             let rot = 0, guard = 0; const PREF = ["SOV South Floor", "SOV South Bar", "Oasis Food", "Oasis Bar", "SOV North Floor", "SOV Dining"];
+            const starterCounts = blockCountsByStarter.get(s.Name) || baseCounts;
+            const fallbackOrder = PREF.filter(outlet => (starterCounts[outlet] || 0) > 0);
             let fallbackNeeded = false;
-            while (placed < minShifts && guard < 5000) {
+            while (placed < starterMinShifts && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
-                let outlet = PREF.find(o => !used.has(key + "|" + o) && isOutletAllowedOnDate(o, cur));
+                let outlet = fallbackOrder.find(o => getPlacedOutlet(s.Name, o) < starterCounts[o] && isOutletSlotAvailable(s, o, cur, key));
                 if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { 
                     cur = addWorkDay(cur); 
                     fallbackNeeded = true;
                     continue; 
                 }
                 const t = pickTime(outlet, rot++);
-                addRow(makeRow(s, cur, t, outlet, getPlaced(s.Name) + 1));
-                used.add(key + "|" + outlet); placed++; cur = addWorkDay(cur);
+                const { row, usedOutlets } = makeTrainingRow(s, cur, t, outlet, getPlaced(s.Name) + 1);
+                addRow(row);
+                markUsedSlots(key, usedOutlets);
+                placed++; cur = addWorkDay(cur);
             }
             if (fallbackNeeded) conflicts.fallbackUsed++;
         }
+
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
         
         // Generate meaningful conflict status message
@@ -1812,7 +1898,6 @@ window.onload = () => {
             if (conflicts.safetyTriggered) conflictParts.push('complex scheduling');
             statusMessage += ` • Resolved: ${conflictParts.join(', ')}`;
         }
-        
         byId('conflicts').textContent = statusMessage;
         renderSched(allRows);
     }
@@ -1845,12 +1930,39 @@ window.onload = () => {
             tb.appendChild(tr);
         }
     }
-    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
+    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(0, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
+    function getBlocksForStarter(starter) {
+        const base = getBlocks();
+        if (starter?.TrainingTrack !== 'dining') return base;
+        const foodCount = base.find(block => block.outlet === 'Oasis Food')?.count || 0;
+        return base.map(block => {
+            if (block.outlet === 'Oasis Food') return { ...block, count: 0 };
+            if (block.outlet === 'SOV Dining') return { ...block, count: block.count + foodCount };
+            return block;
+        });
+    }
     function getRequiredShiftCount(blocks = getBlocks()) {
         const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
         return MANDATORY_SESSIONS.length + totalBlocks;
     }
-    function makeRow(starter, dateObj, start, outlet, step) { const [hh, mm] = start.split(":").map(Number); const endH = (hh + 5) % 24, endM = mm; return { Starter: starter.Name, StaffID: starter.StaffID || '', Avatar: starter.Avatar || '', Date: toYMD(dateObj), Start: start, End: pad2(endH) + ":" + pad2(endM), Outlet: outlet, Step: step, Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " TRN" }; }
+    function makeRow(starter, dateObj, start, outlet, step, durationHours = 5, shiftTag = 'TRN') {
+        const [hh, mm] = start.split(":").map(Number);
+        const endDate = new Date(2024, 0, 1, hh, mm);
+        endDate.setHours(endDate.getHours() + durationHours);
+        const endH = endDate.getHours();
+        const endM = endDate.getMinutes();
+        return {
+            Starter: starter.Name,
+            StaffID: starter.StaffID || '',
+            Avatar: starter.Avatar || '',
+            Date: toYMD(dateObj),
+            Start: start,
+            End: pad2(endH) + ":" + pad2(endM),
+            Outlet: outlet,
+            Step: step,
+            Shift: start.replace(":", "") + "-" + pad2(endH) + pad2(endM) + " " + outlet + " " + shiftTag
+        };
+    }
     function pickTime(outlet, i) {
         const times = (RULES[outlet] || ["09:00"]).filter(t => t <= "19:00");
         const safeTimes = times.length ? times : ["19:00"];
@@ -1901,6 +2013,20 @@ window.onload = () => {
         btn.textContent = 'Shuffle: ' + (shuffle ? 'ON' : 'OFF');
         btn.style.borderColor = shuffle ? 'var(--brand-secondary)' : 'var(--border-secondary)';
     };
+    function syncSplitOnboardingUI() {
+        const btn = byId('splitOnboardingBtn');
+        const altSelect = byId('onboardDaySelAlt');
+        const sizeInput = byId('onboardSplitSize');
+        btn.textContent = 'Split: ' + (splitOnboarding ? 'ON' : 'OFF');
+        btn.style.borderColor = splitOnboarding ? 'var(--brand-secondary)' : 'var(--border-secondary)';
+        altSelect.disabled = !splitOnboarding;
+        sizeInput.disabled = !splitOnboarding;
+    }
+    byId('splitOnboardingBtn').onclick = () => {
+        splitOnboarding = !splitOnboarding;
+        syncSplitOnboardingUI();
+    };
+    syncSplitOnboardingUI();
     byId('buildAll').onclick = buildAll;
     byId('clearRosterBtn').onclick = clearRoster;
     byId('exportAllCsv').onclick = () => { if (!allRows.length) { showModal('Export Error', 'Build a schedule first.'); return; } const header = ['Starter', 'StaffID', 'Date', 'Start', 'End', 'Outlet', 'Step', 'Shift']; const csv = [header.join(',')].concat(allRows.map(r => [r.Starter, r.StaffID || '', toDMY(parseYMD(r.Date)), r.Start, r.End, r.Outlet, r.Step, r.Shift].join(','))).join('\n'); download('schedules.csv', csv); };
@@ -1924,11 +2050,12 @@ window.onload = () => {
         }));
         const wsSchedule = XLSX.utils.json_to_sheet(scheduleRows, { header: scheduleHeaders });
 
-        const starterHeaders = ['Name', 'Staff ID', 'Start Date'];
+        const starterHeaders = ['Name', 'Staff ID', 'Start Date', 'Training Track'];
         const starterRows = starters.map(s => ({
             'Name': s.Name,
             'Staff ID': s.StaffID || '',
-            'Start Date': s.StartDate ? toDMY(parseYMD(s.StartDate)) : ''
+            'Start Date': s.StartDate ? toDMY(parseYMD(s.StartDate)) : '',
+            'Training Track': getTrainingTrackLabel(s.TrainingTrack)
         }));
         const wsStarters = XLSX.utils.json_to_sheet(starterRows, { header: starterHeaders });
 
@@ -1953,7 +2080,7 @@ window.onload = () => {
             sheetName: startersSheetName,
             type: 'table',
             options: {
-                columnWidths: [28, 16, 16],
+                columnWidths: [28, 16, 16, 24],
                 headerRowIndex: 0,
                 dataStartRow: 1
             }
