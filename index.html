@@ -1367,10 +1367,17 @@ window.onload = () => {
         const trimmed = value.trim();
         if (!trimmed) return '';
         if (isValidIsoDate(trimmed)) return trimmed;
-        const dmyMatch = trimmed.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
-        if (!dmyMatch) return '';
-        const iso = `${dmyMatch[3]}-${pad2(Number(dmyMatch[2]))}-${pad2(Number(dmyMatch[1]))}`;
+        const dayMonthYearMatch = trimmed.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+        if (!dayMonthYearMatch) return '';
+        const iso = `${dayMonthYearMatch[3]}-${pad2(Number(dayMonthYearMatch[2]))}-${pad2(Number(dayMonthYearMatch[1]))}`;
         return isValidIsoDate(iso) ? iso : '';
+    }
+    function formatInvalidStartDateMessage(invalidStarters) {
+        const invalidNames = invalidStarters.map(s => (s?.Name || '').trim()).filter(Boolean);
+        if (!invalidNames.length) return 'One or more starters have an invalid start date.';
+        const listedNames = invalidNames.slice(0, 3).join(', ');
+        const extraNames = invalidNames.length > 3 ? ` and ${invalidNames.length - 3} more` : '';
+        return `Update the start dates for ${listedNames}${extraNames}.`;
     }
     const stDateInput = byId('stDate');
     const stBirthDateInput = byId('stBirthDate');
@@ -1829,10 +1836,7 @@ window.onload = () => {
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
         const invalidStarters = starters.filter(s => !isValidIsoDate(s.StartDate));
         if (invalidStarters.length) {
-            const invalidNames = invalidStarters.map(s => (s?.Name || '').trim()).filter(Boolean);
-            const listedNames = invalidNames.slice(0, 3).join(', ');
-            const extraNames = invalidNames.length > 3 ? ` and ${invalidNames.length - 3} more` : '';
-            const detail = listedNames ? `Update the start dates for ${listedNames}${extraNames}.` : 'One or more starters have an invalid start date.';
+            const detail = formatInvalidStartDateMessage(invalidStarters);
             showModal('Invalid Start Date', `${detail} Dates must be YYYY-MM-DD before building the roster.`);
             return;
         }
