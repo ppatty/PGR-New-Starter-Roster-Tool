@@ -411,10 +411,35 @@ window.onload = () => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
-                starters = JSON.parse(saved).map(starter => ({
-                    ...starter,
-                    blackoutDates: Array.isArray(starter.blackoutDates) ? starter.blackoutDates : []
-                }));
+                const parsed = JSON.parse(saved);
+                let invalidCount = 0;
+                let invalidBirthCount = 0;
+                starters = parsed.map(starter => {
+                    const normalizedStart = normalizeIsoDate(starter?.StartDate || '');
+                    if (!normalizedStart) {
+                        invalidCount += 1;
+                        return null;
+                    }
+                    const rawBirth = starter?.BirthDate || '';
+                    const normalizedBirth = normalizeIsoDate(rawBirth);
+                    if (rawBirth && !normalizedBirth) invalidBirthCount += 1;
+                    return {
+                        ...starter,
+                        StartDate: normalizedStart,
+                        BirthDate: normalizedBirth,
+                        blackoutDates: Array.isArray(starter.blackoutDates) ? starter.blackoutDates : []
+                    };
+                }).filter(Boolean);
+                const warnings = [];
+                if (invalidCount) {
+                    warnings.push(`${invalidCount} saved ${invalidCount === 1 ? 'entry was' : 'entries were'} removed because the start date was invalid.`);
+                }
+                if (invalidBirthCount) {
+                    warnings.push(`${invalidBirthCount} ${invalidBirthCount === 1 ? 'birth date was' : 'birth dates were'} cleared because the value was invalid.`);
+                }
+                if (warnings.length) {
+                    showModal('Invalid Dates', warnings.join(' '));
+                }
                 renderStarters();
             }
         } catch (e) {
@@ -1326,6 +1351,34 @@ window.onload = () => {
     const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     const toDMY = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
     const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+    function parseIsoDate(value) {
+        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+        const [year, month, day] = value.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+        return date;
+    }
+    function isValidIsoDate(value) {
+        return Boolean(parseIsoDate(value));
+    }
+    function normalizeIsoDate(value) {
+        if (typeof value !== 'string') return '';
+        const trimmed = value.trim();
+        if (!trimmed) return '';
+        if (parseIsoDate(trimmed)) return trimmed;
+        const dayMonthYearMatch = trimmed.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+        if (!dayMonthYearMatch) return '';
+        const [, day, month, year] = dayMonthYearMatch;
+        const iso = `${year}-${pad2(Number(month))}-${pad2(Number(day))}`;
+        return parseIsoDate(iso) ? iso : '';
+    }
+    function formatInvalidStartDateMessage(invalidStarters) {
+        const invalidNames = invalidStarters.map(s => (s?.Name || '').trim()).filter(Boolean);
+        if (!invalidNames.length) return 'One or more starters have an invalid start date.';
+        const listedNames = invalidNames.slice(0, 3).join(', ');
+        const extraNames = invalidNames.length > 3 ? ` and ${invalidNames.length - 3} more` : '';
+        return `Update the start dates for ${listedNames}${extraNames}.`;
+    }
     const stDateInput = byId('stDate');
     const stBirthDateInput = byId('stBirthDate');
     function setStartDateISO(iso) {
@@ -1522,8 +1575,11 @@ window.onload = () => {
         tb.innerHTML = starters.map((s, i) => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
-            const birthDateDisplay = s.BirthDate ? toDMY(parseYMD(s.BirthDate)) : 'N/A';
-            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
+            const startDate = parseIsoDate(s.StartDate);
+            const birthDate = s.BirthDate ? parseIsoDate(s.BirthDate) : null;
+            const startDateDisplay = startDate ? toDMY(startDate) : 'Invalid date';
+            const birthDateDisplay = s.BirthDate ? (birthDate ? toDMY(birthDate) : 'Invalid date') : 'N/A';
+            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${startDateDisplay}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); saveStartersToStorage(); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
@@ -1571,12 +1627,45 @@ window.onload = () => {
         fr.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
-            starters = lines.map(l => {
+            let invalidCount = 0;
+            let invalidBirthCount = 0;
+            const imported = lines.map(l => {
                 const [Name, StaffID, StartDate, BirthDate] = l.split(',');
-                return { Name, StaffID, StartDate, BirthDate: BirthDate || '', blackoutDates: [], Avatar: getRandomAvatar() };
-            });
+                const trimmedName = (Name || '').trim();
+                const normalizedStart = normalizeIsoDate(StartDate || '');
+                if (!trimmedName || !normalizedStart) {
+                    invalidCount += 1;
+                    return null;
+                }
+                const rawBirth = BirthDate || '';
+                const normalizedBirth = normalizeIsoDate(rawBirth);
+                if (rawBirth && !normalizedBirth) invalidBirthCount += 1;
+                return {
+                    Name: trimmedName,
+                    StaffID: (StaffID || '').trim(),
+                    StartDate: normalizedStart,
+                    BirthDate: normalizedBirth,
+                    blackoutDates: [],
+                    Avatar: getRandomAvatar()
+                };
+            }).filter(Boolean);
+            if (!imported.length) {
+                showModal('Import Error', 'No valid starters were found. Ensure each row has a name and a YYYY-MM-DD start date.');
+                return;
+            }
+            starters = imported;
             saveStartersToStorage();
             renderStarters();
+            if (invalidCount || invalidBirthCount) {
+                const notices = [];
+                if (invalidCount) {
+                    notices.push(`${invalidCount} ${invalidCount === 1 ? 'row was' : 'rows were'} skipped because the name or start date was invalid.`);
+                }
+                if (invalidBirthCount) {
+                    notices.push(`${invalidBirthCount} ${invalidBirthCount === 1 ? 'birth date was' : 'birth dates were'} cleared because the value was invalid.`);
+                }
+                showModal('Import Notice', notices.join(' '));
+            }
         };
         fr.readAsText(f);
         e.target.value = null;
@@ -1591,7 +1680,7 @@ window.onload = () => {
     
     async function exportBirthdayList() {
         if (!starters.length) { showModal('Export Error', 'No starters to export.'); return; }
-        const startersWithBirthdays = starters.filter(s => s.BirthDate);
+        const startersWithBirthdays = starters.filter(s => isValidIsoDate(s.BirthDate));
         if (startersWithBirthdays.length === 0) { showModal('Export Error', 'No starters have birth dates entered.'); return; }
         if (typeof XLSX === 'undefined') {
             showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
@@ -1761,6 +1850,12 @@ window.onload = () => {
             if (!confirmed) return;
         }
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
+        const invalidStarters = starters.filter(s => !isValidIsoDate(s.StartDate));
+        if (invalidStarters.length) {
+            const detail = formatInvalidStartDateMessage(invalidStarters);
+            showModal('Invalid Start Date', `${detail} Dates must be YYYY-MM-DD before building the roster.`);
+            return;
+        }
 
         allRows = [];
         const placedByStarter = new Map();
