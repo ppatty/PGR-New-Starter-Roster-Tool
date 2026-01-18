@@ -102,6 +102,30 @@ function makeRow(starter, dateObj, start, outlet, step) {
   };
 }
 
+function addMinutes(timeStr, minutes) {
+  const [hours, mins] = timeStr.split(':').map(Number);
+  const totalMinutes = hours * 60 + mins + minutes;
+  const normalized = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
+  const nextHours = Math.floor(normalized / 60);
+  const nextMinutes = normalized % 60;
+  return `${pad2(nextHours)}:${pad2(nextMinutes)}`;
+}
+
+function generateSplitShift(startTime, areaOne = 'Sovereign', areaTwo = 'Oasis') {
+  const firstLegEnd = addMinutes(startTime, 240);
+  const secondLegStart = addMinutes(firstLegEnd, 30);
+  const secondLegEnd = addMinutes(secondLegStart, 240);
+  const rosterString = `${startTime} - ${firstLegEnd} (${areaOne}) / ${secondLegStart} - ${secondLegEnd} (${areaTwo})`;
+
+  return {
+    display: rosterString,
+    totalHours: 8,
+    locations: [areaOne, areaTwo],
+    isDevelopmentFocus: true,
+    note: 'Pulse Check required during transition!'
+  };
+}
+
 function calculateMinimumShifts(blockMap) {
   return MANDATORY_SESSIONS.length + Object.values(blockMap || {}).reduce((sum, value) => sum + Number(value || 0), 0);
 }
