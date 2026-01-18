@@ -435,10 +435,25 @@ window.onload = () => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
-                starters = JSON.parse(saved).map(starter => ({
-                    ...starter,
-                    blackoutDates: Array.isArray(starter.blackoutDates) ? starter.blackoutDates : []
-                }));
+                const parsed = JSON.parse(saved);
+                let invalidCount = 0;
+                starters = parsed.map(starter => {
+                    const normalizedStart = normalizeIsoDate(starter?.StartDate || '');
+                    if (!normalizedStart) {
+                        invalidCount += 1;
+                        return null;
+                    }
+                    const normalizedBirth = normalizeIsoDate(starter?.BirthDate || '');
+                    return {
+                        ...starter,
+                        StartDate: normalizedStart,
+                        BirthDate: normalizedBirth,
+                        blackoutDates: Array.isArray(starter.blackoutDates) ? starter.blackoutDates : []
+                    };
+                }).filter(Boolean);
+                if (invalidCount) {
+                    showModal('Invalid Start Dates', `${invalidCount} saved ${invalidCount === 1 ? 'entry was' : 'entries were'} removed because the start date was invalid.`);
+                }
                 renderStarters();
             }
         } catch (e) {
@@ -1341,6 +1356,22 @@ window.onload = () => {
     const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     const toDMY = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
     const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+    function isValidIsoDate(value) {
+        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+        const [year, month, day] = value.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+    }
+    function normalizeIsoDate(value) {
+        if (typeof value !== 'string') return '';
+        const trimmed = value.trim();
+        if (!trimmed) return '';
+        if (isValidIsoDate(trimmed)) return trimmed;
+        const dmyMatch = trimmed.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+        if (!dmyMatch) return '';
+        const iso = `${dmyMatch[3]}-${pad2(Number(dmyMatch[2]))}-${pad2(Number(dmyMatch[1]))}`;
+        return isValidIsoDate(iso) ? iso : '';
+    }
     const stDateInput = byId('stDate');
     const stBirthDateInput = byId('stBirthDate');
     function setStartDateISO(iso) {
@@ -1537,8 +1568,9 @@ window.onload = () => {
         tb.innerHTML = starters.map((s, i) => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
-            const birthDateDisplay = s.BirthDate ? toDMY(parseYMD(s.BirthDate)) : 'N/A';
-            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
+            const startDateDisplay = isValidIsoDate(s.StartDate) ? toDMY(parseYMD(s.StartDate)) : 'Invalid date';
+            const birthDateDisplay = isValidIsoDate(s.BirthDate) ? toDMY(parseYMD(s.BirthDate)) : 'N/A';
+            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${startDateDisplay}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); saveStartersToStorage(); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
@@ -1586,12 +1618,35 @@ window.onload = () => {
         fr.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
-            starters = lines.map(l => {
+            let invalidCount = 0;
+            const imported = lines.map(l => {
                 const [Name, StaffID, StartDate, BirthDate] = l.split(',');
-                return { Name, StaffID, StartDate, BirthDate: BirthDate || '', blackoutDates: [], Avatar: getRandomAvatar() };
-            });
+                const trimmedName = (Name || '').trim();
+                const normalizedStart = normalizeIsoDate(StartDate || '');
+                if (!trimmedName || !normalizedStart) {
+                    invalidCount += 1;
+                    return null;
+                }
+                const normalizedBirth = normalizeIsoDate(BirthDate || '');
+                return {
+                    Name: trimmedName,
+                    StaffID: (StaffID || '').trim(),
+                    StartDate: normalizedStart,
+                    BirthDate: normalizedBirth,
+                    blackoutDates: [],
+                    Avatar: getRandomAvatar()
+                };
+            }).filter(Boolean);
+            if (!imported.length) {
+                showModal('Import Error', 'No valid starters were found. Ensure each row has a name and a YYYY-MM-DD start date.');
+                return;
+            }
+            starters = imported;
             saveStartersToStorage();
             renderStarters();
+            if (invalidCount) {
+                showModal('Import Notice', `${invalidCount} ${invalidCount === 1 ? 'row was' : 'rows were'} skipped because the name or start date was invalid.`);
+            }
         };
         fr.readAsText(f);
         e.target.value = null;
@@ -1606,7 +1661,7 @@ window.onload = () => {
     
     async function exportBirthdayList() {
         if (!starters.length) { showModal('Export Error', 'No starters to export.'); return; }
-        const startersWithBirthdays = starters.filter(s => s.BirthDate);
+        const startersWithBirthdays = starters.filter(s => isValidIsoDate(s.BirthDate));
         if (startersWithBirthdays.length === 0) { showModal('Export Error', 'No starters have birth dates entered.'); return; }
         if (typeof XLSX === 'undefined') {
             showModal('Export Error', 'Excel export functionality is not available. The required library could not be loaded.');
@@ -1772,6 +1827,11 @@ window.onload = () => {
             if (!confirmed) return;
         }
         if (!starters.length) { showModal('Build Error', 'Add at least one starter.'); return; }
+        const invalidStarters = starters.filter(s => !isValidIsoDate(s.StartDate));
+        if (invalidStarters.length) {
+            showModal('Invalid Start Date', 'One or more starters have an invalid start date. Update the dates to YYYY-MM-DD before building the roster.');
+            return;
+        }
 
         allRows = [];
         const placedByStarter = new Map();
