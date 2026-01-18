@@ -161,6 +161,8 @@
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
     #calendar-modal .modal-content { max-width: 340px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .calendar-header-center { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+    .calendar-year { width: auto; min-width: 110px; font-size: 0.75rem; padding: 0.35rem 0.5rem; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
     .calendar-day, .calendar-weekday { display: flex; align-items: center; justify-content: center; height: 36px; border-radius: var(--radius-md); }
     .calendar-weekday { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
@@ -227,12 +229,11 @@
     <section class="card" aria-labelledby="starters-h">
       <div class="hd"><h2 id="starters-h">Step 1: Add New Team Members</h2><span class="sub">Add manually or import a CSV file</span></div>
       <div class="bd">
-        <div class="grid g5">
+        <div class="grid g4">
           <div><label for="stName">Full Name</label><input id="stName" placeholder="Dakota Parata"></div>
           <div><label for="stId">Staff ID</label><input id="stId" placeholder="123456"></div>
           <div><label for="stDate">First Day of Work</label><input id="stDate" class="date-input" type="text" placeholder="Select a date" readonly aria-haspopup="dialog" aria-expanded="false"></div>
           <div><label for="stBirthDate">Birth Date (Optional)</label><input id="stBirthDate" class="date-input" type="text" placeholder="Select birth date" readonly aria-haspopup="dialog" aria-expanded="false"></div>
-          <div><label for="stTrack">Training Track</label><select id="stTrack"><option value="standard" selected>Standard (Oasis Food)</option><option value="dining">Dining Focus (Replace Oasis Food)</option></select></div>
         </div>
         <div class="grid g4 mt-4">
           <button id="addStarter" class="btn primary" type="button">Add Person</button>
@@ -245,7 +246,7 @@
         </div>
         <div class="mt-4 table-wrapper">
           <table id="startersTbl">
-            <thead><tr><th>#</th><th>Name</th><th>Staff ID</th><th>Start Date</th><th>Birth Date</th><th>Training Track</th><th>Days Off</th><th>Actions</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>Staff ID</th><th>Start Date</th><th>Birth Date</th><th>Days Off</th><th>Actions</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -253,15 +254,20 @@
     </section>
 
     <section class="card" aria-labelledby="blocks-h">
-      <div class="hd"><h2 id="blocks-h">Step 2: Training Shifts</h2><span class="sub">Every starter completes five training shifts of 8 hours each; standard track Oasis Food shifts are automatically split with South Floor or Oasis Bar</span></div>
+      <div class="hd"><h2 id="blocks-h">Step 2: Training Shifts</h2><span class="sub">Every starter completes five training shifts of 8 hours each. Assign how many shifts land in each outlet, with optional split shifts.</span></div>
       <div class="bd">
         <div class="grid g3">
-          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="5" min="0" disabled></div>
-          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0" disabled></div>
-          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="0" min="0" disabled></div>
-          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0" disabled></div>
-          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="0" min="0" disabled></div>
-          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="0" min="0" disabled></div>
+          <div><label for="blk_food">Oasis Food</label><input type="number" id="blk_food" value="5" min="0"></div>
+          <div><label for="blk_obar">Oasis Bar</label><input type="number" id="blk_obar" value="0" min="0"></div>
+          <div><label for="blk_floor">SOV South Floor</label><input type="number" id="blk_floor" value="0" min="0"></div>
+          <div><label for="blk_nfloor">SOV North Floor</label><input type="number" id="blk_nfloor" value="0" min="0"></div>
+          <div><label for="blk_bar">SOV South Bar</label><input type="number" id="blk_bar" value="0" min="0"></div>
+          <div><label for="blk_dining">SOV Dining</label><input type="number" id="blk_dining" value="0" min="0"></div>
+        </div>
+        <div class="grid g3 mt-4">
+          <div><label>Split a training shift?</label><button id="splitTrainingBtn" class="btn" type="button">Split: OFF</button></div>
+          <div><label for="splitPrimaryOutlet">Primary Outlet</label><select id="splitPrimaryOutlet" disabled><option value="Oasis Food" selected>Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+          <div><label for="splitSecondaryOutlet">Secondary Outlet</label><select id="splitSecondaryOutlet" disabled><option value="SOV South Floor" selected>SOV South Floor</option><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
         </div>
         <div class="mt-4">
           <label>Randomize Shift Order?</label>
@@ -332,7 +338,7 @@
 
 <!-- Modals -->
 <div id="modal" class="modal-overlay"><div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title"><h3 id="modal-title"></h3><p id="modal-text"></p><div class="modal-actions"><button id="modal-cancel" class="btn">Cancel</button><button id="modal-confirm" class="btn primary">Confirm</button></div></div></div>
-<div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost" type="button">&lt;</button><h3 id="calendar-title"></h3><button id="next-month" class="btn ghost" type="button">&gt;</button></div><p id="calendar-helper" class="calendar-helper"></p><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary" type="button">Done</button></div></div></div>
+<div id="calendar-modal" class="modal-overlay"><div class="modal-content"><div class="calendar-header"><button id="prev-month" class="btn ghost" type="button">&lt;</button><div class="calendar-header-center"><h3 id="calendar-title"></h3><select id="calendar-year" class="calendar-year" aria-label="Select year"></select></div><button id="next-month" class="btn ghost" type="button">&gt;</button></div><p id="calendar-helper" class="calendar-helper"></p><div class="calendar-grid" id="calendar-weekdays"></div><div class="calendar-grid" id="calendar-days"></div><div class="modal-actions" style="margin-top: 1rem;"><button id="calendar-close" class="btn primary" type="button">Done</button></div></div></div>
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </body>
@@ -349,6 +355,7 @@ window.onload = () => {
     let currentCalendarDate = new Date();
     let appMode = 'advanced';
     let splitOnboarding = false;
+    let splitTraining = false;
 
     const STORAGE_KEY = 'pgr_roster_starters_v1';
     const THEME_STORAGE_KEY = 'pgr_roster_theme_v1';
@@ -429,8 +436,8 @@ window.onload = () => {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 starters = JSON.parse(saved).map(starter => ({
-                    TrainingTrack: 'standard',
-                    ...starter
+                    ...starter,
+                    blackoutDates: Array.isArray(starter.blackoutDates) ? starter.blackoutDates : []
                 }));
                 renderStarters();
             }
@@ -455,10 +462,6 @@ window.onload = () => {
     };
     const AVATARS = ['🦊', '🐼', '🦉', '🦁', '🐙', '🐳', '🦄', '🐲', '🌟', '🚀', '🎲', '🎯'];
     const AVATAR_TOOLTIP = 'This avatar is just for fun and has no effect on scheduling.';
-    const TRAINING_TRACKS = {
-        standard: { label: 'Standard (Oasis Food)', mode: 'standard' },
-        dining: { label: 'Dining Focus', mode: 'dining' }
-    };
     const DEFAULT_COMPETENCY_BUNDLE_URL = 'data/pgr_competency_checklist_bundle.json';
     const DEFAULT_COMPETENCY_BUNDLE_LABEL = 'PGR Competency Checklist (PDF)';
     const LEGACY_COMPETENCY_TEMPLATE_URL = 'data/competency-template.json';
@@ -475,7 +478,6 @@ window.onload = () => {
 
     function getRandomAvatar() { return AVATARS[Math.floor(Math.random() * AVATARS.length)]; }
     function getAvatarMarkup(avatar) { return avatar ? `<span class="starter-avatar" title="${AVATAR_TOOLTIP}">${avatar}</span>` : ''; }
-    function getTrainingTrackLabel(track) { return TRAINING_TRACKS[track]?.label || TRAINING_TRACKS.standard.label; }
 
     // --- COMPETENCY CHECKLIST HELPERS ---
     const competencyTools = {};
@@ -1426,6 +1428,7 @@ window.onload = () => {
     function renderCalendar() {
         if (!calendarContext) return;
         const calendarTitle = byId('calendar-title');
+        const calendarYearSelect = byId('calendar-year');
         const calendarDays = byId('calendar-days');
         const weekdaysContainer = byId('calendar-weekdays');
         const helper = byId('calendar-helper');
@@ -1446,7 +1449,29 @@ window.onload = () => {
 
         const year = currentCalendarDate.getFullYear();
         const month = currentCalendarDate.getMonth();
-        calendarTitle.textContent = `${currentCalendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
+        const monthLabel = currentCalendarDate.toLocaleString('default', { month: 'long' });
+        if (mode === 'birthDate') {
+            const currentYear = new Date().getFullYear();
+            const earliestYear = 1900;
+            calendarTitle.textContent = monthLabel;
+            calendarYearSelect.style.display = 'inline-flex';
+            calendarYearSelect.innerHTML = '';
+            for (let y = currentYear; y >= earliestYear; y--) {
+                const option = document.createElement('option');
+                option.value = String(y);
+                option.textContent = String(y);
+                calendarYearSelect.appendChild(option);
+            }
+            calendarYearSelect.value = String(year);
+            calendarYearSelect.onchange = () => {
+                currentCalendarDate.setFullYear(Number(calendarYearSelect.value));
+                renderCalendar();
+            };
+        } else {
+            calendarTitle.textContent = `${monthLabel} ${year}`;
+            calendarYearSelect.style.display = 'none';
+            calendarYearSelect.onchange = null;
+        }
         calendarDays.innerHTML = '';
         weekdaysContainer.innerHTML = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
         const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -1502,7 +1527,7 @@ window.onload = () => {
     function renderStarters() {
         const tb = document.querySelector('#startersTbl tbody');
         if (starters.length === 0) {
-            tb.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
+            tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No starters added yet.</td></tr>`;
             syncChecklists();
             return;
         }
@@ -1510,8 +1535,7 @@ window.onload = () => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
             const birthDateDisplay = s.BirthDate ? toDMY(parseYMD(s.BirthDate)) : 'N/A';
-            const trackLabel = getTrainingTrackLabel(s.TrainingTrack);
-            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${trackLabel}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
+            return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${toDMY(parseYMD(s.StartDate))}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); saveStartersToStorage(); renderStarters(); } });
         tb.querySelectorAll('.open-calendar').forEach(b => b.onclick = () => {
@@ -1541,16 +1565,15 @@ window.onload = () => {
     }
     function addStarter() {
         const Name = byId('stName').value.trim(); const StaffID = byId('stId').value.trim(); const StartDate = getStartDateISO(); const BirthDate = getBirthDateISO();
-        const TrainingTrack = byId('stTrack').value || 'standard';
         if (!Name || !StartDate) { showModal('Missing Information', 'Both Name and Start Date are required.'); return; }
         if (StaffID && starters.some(s => s.StaffID === StaffID)) {
             showModal('Duplicate ID', `Staff ID ${StaffID} is already assigned to another person.`);
             return;
         }
-        starters.push({ Name, StaffID, StartDate, BirthDate, TrainingTrack, blackoutDates: [], Avatar: getRandomAvatar() });
+        starters.push({ Name, StaffID, StartDate, BirthDate, blackoutDates: [], Avatar: getRandomAvatar() });
         saveStartersToStorage();
         renderStarters();
-        byId('stName').value = ''; byId('stId').value = ''; setStartDateISO(''); setBirthDateISO(''); byId('stTrack').value = 'standard';
+        byId('stName').value = ''; byId('stId').value = ''; setStartDateISO(''); setBirthDateISO('');
     }
     async function clearStarters() { if (starters.length === 0) { showModal('No Starters', 'There are no starters to clear.'); return; } const confirmed = await showModal('Confirm Clear', 'Are you sure?', true); if (confirmed) { starters = []; saveStartersToStorage(); renderStarters(); } }
     function importStarters(e) {
@@ -1561,8 +1584,8 @@ window.onload = () => {
             const lines = fr.result.split(/\r?\n/).filter(Boolean);
             lines.shift();
             starters = lines.map(l => {
-                const [Name, StaffID, StartDate, BirthDate, TrainingTrack] = l.split(',');
-                return { Name, StaffID, StartDate, BirthDate: BirthDate || '', TrainingTrack: TrainingTrack || 'standard', blackoutDates: [], Avatar: getRandomAvatar() };
+                const [Name, StaffID, StartDate, BirthDate] = l.split(',');
+                return { Name, StaffID, StartDate, BirthDate: BirthDate || '', blackoutDates: [], Avatar: getRandomAvatar() };
             });
             saveStartersToStorage();
             renderStarters();
@@ -1572,8 +1595,8 @@ window.onload = () => {
     }
     function exportStarters() {
         if (starters.length === 0) { showModal('No Starters', 'There are no starters to export.'); return; }
-        const header = ['Name', 'StaffID', 'StartDate', 'BirthDate', 'TrainingTrack'];
-        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate, s.BirthDate || '', s.TrainingTrack || 'standard'].join(','))).join('\n');
+        const header = ['Name', 'StaffID', 'StartDate', 'BirthDate'];
+        const csv = [header.join(',')].concat(starters.map(s => [s.Name, s.StaffID || '', s.StartDate, s.BirthDate || ''].join(','))).join('\n');
         download('starters.csv', csv);
     }
     function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = name; a.click(); }
@@ -1733,6 +1756,13 @@ window.onload = () => {
     }
 
     // --- BUILDER & RENDER LOGIC ---
+    function getSplitConfig() {
+        if (!splitTraining) return null;
+        const primary = byId('splitPrimaryOutlet')?.value;
+        const secondary = byId('splitSecondaryOutlet')?.value;
+        if (!primary || !secondary || primary === secondary) return null;
+        return { primary, secondary };
+    }
     async function buildAll() {
         if (allRows.length > 0) {
             const confirmed = await showModal('Roster Exists', 'A schedule already exists. Do you want to replace it?', true);
@@ -1758,18 +1788,19 @@ window.onload = () => {
         const elevateDow = +byId('elevateDaySel').value;
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
-        function getSplitSecondaryOutlet(starterName) {
-            const oasisCount = getPlacedOutlet(starterName, 'Oasis Food') + 1;
-            return oasisCount % 2 === 1 ? 'SOV South Floor' : 'Oasis Bar';
+        const splitConfig = getSplitConfig();
+        if (splitTraining && !splitConfig) {
+            showModal('Split Shift', 'Select two different outlets to split a training shift.');
+            return;
         }
-        function getOutletSlotsForStarter(starter, outlet) {
-            if (starter?.TrainingTrack === 'standard' && outlet === 'Oasis Food') {
-                return [outlet, getSplitSecondaryOutlet(starter.Name)];
+        function getOutletSlots(outlet) {
+            if (splitConfig && outlet === splitConfig.primary) {
+                return [splitConfig.primary, splitConfig.secondary];
             }
             return [outlet];
         }
-        function isOutletSlotAvailable(starter, outlet, dateObj, dateKey) {
-            const outlets = getOutletSlotsForStarter(starter, outlet);
+        function isOutletSlotAvailable(outlet, dateObj, dateKey) {
+            const outlets = getOutletSlots(outlet);
             return outlets.every((slot) => !used.has(dateKey + "|" + slot) && isOutletAllowedOnDate(slot, dateObj));
         }
         function markUsedSlots(dateKey, outlets) { outlets.forEach((slot) => used.add(dateKey + "|" + slot)); }
@@ -1782,8 +1813,8 @@ window.onload = () => {
         }
         function makeTrainingRow(starter, dateObj, startTime, outlet, step) {
             const durationHours = 8;
-            if (starter?.TrainingTrack === 'standard' && outlet === 'Oasis Food') {
-                const secondaryOutlet = getSplitSecondaryOutlet(starter.Name);
+            if (splitConfig && outlet === splitConfig.primary) {
+                const secondaryOutlet = splitConfig.secondary;
                 const row = makeRow(starter, dateObj, startTime, outlet, step, durationHours, 'TRN');
                 row.PrimaryOutlet = outlet;
                 row.Outlet = `${outlet} + ${secondaryOutlet}`;
@@ -1808,6 +1839,11 @@ window.onload = () => {
             }
         }
         const blocks = getBlocks();
+        const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
+        if (totalBlocks !== 5) {
+            showModal('Training Shifts', 'Please allocate exactly five training shifts across the outlets.');
+            return;
+        }
         const baseCounts = blocks.reduce((m, b) => (m[b.outlet] = b.count, m), {});
         const minShifts = getRequiredShiftCount(blocks);
         const minShiftsByStarter = new Map();
@@ -1836,7 +1872,7 @@ window.onload = () => {
                     let candidates = Object.keys(starterCounts).filter(o => getPlacedOutlet(s.Name, o) < starterCounts[o]);
                     if (!candidates.length) { s.__state = null; continue; }
                     if (shuffle) candidates = shuffled(candidates);
-                    const allowedToday = candidates.filter(o => isOutletSlotAvailable(s, o, cur, curKey));
+                    const allowedToday = candidates.filter(o => isOutletSlotAvailable(o, cur, curKey));
                     if (allowedToday.length === 0) conflicts.outletConflicts++;
                     outlet = allowedToday[0] || (shuffle ? shuffled(candidates)[0] : candidates[0]);
                     st.currentOutlet = outlet;
@@ -1844,7 +1880,7 @@ window.onload = () => {
                 }
                 const initialDate = cur;
                 let dateSafety = 0;
-                while (s.blackoutDates.includes(curKey) || !isOutletSlotAvailable(s, outlet, cur, curKey) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
+                while (s.blackoutDates.includes(curKey) || !isOutletSlotAvailable(outlet, cur, curKey) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
                     cur = addWorkDay(cur); 
                     curKey = toYMD(cur); 
                     if (++dateSafety > 100) break; 
@@ -1869,7 +1905,7 @@ window.onload = () => {
             while (placed < starterMinShifts && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
-                let outlet = fallbackOrder.find(o => getPlacedOutlet(s.Name, o) < starterCounts[o] && isOutletSlotAvailable(s, o, cur, key));
+                let outlet = fallbackOrder.find(o => getPlacedOutlet(s.Name, o) < starterCounts[o] && isOutletSlotAvailable(o, cur, key));
                 if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { 
                     cur = addWorkDay(cur); 
                     fallbackNeeded = true;
@@ -1932,14 +1968,7 @@ window.onload = () => {
     }
     function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(0, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
     function getBlocksForStarter(starter) {
-        const base = getBlocks();
-        if (starter?.TrainingTrack !== 'dining') return base;
-        const foodCount = base.find(block => block.outlet === 'Oasis Food')?.count || 0;
-        return base.map(block => {
-            if (block.outlet === 'Oasis Food') return { ...block, count: 0 };
-            if (block.outlet === 'SOV Dining') return { ...block, count: block.count + foodCount };
-            return block;
-        });
+        return getBlocks();
     }
     function getRequiredShiftCount(blocks = getBlocks()) {
         const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
@@ -2013,6 +2042,15 @@ window.onload = () => {
         btn.textContent = 'Shuffle: ' + (shuffle ? 'ON' : 'OFF');
         btn.style.borderColor = shuffle ? 'var(--brand-secondary)' : 'var(--border-secondary)';
     };
+    function syncSplitTrainingUI() {
+        const btn = byId('splitTrainingBtn');
+        const primary = byId('splitPrimaryOutlet');
+        const secondary = byId('splitSecondaryOutlet');
+        btn.textContent = 'Split: ' + (splitTraining ? 'ON' : 'OFF');
+        btn.style.borderColor = splitTraining ? 'var(--brand-secondary)' : 'var(--border-secondary)';
+        primary.disabled = !splitTraining;
+        secondary.disabled = !splitTraining;
+    }
     function syncSplitOnboardingUI() {
         const btn = byId('splitOnboardingBtn');
         const altSelect = byId('onboardDaySelAlt');
@@ -2022,10 +2060,15 @@ window.onload = () => {
         altSelect.disabled = !splitOnboarding;
         sizeInput.disabled = !splitOnboarding;
     }
+    byId('splitTrainingBtn').onclick = () => {
+        splitTraining = !splitTraining;
+        syncSplitTrainingUI();
+    };
     byId('splitOnboardingBtn').onclick = () => {
         splitOnboarding = !splitOnboarding;
         syncSplitOnboardingUI();
     };
+    syncSplitTrainingUI();
     syncSplitOnboardingUI();
     byId('buildAll').onclick = buildAll;
     byId('clearRosterBtn').onclick = clearRoster;
@@ -2050,12 +2093,12 @@ window.onload = () => {
         }));
         const wsSchedule = XLSX.utils.json_to_sheet(scheduleRows, { header: scheduleHeaders });
 
-        const starterHeaders = ['Name', 'Staff ID', 'Start Date', 'Training Track'];
+        const starterHeaders = ['Name', 'Staff ID', 'Start Date', 'Birth Date'];
         const starterRows = starters.map(s => ({
             'Name': s.Name,
             'Staff ID': s.StaffID || '',
             'Start Date': s.StartDate ? toDMY(parseYMD(s.StartDate)) : '',
-            'Training Track': getTrainingTrackLabel(s.TrainingTrack)
+            'Birth Date': s.BirthDate ? toDMY(parseYMD(s.BirthDate)) : ''
         }));
         const wsStarters = XLSX.utils.json_to_sheet(starterRows, { header: starterHeaders });
 

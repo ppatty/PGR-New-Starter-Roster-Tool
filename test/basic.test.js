@@ -185,3 +185,22 @@ test('default session days are set correctly', () => {
   assert.ok(elevateDaySelected, 'Elevate Training default not found');
   assert.strictEqual(elevateDaySelected[1], '3', 'Elevate Training should default to Wednesday (value 3)');
 });
+
+test('birth date picker exposes a year selector', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('id="calendar-year"'), 'calendar year selector missing');
+  const renderCalendarBlock = html.match(/function renderCalendar\(\)[\s\S]*?function closeCalendarModal/);
+  assert.ok(renderCalendarBlock, 'renderCalendar function not found');
+  assert.ok(renderCalendarBlock[0].includes('calendarYearSelect'), 'renderCalendar should reference calendar year selector');
+  assert.ok(renderCalendarBlock[0].includes('setFullYear'), 'renderCalendar should update calendar year');
+});
+
+test('training shift inputs are editable and include split controls', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const foodInput = html.match(/<input[^>]*id="blk_food"[^>]*>/);
+  assert.ok(foodInput, 'Oasis Food input not found');
+  assert.ok(!/disabled/.test(foodInput[0]), 'Training shift inputs should be editable');
+  assert.ok(html.includes('id="splitTrainingBtn"'), 'Split training toggle missing');
+  assert.ok(html.includes('id="splitPrimaryOutlet"'), 'Split primary outlet selector missing');
+  assert.ok(html.includes('id="splitSecondaryOutlet"'), 'Split secondary outlet selector missing');
+});
