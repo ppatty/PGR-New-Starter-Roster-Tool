@@ -1842,7 +1842,7 @@ window.onload = () => {
         const blocks = getBlocks();
         const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
         if (totalBlocks !== REQUIRED_TRAINING_SHIFTS) {
-            showModal('Training Shifts', 'Please allocate exactly five training shifts across the outlets.');
+            showModal('Training Shifts', `Please allocate exactly ${REQUIRED_TRAINING_SHIFTS} training shifts across the outlets.`);
             return;
         }
         const baseCounts = blocks.reduce((m, b) => (m[b.outlet] = b.count, m), {});
