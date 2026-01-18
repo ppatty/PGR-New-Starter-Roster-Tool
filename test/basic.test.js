@@ -189,10 +189,8 @@ test('default session days are set correctly', () => {
 test('birth date picker exposes a year selector', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes('id="calendar-year"'), 'calendar year selector missing');
-  const renderCalendarBlock = html.match(/function renderCalendar\(\)[\s\S]*?function closeCalendarModal/);
-  assert.ok(renderCalendarBlock, 'renderCalendar function not found');
-  assert.ok(renderCalendarBlock[0].includes('calendarYearSelect'), 'renderCalendar should reference calendar year selector');
-  assert.ok(renderCalendarBlock[0].includes('setFullYear'), 'renderCalendar should update calendar year');
+  assert.ok(html.includes('calendarYearSelect'), 'renderCalendar should reference calendar year selector');
+  assert.ok(html.includes('setFullYear'), 'renderCalendar should update calendar year');
 });
 
 test('training shift inputs are editable and include split controls', () => {

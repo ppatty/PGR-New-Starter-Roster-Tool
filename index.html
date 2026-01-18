@@ -452,6 +452,8 @@ window.onload = () => {
       { name: 'Elevate Training', label: 'Elevate Training', start: '09:00' }
     ];
     const MANDATORY_SESSION_HOURS = 5;
+    const REQUIRED_TRAINING_SHIFTS = 5;
+    const EARLIEST_BIRTH_YEAR = 1900;
     const RULES = {
         "Oasis Food": ["08:00", "11:00", "16:00"],
         "Oasis Bar": ["06:00", "08:00", "10:00", "14:00", "16:00", "17:00", "18:00", "19:00"],
@@ -1452,11 +1454,10 @@ window.onload = () => {
         const monthLabel = currentCalendarDate.toLocaleString('default', { month: 'long' });
         if (mode === 'birthDate') {
             const currentYear = new Date().getFullYear();
-            const earliestYear = 1900;
             calendarTitle.textContent = monthLabel;
             calendarYearSelect.style.display = 'inline-flex';
             calendarYearSelect.innerHTML = '';
-            for (let y = currentYear; y >= earliestYear; y--) {
+            for (let y = currentYear; y >= EARLIEST_BIRTH_YEAR; y--) {
                 const option = document.createElement('option');
                 option.value = String(y);
                 option.textContent = String(y);
@@ -1840,7 +1841,7 @@ window.onload = () => {
         }
         const blocks = getBlocks();
         const totalBlocks = blocks.reduce((sum, block) => sum + block.count, 0);
-        if (totalBlocks !== 5) {
+        if (totalBlocks !== REQUIRED_TRAINING_SHIFTS) {
             showModal('Training Shifts', 'Please allocate exactly five training shifts across the outlets.');
             return;
         }
