@@ -81,6 +81,34 @@ test('birth date picker exposes a year selector', () => {
   assert.ok(html.includes('setFullYear'), 'renderCalendar should update calendar year');
 });
 
+test('normalizeIsoDate accepts common formats and rejects invalid dates', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const pad2Match = html.match(/const pad2 =[^;]+;/);
+  assert.ok(pad2Match, 'pad2 helper missing');
+  const parseStart = html.indexOf('function parseIsoDate');
+  const isValidStart = html.indexOf('function isValidIsoDate');
+  const normalizeStart = html.indexOf('function normalizeIsoDate');
+  const formatStart = html.indexOf('function formatInvalidStartDateMessage');
+  assert.ok(parseStart !== -1, 'parseIsoDate helper missing');
+  assert.ok(isValidStart !== -1, 'isValidIsoDate helper missing');
+  assert.ok(normalizeStart !== -1, 'normalizeIsoDate helper missing');
+  assert.ok(formatStart !== -1, 'formatInvalidStartDateMessage helper missing');
+  const parseBlock = html.slice(parseStart, isValidStart);
+  const isValidBlock = html.slice(isValidStart, normalizeStart);
+  const normalizeBlock = html.slice(normalizeStart, formatStart);
+
+  const sandbox = {};
+  vm.createContext(sandbox);
+  vm.runInContext(`${pad2Match[0]}\n${parseBlock}\n${isValidBlock}\n${normalizeBlock}\nthis.normalizeIsoDate = normalizeIsoDate;\nthis.isValidIsoDate = isValidIsoDate;`, sandbox);
+
+  const { normalizeIsoDate, isValidIsoDate } = sandbox;
+  assert.strictEqual(normalizeIsoDate('2025-02-03'), '2025-02-03');
+  assert.strictEqual(normalizeIsoDate('3/2/2025'), '2025-02-03');
+  assert.strictEqual(normalizeIsoDate('31-04-2025'), '');
+  assert.ok(isValidIsoDate('2025-02-03'));
+  assert.ok(!isValidIsoDate('2025-02-30'));
+});
+
 test('training shift inputs are editable and include split controls', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const foodInput = html.match(/<input[^>]*id="blk_food"[^>]*>/);
