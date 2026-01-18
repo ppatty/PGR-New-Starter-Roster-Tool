@@ -1366,22 +1366,26 @@ window.onload = () => {
     const toYMD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     const toDMY = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
     const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-    function isValidIsoDate(value) {
-        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    function parseIsoDate(value) {
+        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
         const [year, month, day] = value.split('-').map(Number);
         const date = new Date(year, month - 1, day);
-        return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+        return date;
+    }
+    function isValidIsoDate(value) {
+        return Boolean(parseIsoDate(value));
     }
     function normalizeIsoDate(value) {
         if (typeof value !== 'string') return '';
         const trimmed = value.trim();
         if (!trimmed) return '';
-        if (isValidIsoDate(trimmed)) return trimmed;
+        if (parseIsoDate(trimmed)) return trimmed;
         const dayMonthYearMatch = trimmed.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
         if (!dayMonthYearMatch) return '';
         const [, day, month, year] = dayMonthYearMatch;
         const iso = `${year}-${pad2(Number(month))}-${pad2(Number(day))}`;
-        return isValidIsoDate(iso) ? iso : '';
+        return parseIsoDate(iso) ? iso : '';
     }
     function formatInvalidStartDateMessage(invalidStarters) {
         const invalidNames = invalidStarters.map(s => (s?.Name || '').trim()).filter(Boolean);
@@ -1586,10 +1590,10 @@ window.onload = () => {
         tb.innerHTML = starters.map((s, i) => {
             if (!s.Avatar) s.Avatar = getRandomAvatar();
             const avatar = getAvatarMarkup(s.Avatar);
-            const startDateDisplay = isValidIsoDate(s.StartDate) ? toDMY(parseYMD(s.StartDate)) : 'Invalid date';
-            const birthDateDisplay = s.BirthDate
-                ? (isValidIsoDate(s.BirthDate) ? toDMY(parseYMD(s.BirthDate)) : 'Invalid date')
-                : 'N/A';
+            const startDate = parseIsoDate(s.StartDate);
+            const birthDate = s.BirthDate ? parseIsoDate(s.BirthDate) : null;
+            const startDateDisplay = startDate ? toDMY(startDate) : 'Invalid date';
+            const birthDateDisplay = s.BirthDate ? (birthDate ? toDMY(birthDate) : 'Invalid date') : 'N/A';
             return `<tr><td>${i + 1}</td><td><span class="starter-cell">${avatar}<span>${s.Name}</span></span></td><td>${s.StaffID || 'N/A'}</td><td>${startDateDisplay}</td><td>${birthDateDisplay}</td><td>${s.blackoutDates.length} day(s)</td><td style="text-align:right"><button data-i='${i}' class='btn ghost open-calendar' type="button">Calendar</button><button data-i='${i}' class='btn ghost remove-starter' type="button">Remove</button></td></tr>`;
         }).join('');
         tb.querySelectorAll('.remove-starter').forEach(b => b.onclick = async () => { const confirmed = await showModal('Confirm Removal', `Are you sure you want to remove ${starters[+b.dataset.i].Name}?`, true); if (confirmed) { starters.splice(+b.dataset.i, 1); saveStartersToStorage(); renderStarters(); } });

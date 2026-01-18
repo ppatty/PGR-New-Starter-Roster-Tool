@@ -197,14 +197,21 @@ test('normalizeIsoDate accepts common formats and rejects invalid dates', () => 
   const html = fs.readFileSync('index.html', 'utf8');
   const pad2Match = html.match(/const pad2 =[^;]+;/);
   assert.ok(pad2Match, 'pad2 helper missing');
-  const isValidMatch = html.match(/function isValidIsoDate[\s\S]*?(?=function normalizeIsoDate)/);
-  assert.ok(isValidMatch, 'isValidIsoDate helper missing');
-  const normalizeMatch = html.match(/function normalizeIsoDate[\s\S]*?(?=const stDateInput)/);
-  assert.ok(normalizeMatch, 'normalizeIsoDate helper missing');
+  const parseStart = html.indexOf('function parseIsoDate');
+  const isValidStart = html.indexOf('function isValidIsoDate');
+  const normalizeStart = html.indexOf('function normalizeIsoDate');
+  const formatStart = html.indexOf('function formatInvalidStartDateMessage');
+  assert.ok(parseStart !== -1, 'parseIsoDate helper missing');
+  assert.ok(isValidStart !== -1, 'isValidIsoDate helper missing');
+  assert.ok(normalizeStart !== -1, 'normalizeIsoDate helper missing');
+  assert.ok(formatStart !== -1, 'formatInvalidStartDateMessage helper missing');
+  const parseBlock = html.slice(parseStart, isValidStart);
+  const isValidBlock = html.slice(isValidStart, normalizeStart);
+  const normalizeBlock = html.slice(normalizeStart, formatStart);
 
   const sandbox = {};
   vm.createContext(sandbox);
-  vm.runInContext(`${pad2Match[0]}\n${isValidMatch[0]}\n${normalizeMatch[0]}\nthis.normalizeIsoDate = normalizeIsoDate;\nthis.isValidIsoDate = isValidIsoDate;`, sandbox);
+  vm.runInContext(`${pad2Match[0]}\n${parseBlock}\n${isValidBlock}\n${normalizeBlock}\nthis.normalizeIsoDate = normalizeIsoDate;\nthis.isValidIsoDate = isValidIsoDate;`, sandbox);
 
   const { normalizeIsoDate, isValidIsoDate } = sandbox;
   assert.strictEqual(normalizeIsoDate('2025-02-03'), '2025-02-03');
