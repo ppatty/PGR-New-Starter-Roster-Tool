@@ -84,12 +84,17 @@ test('buildRoster defaults produce a summary with the starter count', () => {
 
 test('default training shifts total five and run for eight hours', () => {
   const MINUTES_PER_DAY = 24 * 60;
+  const EXPECTED_TRAINING_SHIFTS = 5;
   const totalBlocks = Object.values(DEFAULT_BLOCKS).reduce((sum, value) => sum + value, 0);
-  assert.equal(totalBlocks, 5, 'default blocks should total five training shifts');
-  assert.equal(DEFAULT_MIN_SHIFTS, MANDATORY_SESSIONS.length + 5);
+  assert.equal(totalBlocks, EXPECTED_TRAINING_SHIFTS, 'default blocks should total five training shifts');
+  assert.equal(DEFAULT_MIN_SHIFTS, MANDATORY_SESSIONS.length + EXPECTED_TRAINING_SHIFTS);
 
   const starters = [{ Name: 'Morgan Lee', StartDate: '2025-01-09' }];
-  const result = buildRoster({ starters, blocks: DEFAULT_BLOCKS, minShifts: MANDATORY_SESSIONS.length + 5 });
+  const result = buildRoster({
+    starters,
+    blocks: DEFAULT_BLOCKS,
+    minShifts: MANDATORY_SESSIONS.length + EXPECTED_TRAINING_SHIFTS
+  });
   const mandatoryLabels = new Set(MANDATORY_SESSIONS.map((session) => session.label));
   const trainingRow = result.rows.find((row) => !mandatoryLabels.has(row.Outlet));
   assert.ok(trainingRow, 'expected at least one training shift');

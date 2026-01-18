@@ -5,6 +5,7 @@ const MANDATORY_SESSIONS = [
   { name: 'PGR F&B On boarding', label: 'PGR F&B On boarding', start: '09:00' },
   { name: 'Elevate Training', label: 'Elevate Training', start: '09:00' }
 ];
+const MANDATORY_SESSION_HOURS = 5;
 const RULES = {
   'Oasis Food': ['08:00', '11:00', '16:00'],
   'Oasis Bar': ['06:00', '08:00', '10:00', '14:00', '16:00', '17:00', '18:00', '19:00'],
@@ -293,9 +294,9 @@ function buildRoster(options = {}) {
     const onboardingDate = nextDow(welcomeDate, onboardDay, false);
     const elevateDate = nextDow(onboardingDate, elevateDay, false);
     for (const starter of groups[dayKey]) {
-      addRow(makeRow(starter, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, 5));
-      addRow(makeRow(starter, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, 5));
-      addRow(makeRow(starter, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, 5));
+      addRow(makeRow(starter, welcomeDate, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, MANDATORY_SESSION_HOURS));
+      addRow(makeRow(starter, onboardingDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, MANDATORY_SESSION_HOURS));
+      addRow(makeRow(starter, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, MANDATORY_SESSION_HOURS));
       starter.__state = {
         currentOutlet: null,
         remaining: 0,
