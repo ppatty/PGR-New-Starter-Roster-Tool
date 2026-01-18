@@ -270,8 +270,24 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="post-training-h">
+      <div class="hd"><h2 id="post-training-h">Step 3: Post-Training Roster Shifts</h2><span class="sub">Add roster fill shifts after training to cover the month</span></div>
+      <div class="bd">
+        <div class="grid g4">
+          <div><label for="postShiftCount">Roster shifts per person</label><input type="number" id="postShiftCount" value="5" min="0"></div>
+          <div><label for="postShiftHours">Shift length (hours)</label><input type="number" id="postShiftHours" value="8" min="1" max="12"></div>
+          <div><label for="postOutletA">Roster location A</label><select id="postOutletA"><option value="Oasis Food">Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor" selected>SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+          <div><label for="postOutletB">Roster location B</label><select id="postOutletB"><option value="Oasis Food" selected>Oasis Food</option><option value="Oasis Bar">Oasis Bar</option><option value="SOV South Floor">SOV South Floor</option><option value="SOV North Floor">SOV North Floor</option><option value="SOV South Bar">SOV South Bar</option><option value="SOV Dining">SOV Dining</option></select></div>
+        </div>
+        <div class="grid g2 mt-4">
+          <div><label for="postShiftSpacing">Working days between roster shifts</label><input type="number" id="postShiftSpacing" value="3" min="0"></div>
+          <div class="control-note">Roster fill shifts are placed after training, alternating between the two locations.</div>
+        </div>
+      </div>
+    </section>
+
     <section id="competencyCard" class="card" aria-labelledby="competency-h">
-      <div class="hd"><h2 id="competency-h">Step 3: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
+      <div class="hd"><h2 id="competency-h">Step 4: Configure Competency Checklists</h2><span class="sub">Load a template, connect team member data, and preview exports</span></div>
       <div class="bd">
         <div class="grid g3">
           <button id="loadDefaultCompetencies" class="btn" type="button">Use Default Template</button>
@@ -301,7 +317,7 @@
     </section>
 
     <section class="card" aria-labelledby="mandatory-h">
-      <div class="hd"><h2 id="mandatory-h">Step 4: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
+      <div class="hd"><h2 id="mandatory-h">Step 5: Session Days</h2><span class="sub">Choose days for mandatory sessions</span></div>
       <div class="bd">
         <div class="grid g3">
           <div><label for="welcomeDaySel">Welcome Day</label><select id="welcomeDaySel"><option value="1">Monday</option><option value="2" selected>Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
@@ -317,7 +333,7 @@
     </section>
 
     <section class="card" aria-labelledby="schedule-h">
-      <div class="hd"><h2 id="schedule-h">Step 5: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
+      <div class="hd"><h2 id="schedule-h">Step 6: Generated Roster</h2><span class="sub">Click "Build Roster" to see the results here</span></div>
       <div class="bd" style="padding: 0;">
         <div class="table-wrapper">
           <table id="schedTbl">
@@ -1362,13 +1378,12 @@ window.onload = () => {
     const isSun = d => d.getDay() === 0;
     const nextWorking = d => { let x = new Date(d); while (isSun(x)) x.setDate(x.getDate() + 1); return x; };
     function addWorkDay(d) { const x = new Date(d); x.setDate(x.getDate() + 1); return nextWorking(x); }
-    function addMinutes(timeStr, minutes) {
-        const [hours, mins] = timeStr.split(':').map(Number);
-        const totalMinutes = hours * 60 + mins + minutes;
-        const normalized = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
-        const nextHours = Math.floor(normalized / 60);
-        const nextMinutes = normalized % 60;
-        return `${pad2(nextHours)}:${pad2(nextMinutes)}`;
+    function addWorkDays(d, count) {
+        let x = new Date(d);
+        for (let i = 0; i < count; i++) {
+            x = addWorkDay(x);
+        }
+        return x;
     }
     function nextDow(startDate, dow, includeStart = true) { const d = new Date(startDate); if (!includeStart) d.setDate(d.getDate() + 1); while (d.getDay() !== dow) d.setDate(d.getDate() + 1); return d; }
     function shuffled(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -1756,6 +1771,11 @@ window.onload = () => {
         const onboardSplitSize = Math.max(1, +byId('onboardSplitSize').value || 1);
         const onboardSplitEnabled = splitOnboarding;
         const elevateDow = +byId('elevateDaySel').value;
+        const postShiftCount = Math.max(0, +byId('postShiftCount').value || 0);
+        const postShiftHours = Math.max(1, +byId('postShiftHours').value || 8);
+        const postShiftSpacing = Math.max(0, +byId('postShiftSpacing').value || 0);
+        const postOutlets = [byId('postOutletA').value, byId('postOutletB').value].filter(Boolean);
+        const postOutletsUnique = Array.from(new Set(postOutlets));
         const norm = starters.map(s => { let d = parseYMD(s.StartDate); while (isSun(d)) d.setDate(d.getDate() + 1); return { ...s, NormStart: d }; });
         const groups = {}; for (const s of norm) { const k = toYMD(s.NormStart); (groups[k] ||= []).push(s); }
         function getSplitSecondaryOutlet(starterName) {
@@ -1884,6 +1904,32 @@ window.onload = () => {
             if (fallbackNeeded) conflicts.fallbackUsed++;
         }
 
+        let postShiftAdded = 0;
+        if (postShiftCount > 0 && postOutletsUnique.length > 0) {
+            for (const s of everyone) {
+                let rosterPlaced = 0;
+                let guard = 0;
+                let outletIndex = 0;
+                let last = allRows.filter(r => r.Starter === s.Name).map(r => r.Date).sort().pop();
+                let cur = last ? addWorkDay(parseYMD(last)) : nextWorking(s.NormStart);
+                while (rosterPlaced < postShiftCount && guard < 5000) {
+                    guard++;
+                    const outlet = postOutletsUnique[outletIndex % postOutletsUnique.length];
+                    const key = toYMD(cur);
+                    if (s.blackoutDates.includes(key) || used.has(key + "|" + outlet) || !isOutletAllowedOnDate(outlet, cur) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rosterPlaced))) {
+                        cur = addWorkDay(cur);
+                        continue;
+                    }
+                    const t = pickTime(outlet, rosterPlaced);
+                    addRow(makeRow(s, cur, t, outlet, `Roster Fill ${rosterPlaced + 1}`, postShiftHours, 'RST'));
+                    used.add(key + "|" + outlet);
+                    rosterPlaced++;
+                    outletIndex++;
+                    cur = addWorkDays(cur, postShiftSpacing + 1);
+                }
+                postShiftAdded += rosterPlaced;
+            }
+        }
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
         
         // Generate meaningful conflict status message
@@ -1898,6 +1944,10 @@ window.onload = () => {
             if (conflicts.safetyTriggered) conflictParts.push('complex scheduling');
             statusMessage += ` • Resolved: ${conflictParts.join(', ')}`;
         }
+        if (postShiftAdded > 0) {
+            statusMessage += ` • Added ${postShiftAdded} roster fill shifts`;
+        }
+        
         byId('conflicts').textContent = statusMessage;
         renderSched(allRows);
     }
@@ -1930,7 +1980,7 @@ window.onload = () => {
             tb.appendChild(tr);
         }
     }
-    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(0, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
+    function getBlocks() { return [{ outlet: "Oasis Food", count: Math.max(0, +byId('blk_food').value || 0) }, { outlet: "Oasis Bar", count: Math.max(0, +byId('blk_obar').value || 0) }, { outlet: "SOV South Floor", count: Math.max(3, +byId('blk_floor').value || 0) }, { outlet: "SOV North Floor", count: Math.max(0, +byId('blk_nfloor').value || 0) }, { outlet: "SOV South Bar", count: Math.max(0, +byId('blk_bar').value || 0) }, { outlet: "SOV Dining", count: Math.max(0, +byId('blk_dining').value || 0) }]; }
     function getBlocksForStarter(starter) {
         const base = getBlocks();
         if (starter?.TrainingTrack !== 'dining') return base;
