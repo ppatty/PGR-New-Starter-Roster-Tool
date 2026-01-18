@@ -2022,6 +2022,10 @@ window.onload = () => {
         }
         byId('conflicts').textContent = statusMessage;
         renderSched(allRows);
+        const scheduleSection = document.querySelector('[aria-labelledby="schedule-h"]');
+        if (scheduleSection) {
+            scheduleSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
     async function clearRoster() {
         if (allRows.length === 0) {
