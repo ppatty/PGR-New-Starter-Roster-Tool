@@ -1404,6 +1404,7 @@ window.onload = () => {
     const isMon = d => d.getDay() === 1;
     const isSun = d => d.getDay() === 0;
     const nextWorking = d => { let x = new Date(d); while (isSun(x)) x.setDate(x.getDate() + 1); return x; };
+    function addDays(d, count) { const x = new Date(d); x.setDate(x.getDate() + count); return x; }
     function addWorkDay(d) { const x = new Date(d); x.setDate(x.getDate() + 1); return nextWorking(x); }
     function addWorkDays(d, count) {
         let x = new Date(d);
@@ -1893,11 +1894,26 @@ window.onload = () => {
             if (pairedOutlet) return [outlet, pairedOutlet];
             return [outlet];
         }
-        function isOutletSlotAvailable(outlet, dateObj, dateKey) {
-            const outlets = getOutletSlots(outlet);
-            return outlets.every((slot) => !used.has(dateKey + "|" + slot) && isOutletAllowedOnDate(slot, dateObj));
+        function buildSlotKey(dateKey, outlet, startTime) {
+            return `${dateKey}|${outlet}|${startTime}`;
         }
-        function markUsedSlots(dateKey, outlets) { outlets.forEach((slot) => used.add(dateKey + "|" + slot)); }
+        function areOutletsAvailable(outlets, dateObj, dateKey, startTime) {
+            return outlets.every((slot) => !used.has(buildSlotKey(dateKey, slot, startTime)) && isOutletAllowedOnDate(slot, dateObj));
+        }
+        function markUsedSlots(dateKey, outlets, startTime) {
+            outlets.forEach((slot) => used.add(buildSlotKey(dateKey, slot, startTime)));
+        }
+        function getAvailableStartTime(outlet, seedIndex, dateObj, dateKey) {
+            const times = (RULES[outlet] || ["09:00"]).filter(t => t <= "19:00");
+            const safeTimes = times.length ? times : ["19:00"];
+            const startIndex = seedIndex % safeTimes.length;
+            const outlets = getOutletSlots(outlet);
+            for (let offset = 0; offset < safeTimes.length; offset += 1) {
+                const time = safeTimes[(startIndex + offset) % safeTimes.length];
+                if (areOutletsAvailable(outlets, dateObj, dateKey, time)) return time;
+            }
+            return null;
+        }
         function buildSplitShiftCode(startTime, primary, secondary) {
             const firstLegEnd = addMinutes(startTime, 210);
             const secondLegStart = addMinutes(firstLegEnd, 60);
@@ -1929,6 +1945,7 @@ window.onload = () => {
                 addRow(makeRow(s, day1, MANDATORY_SESSIONS[0].start, MANDATORY_SESSIONS[0].label, 1, MANDATORY_SESSION_HOURS));
                 addRow(makeRow(s, onboardDate, MANDATORY_SESSIONS[1].start, MANDATORY_SESSIONS[1].label, 2, MANDATORY_SESSION_HOURS));
                 addRow(makeRow(s, elevateDate, MANDATORY_SESSIONS[2].start, MANDATORY_SESSIONS[2].label, 3, MANDATORY_SESSION_HOURS));
+                s.__weekEnd = addDays(day1, 6);
                 s.__state = { currentOutlet: null, remaining: 0, nextDate: addWorkDay(elevateDate) };
             }
         }
@@ -1950,6 +1967,7 @@ window.onload = () => {
         const everyone = Object.values(groups).flat().sort((a, b) => {
             return (b.blackoutDates.length || 0) - (a.blackoutDates.length || 0);
         });
+        const failedStarters = new Set();
         while (progress && safety < 5000) {
             progress = false; safety++;
             if (safety > 4000) conflicts.safetyTriggered = true;
@@ -1959,12 +1977,13 @@ window.onload = () => {
                 if (getPlaced(s.Name) >= starterMinShifts) { s.__state = null; continue; }
                 if (!s.__state) continue;
                 let st = s.__state; let cur = nextWorking(st.nextDate); let curKey = toYMD(cur);
+                if (s.__weekEnd && cur > s.__weekEnd) { failedStarters.add(s.Name); s.__state = null; continue; }
                 let outlet = st.currentOutlet;
                 if (st.remaining <= 0) {
                     let candidates = Object.keys(starterCounts).filter(o => getPlacedOutlet(s.Name, o) < starterCounts[o]);
                     if (!candidates.length) { s.__state = null; continue; }
                     if (shuffle) candidates = shuffled(candidates);
-                    const allowedToday = candidates.filter(o => isOutletSlotAvailable(o, cur, curKey));
+                    const allowedToday = candidates.filter(o => getAvailableStartTime(o, allRows.length, cur, curKey));
                     if (allowedToday.length === 0) conflicts.outletConflicts++;
                     outlet = allowedToday[0] || (shuffle ? shuffled(candidates)[0] : candidates[0]);
                     st.currentOutlet = outlet;
@@ -1972,16 +1991,19 @@ window.onload = () => {
                 }
                 const initialDate = cur;
                 let dateSafety = 0;
-                while (s.blackoutDates.includes(curKey) || !isOutletSlotAvailable(outlet, cur, curKey) || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, allRows.length))) { 
+                let t = getAvailableStartTime(outlet, allRows.length, cur, curKey);
+                while (s.blackoutDates.includes(curKey) || !t || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, t)) { 
                     cur = addWorkDay(cur); 
                     curKey = toYMD(cur); 
+                    if (s.__weekEnd && cur > s.__weekEnd) break;
+                    t = getAvailableStartTime(outlet, allRows.length, cur, curKey);
                     if (++dateSafety > 100) break; 
                 }
+                if (s.__weekEnd && cur > s.__weekEnd) { failedStarters.add(s.Name); s.__state = null; continue; }
                 if (cur > initialDate) conflicts.dateConflicts++;
-                const t = pickTime(outlet, allRows.length);
                 const { row, usedOutlets } = makeTrainingRow(s, cur, t, outlet, getPlaced(s.Name) + 1);
                 addRow(row);
-                markUsedSlots(curKey, usedOutlets);
+                markUsedSlots(curKey, usedOutlets, t);
                 st.remaining -= 1; st.nextDate = addWorkDay(cur); progress = true;
             }
         }
@@ -1994,22 +2016,30 @@ window.onload = () => {
             const starterCounts = blockCountsByStarter.get(s.Name) || baseCounts;
             const fallbackOrder = PREF.filter(outlet => (starterCounts[outlet] || 0) > 0);
             let fallbackNeeded = false;
+            const weekEnd = s.__weekEnd;
             while (placed < starterMinShifts && guard < 5000) {
                 guard++; const key = toYMD(cur);
                 if (s.blackoutDates.includes(key)) { cur = addWorkDay(cur); continue; }
-                let outlet = fallbackOrder.find(o => getPlacedOutlet(s.Name, o) < starterCounts[o] && isOutletSlotAvailable(o, cur, key));
-                if (!outlet || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, pickTime(outlet, rot))) { 
+                if (weekEnd && cur > weekEnd) { failedStarters.add(s.Name); break; }
+                let outlet = fallbackOrder.find(o => getPlacedOutlet(s.Name, o) < starterCounts[o] && getAvailableStartTime(o, rot, cur, key));
+                const t = outlet ? getAvailableStartTime(outlet, rot, cur, key) : null;
+                if (!outlet || !t || !canWorkThisDay(s.Name, cur) || !hasMinRest(s.Name, cur, t)) { 
                     cur = addWorkDay(cur); 
                     fallbackNeeded = true;
                     continue; 
                 }
-                const t = pickTime(outlet, rot++);
                 const { row, usedOutlets } = makeTrainingRow(s, cur, t, outlet, getPlaced(s.Name) + 1);
                 addRow(row);
-                markUsedSlots(key, usedOutlets);
+                markUsedSlots(key, usedOutlets, t);
                 placed++; cur = addWorkDay(cur);
             }
             if (fallbackNeeded) conflicts.fallbackUsed++;
+            if (placed < starterMinShifts) failedStarters.add(s.Name);
+        }
+
+        if (failedStarters.size) {
+            showModal('Training Shifts', `Unable to schedule all training shifts within the same week for: ${Array.from(failedStarters).join(', ')}.`);
+            return;
         }
 
         allRows.sort((a, b) => a.Starter.localeCompare(b.Starter) || a.Date.localeCompare(b.Date) || a.Start.localeCompare(b.Start));
